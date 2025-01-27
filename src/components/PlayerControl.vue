@@ -906,7 +906,8 @@ const hideTimeTooltip = () => {
 };
 
 const initMediaSession = () => {
-    if (!("mediaSession" in navigator) || !navigator.mediaSession) return;
+    if (!("mediaSession" in navigator) || !navigator.mediaSession)
+        return;
     navigator.mediaSession.setActionHandler('play', togglePlayPause);
     navigator.mediaSession.setActionHandler('pause', togglePlayPause);
     navigator.mediaSession.setActionHandler('previoustrack', () => {
@@ -918,14 +919,24 @@ const initMediaSession = () => {
 };
 
 const changeMediaSession = (song)=>{
-  if (!("mediaSession" in navigator) || !navigator.mediaSession) return;
+  if (!("mediaSession" in navigator) || !navigator.mediaSession)
+      return;
   try {
     navigator.mediaSession.metadata = new MediaMetadata({
       title: song.name,
       artist: song.author,
       album: song.album,
-      artwork: [{ src: song.img }]
+      artwork: [{ src: './assets/images/logo.jpg' }]
     });
+  } catch (error) {
+    console.error( error);
+  }
+  try {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: song.name,
+      artist: song.author,
+      album: song.album,
+      artwork: [{ src: song.img }]});
   } catch (error) {
     console.error( error);
   }

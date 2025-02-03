@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "electron:serve": "cross-env NODE_ENV=development electron .",
-    "api": "node API/app.js",
+    "api": "node api/app.js",
     "dev": "npm run api & npm run serve & npm run electron:serve",
     "build:api:win": "npm run --prefix ./api pkgwin",
     "build:api:linux": "npm run --prefix ./api pkglinux",

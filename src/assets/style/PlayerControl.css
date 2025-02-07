@@ -334,7 +334,7 @@
 /* 播放队列样式 */
 .queue-popup {
     position: fixed;
-    right: 20px;
+    right: 16px;
     bottom: 100px;
     width: 300px;
     max-height: 400px;

@@ -189,7 +189,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, onUnmounted, nextTick } from 'vue';
+import { ref, onMounted, computed, onUnmounted, nextTick, watch } from 'vue';
 import { RecycleScroller } from 'vue3-virtual-scroller';
 import 'vue3-virtual-scroller/dist/vue3-virtual-scroller.css';
 import { get } from '../utils/request';
@@ -403,6 +403,20 @@ const playSongFromQueue = (direction) => {
         musicQueueStore.queue[targetIndex].author
     );
 };
+
+//切换小宠物显示状态
+watch(showQueue, (newValue) => {
+    const locationArrow = document.querySelector('.location-arrow');
+    const scrollBottom = document.querySelector('.scroll-bottom-img');
+
+    if (newValue) {
+        locationArrow.style.zIndex = -1;
+        scrollBottom.style.zIndex = -1;
+    } else {
+        locationArrow.style.zIndex = 90;
+        scrollBottom.style.zIndex = 90;
+    }
+});
 
 // 切换播放/暂停
 const togglePlayPause = async () => {

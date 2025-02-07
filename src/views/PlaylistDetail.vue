@@ -435,7 +435,7 @@ const sharePlaylist = () => {
 .location-arrow {
     position: fixed;
     bottom: 168px;
-    right: 14px;
+    right: 16px;
     z-index: 90;
     cursor: pointer;
     font-size: 37px;

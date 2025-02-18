@@ -261,7 +261,7 @@ export function startApiServer() {
 // 停止 API 服务器
 export function stopApiServer() {
     if (apiProcess) {
-        kill(apiProcess.pid);
+        process.kill(apiProcess.pid, 'SIGKILL');
         apiProcess = null;
     }
 }

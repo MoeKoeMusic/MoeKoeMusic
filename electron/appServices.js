@@ -187,9 +187,17 @@ export function createTray(mainWindow) {
     ]);
 
     tray.setToolTip('MoeKoe Music');
-    tray.on('right-click', () => {
-        tray.popUpContextMenu(contextMenu);
-    });
+
+    switch (process.platform) {
+        case 'linux':
+            tray.setContextMenu(contextMenu);
+            break;
+        default:
+            tray.on('right-click', () => {
+                tray.popUpContextMenu(contextMenu);
+            });
+            return;
+    }
     tray.on('click', () => {
         mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
     });

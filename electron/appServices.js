@@ -196,7 +196,6 @@ export function createTray(mainWindow) {
             tray.on('right-click', () => {
                 tray.popUpContextMenu(contextMenu);
             });
-            return;
     }
     tray.on('click', () => {
         mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();

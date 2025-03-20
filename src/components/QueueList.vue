@@ -69,7 +69,7 @@ const removeSongFromQueue = (index) => {
 
 // 添加歌曲到队列并播放
 const addSongToQueue = (hash, name, img, author) => {
-    emit('addSongToQueue', { hash, name, img, author });
+    emit('addSongToQueue', hash, name, img, author);
 };
 
 // 滚动到当前播放歌曲位置

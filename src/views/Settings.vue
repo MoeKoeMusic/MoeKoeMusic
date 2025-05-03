@@ -2,10 +2,10 @@
     <div class="settings-page">
         <section v-for="(section, sectionIndex) in settingSections" :key="sectionIndex" class="setting-section">
             <h3>{{ section.title }}</h3>
-            <div v-for="(item, itemIndex) in section.items" :key="itemIndex" 
+            <div v-for="(item, itemIndex) in section.items" :key="itemIndex"
                  class="setting-item" @click="item.action ? item.action() : openSelection(item.key)">
                 <span>{{ item.label }}
-                    <span v-if="item.showRefreshHint && showRefreshHint[item.key]" class="refresh-hint"> 
+                    <span v-if="item.showRefreshHint && showRefreshHint[item.key]" class="refresh-hint">
                         {{ item.refreshHintText }}
                     </span>
                 </span>
@@ -23,7 +23,7 @@
                         {{ option.displayText }}
                     </li>
                 </ul>
-                
+
                 <div v-if="selectionType === 'quality'" class="compatibility-option">
                     <label>
                         <input type="checkbox" v-model="qualityCompatibilityMode" />
@@ -31,16 +31,16 @@
                         <div class="compatibility-hint">如果高音质播放失败，请开启此选项</div>
                     </label>
                 </div>
-                
+
                 <div v-if="selectionType === 'highDpi'" class="scale-slider-container">
                     <div class="scale-slider-label">缩放因子: {{ dpiScale }} <span class="scale-slider-hint">调整后需要重启应用生效</span></div>
                     <div class="scale-slider-wrapper">
-                        <input 
-                            type="range" 
-                            min="0.5" 
-                            max="2" 
-                            step="0.1" 
-                            v-model="dpiScale" 
+                        <input
+                            type="range"
+                            min="0.5"
+                            max="2"
+                            step="0.1"
+                            v-model="dpiScale"
                             class="scale-slider"
                         />
                         <div class="scale-marks">
@@ -51,7 +51,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div v-if="selectionType === 'apiMode' && selectedSettings.apiMode.value === 'on'" class="api-settings-container">
                     <div class="api-setting-item">
                         <label>API 地址</label>
@@ -76,12 +76,12 @@
                 <div class="shortcut-list">
                     <div class="shortcut-item" v-for="(config, key) in shortcutConfigs" :key="key">
                         <span>{{ config.label }}</span>
-                        <div class="shortcut-input" 
-                             @click="startRecording(key)" 
+                        <div class="shortcut-input"
+                             @click="startRecording(key)"
                              :class="{ 'recording': recordingKey === key }">
                             {{ shortcuts[key] || '点击设置快捷键' }}
-                            <div v-if="shortcuts[key]" 
-                                 class="clear-shortcut" 
+                            <div v-if="shortcuts[key]"
+                                 class="clear-shortcut"
                                  @click.stop="clearShortcut(key)">
                                 ×
                             </div>
@@ -94,7 +94,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="reset-settings-container">
             <button @click="openResetConfirmation" class="reset-settings-button">
                 <i class="fas fa-sync-alt"></i>
@@ -124,6 +124,7 @@ const selectedSettings = ref({
     language: { displayText: '🌏 ' + t('zi-dong'), value: '' },
     themeColor: { displayText: t('shao-nv-fen'), value: 'pink' },
     theme: { displayText: '☀️ ' + t('qian-se'), value: 'light' },
+    nativeTitleBar: { displayText: t('guan-bi'), value: 'off' },
     quality: { displayText: t('pu-tong-yin-zhi'), value: 'normal' },
     lyricsBackground: { displayText: t('da-kai'), value: 'on' },
     desktopLyrics: { displayText: t('guan-bi'), value: 'off' },
@@ -156,6 +157,12 @@ const settingSections = computed(() => [
             {
                 key: 'theme',
                 label: t('wai-guan')
+            },
+            {
+                key: 'nativeTitleBar',
+                label: t('native-title-bar'),
+                showRefreshHint: true,
+                refreshHintText: t('zhong-qi-hou-sheng-xiao')
             },
             {
                 key: 'font',
@@ -269,6 +276,13 @@ const selectionTypeMap = {
             { displayText: '🌙 ' + t('shen-se'), value: 'dark' }
         ]
     },
+    nativeTitleBar: {
+        title: t('native-title-bar'),
+        options: [
+            { displayText: t('da-kai'), value: 'on' },
+            { displayText: t('guan-bi'), value: 'off' }
+        ]
+    },
     quality: {
         title: t('yin-zhi-xuan-ze'),
         options: [
@@ -363,6 +377,7 @@ const selectionTypeMap = {
 };
 
 const showRefreshHint = ref({
+    nativeTitleBar: false,
     lyricsBackground: false,
     lyricsFontSize: false,
     gpuAcceleration: false,
@@ -373,18 +388,18 @@ const showRefreshHint = ref({
 const openSelection = (type) => {
     isSelectionOpen.value = true;
     selectionType.value = type;
-    
+
     if (type === 'quality') {
         qualityCompatibilityMode.value = selectedSettings.value.qualityCompatibility?.value === 'on';
     }
-    
+
     if (type === 'highDpi') {
         dpiScale.value = parseFloat(selectedSettings.value.dpiScale?.value || '1.0');
     }
 };
 
 const selectOption = (option) => {
-    const electronFeatures = ['desktopLyrics', 'gpuAcceleration', 'minimizeToTray', 'highDpi'];
+    const electronFeatures = ['desktopLyrics', 'gpuAcceleration', 'minimizeToTray', 'highDpi', 'nativeTitleBar'];
     if (!isElectron() && electronFeatures.includes(selectionType.value)) {
         window.$modal.alert(t('fei-ke-hu-duan-huan-jing-wu-fa-qi-yong'));
         return;
@@ -393,6 +408,9 @@ const selectOption = (option) => {
     const actions = {
         'themeColor': () => proxy.$applyColorTheme(option.value),
         'theme': () => proxy.$setTheme(option.value),
+        'nativeTitleBar': () => {
+            showRefreshHint.value.nativeTitleBar = true;
+        },
         'language': () => {
             proxy.$i18n.locale = option.value;
             document.documentElement.lang = option.value;
@@ -402,13 +420,13 @@ const selectOption = (option) => {
                 window.$modal.alert(t('gao-pin-zhi-yin-le-xu-yao-deng-lu-hou-cai-neng-bo-fango'));
                 return;
             }
-            selectedSettings.value.qualityCompatibility = { 
+            selectedSettings.value.qualityCompatibility = {
                 value: qualityCompatibilityMode.value ? 'on' : 'off',
                 displayText: qualityCompatibilityMode.value ? t('kai-qi') : t('guan-bi')
             };
         },
         'highDpi': () => {
-            selectedSettings.value.dpiScale = { 
+            selectedSettings.value.dpiScale = {
                 value: dpiScale.value.toString(),
                 displayText: dpiScale.value.toString()
             };
@@ -451,9 +469,9 @@ onMounted(() => {
             if (selectionTypeMap[key] && selectionTypeMap[key].options) {
                 if (key === 'font') {
                     const value = savedSettings[key];
-                    selectedSettings.value[key] = { 
+                    selectedSettings.value[key] = {
                         displayText: value || '默认字体',
-                        value: value 
+                        value: value
                     };
                 } else {
                     const displayText = selectionTypeMap[key].options.find(
@@ -483,43 +501,43 @@ const recordingKey = ref('');
 const shortcuts = ref({});
 
 const shortcutConfigs = ref({
-    mainWindow: { 
+    mainWindow: {
         label: t('xian-shi-yin-cang-zhu-chuang-kou'),
         defaultValue: 'Ctrl+Shift+S'
     },
-    quitApp: { 
+    quitApp: {
         label: t('tui-chu-zhu-cheng-xu'),
         defaultValue: 'Ctrl+Q'
     },
-    prevTrack: { 
+    prevTrack: {
         label: t('shang-yi-shou'),
         defaultValue: 'Alt+Ctrl+Left'
     },
-    nextTrack: { 
+    nextTrack: {
         label: t('xia-yi-shou'),
         defaultValue: 'Alt+Ctrl+Right'
     },
-    playPause: { 
+    playPause: {
         label: t('zan-ting-bo-fang'),
         defaultValue: 'Alt+Ctrl+Space'
     },
-    volumeUp: { 
+    volumeUp: {
         label: t('yin-liang-zeng-jia'),
         defaultValue: 'Alt+Ctrl+Up'
     },
-    volumeDown: { 
+    volumeDown: {
         label: t('yin-liang-jian-xiao'),
         defaultValue: 'Alt+Ctrl+Down'
     },
-    mute: { 
+    mute: {
         label: t('jing-yin'),
         defaultValue: 'Alt+Ctrl+M'
     },
-    like: { 
+    like: {
         label: t('tian-jia-wo-xi-huan'),
         defaultValue: 'Alt+Ctrl+L'
     },
-    mode: { 
+    mode: {
         label: t('qie-huan-bo-fang-mo-shi'),
         defaultValue: 'Alt+Ctrl+P'
     },
@@ -546,22 +564,22 @@ const startRecording = (key) => {
 
 const recordShortcut = (e) => {
     if (!recordingKey.value) return;
-    
+
     e.preventDefault();
     const keys = [];
-    
+
     // 修饰键
     if (e.metaKey) keys.push('CommandOrControl');
     if (e.ctrlKey) keys.push('Ctrl');
     if (e.altKey) keys.push('Alt');
     if (e.shiftKey) keys.push('Shift');
-    
+
     // 如果按下了修饰键，更新提示
     if (keys.length > 0 && ['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) {
         shortcuts.value[recordingKey.value] = keys.join('+') + t('qing-an-xia-qi-ta-jian');
         return;
     }
-    
+
     // 特殊键映射
     const specialKeys = {
         ' ': 'Space',
@@ -586,29 +604,29 @@ const recordShortcut = (e) => {
     };
 
     const key = specialKeys[e.key] || e.key.toUpperCase();
-    
+
     // 只有当按下的不是单独的修饰键时才结束记录
     if (!['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) {
         keys.push(key);
-        
+
         if (keys.length > 0) {
             // 检查是否包含必要的修饰键
             if (!keys.some(k => ['Ctrl', 'Alt', 'Shift', 'CommandOrControl'].includes(k))) {
                 window.$modal.alert(t('kuai-jie-jian-bi-xu-bao-han-zhi-shao-yi-ge-xiu-shi-jian-ctrlaltshiftcommand'));
                 return;
             }
-            
+
             // 检查快捷键冲突
             const newShortcut = keys.join('+');
-            const conflictKey = Object.entries(shortcuts.value).find(([k, v]) => 
+            const conflictKey = Object.entries(shortcuts.value).find(([k, v]) =>
                 v === newShortcut && k !== recordingKey.value
             );
-            
+
             if (conflictKey) {
                 window.$modal.alert(t('gai-kuai-jie-jian-yu')+conflictKey[0]+t('de-kuai-jie-jian-chong-tu'));
                 return;
             }
-            
+
             shortcuts.value[recordingKey.value] = newShortcut;
             recordingKey.value = '';
             window.removeEventListener('keydown', recordShortcut);
@@ -630,15 +648,15 @@ const saveShortcuts = () => {
     }
 
     // 验证所有快捷键
-    const invalidShortcuts = Object.entries(shortcuts.value).filter(([key, value]) => 
+    const invalidShortcuts = Object.entries(shortcuts.value).filter(([key, value]) =>
         value && !validateShortcut(value)
     );
-    
+
     if (invalidShortcuts.length > 0) {
         window.$modal.alert(t('cun-zai-wu-xiao-de-kuai-jie-jian-she-zhi-qing-que-bao-mei-ge-kuai-jie-jian-du-bao-han-xiu-shi-jian'));
         return;
     }
-    
+
     try {
         let settingsToSave = JSON.parse(localStorage.getItem('settings')) || {};
         settingsToSave.shortcuts = shortcuts.value;
@@ -649,7 +667,7 @@ const saveShortcuts = () => {
         console.error('保存设置失败:', error);
         window.$modal.alert(t('bao-cun-she-zhi-shi-bai'));
     }
-    
+
     closeShortcutSettings();
 };
 

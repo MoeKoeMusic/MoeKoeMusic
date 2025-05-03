@@ -17,6 +17,8 @@ let tray = null;
 
 // 创建主窗口
 export function createWindow() {
+    const savedConfig = store.get('settings');
+    const useNativeTitleBar = savedConfig?.nativeTitleBar === 'on' ? true : false;
     const { width: screenWidth, height: screenHeight } = screen.getPrimaryDisplay().workAreaSize;
 
     const windowWidth = Math.min(1200, screenWidth * 0.8);
@@ -29,8 +31,8 @@ export function createWindow() {
         y: lastWindowState.y || Math.floor((screenHeight - windowHeight) / 2),
         minWidth: 890,
         minHeight: 750,
-        frame: false,
-        titleBarStyle: 'hiddenInset',
+        frame: useNativeTitleBar,
+        titleBarStyle: useNativeTitleBar ? 'default' : 'hiddenInset',
         autoHideMenuBar: true,
         webPreferences: {
             preload: path.join(__dirname, 'preload.cjs'),
@@ -84,7 +86,6 @@ export function createWindow() {
         setThumbarButtons(mainWindow);
     }
 
-    const savedConfig = store.get('settings');
     if (savedConfig?.desktopLyrics === 'on') {
         createLyricsWindow();
     }
@@ -120,7 +121,7 @@ export function createLyricsWindow() {
             nodeIntegration: false,
             sandbox: false,
             webSecurity: true,
-            backgroundThrottling: false, 
+            backgroundThrottling: false,
             zoomFactor: 1.0
         }
     });
@@ -178,49 +179,49 @@ export function createTray(mainWindow, title='') {
 
     const contextMenu = Menu.buildFromTemplate([
         {
-            label: '项目主页', 
+            label: '项目主页',
             icon: isDev ? path.join(__dirname, '../build/icons/menu/home.png') : path.join(process.resourcesPath, 'icons', 'menu', 'home.png'),
             click: () => {
                 shell.openExternal('https://github.com/iAJue/');
             }
         },
         {
-            label: '反馈bug', 
+            label: '反馈bug',
             icon: isDev ? path.join(__dirname, '../build/icons/menu/bug.png') : path.join(process.resourcesPath, 'icons', 'menu', 'bug.png'),
             click: () => {
                 shell.openExternal('https://github.com/iAJue/MoeKoeMusic/issues');
             }
         },
         {
-            label: '上一首', 
-            icon: isDev ? path.join(__dirname, '../build/icons/menu/prev.png') : path.join(process.resourcesPath, 'icons', 'menu', 'prev.png'), accelerator: 'Alt+CommandOrControl+Left', 
+            label: '上一首',
+            icon: isDev ? path.join(__dirname, '../build/icons/menu/prev.png') : path.join(process.resourcesPath, 'icons', 'menu', 'prev.png'), accelerator: 'Alt+CommandOrControl+Left',
             click: () => {
                 mainWindow.webContents.send('play-previous-track');
             }
         },
         {
-            label: '暂停', accelerator: 'Alt+CommandOrControl+Space', 
+            label: '暂停', accelerator: 'Alt+CommandOrControl+Space',
             icon: isDev ? path.join(__dirname, '../build/icons/menu/play.png') : path.join(process.resourcesPath, 'icons', 'menu', 'play.png'),
             click: () => {
                 mainWindow.webContents.send('toggle-play-pause');
             }
         },
         {
-            label: '下一首', accelerator: 'Alt+CommandOrControl+Right', 
+            label: '下一首', accelerator: 'Alt+CommandOrControl+Right',
             icon: isDev ? path.join(__dirname, '../build/icons/menu/next.png') : path.join(process.resourcesPath, 'icons', 'menu', 'next.png'),
             click: () => {
                 mainWindow.webContents.send('play-next-track');
             }
         },
         {
-            label: '检查更新', 
+            label: '检查更新',
             icon: isDev ? path.join(__dirname, '../build/icons/menu/update.png') : path.join(process.resourcesPath, 'icons', 'menu', 'update.png'),
             click: () => {
                 checkForUpdates(false);
             }
         },
         {
-            label: '显示/隐藏', accelerator: 'CmdOrCtrl+Shift+S', 
+            label: '显示/隐藏', accelerator: 'CmdOrCtrl+Shift+S',
             icon: isDev ? path.join(__dirname, '../build/icons/menu/show.png') : path.join(process.resourcesPath, 'icons', 'menu', 'show.png'),
             click: () => {
                 if (mainWindow) {
@@ -233,7 +234,7 @@ export function createTray(mainWindow, title='') {
             }
         },
         {
-            label: '退出程序', accelerator: 'CmdOrCtrl+Q', 
+            label: '退出程序', accelerator: 'CmdOrCtrl+Q',
             icon: isDev ? path.join(__dirname, '../build/icons/menu/quit.png') : path.join(process.resourcesPath, 'icons', 'menu', 'quit.png'),
             click: () => {
                 app.isQuitting = true;
@@ -488,7 +489,7 @@ export function setThumbarButtons(mainWindow, isPlaying = false) {
     const buttons = [
         {
             tooltip: '上一首',
-            icon: isDev 
+            icon: isDev
                 ? path.join(__dirname, '../build/icons/prev.png')
                 : path.join(process.resourcesPath, 'icons', 'prev.png'),
             click: () => {
@@ -498,7 +499,7 @@ export function setThumbarButtons(mainWindow, isPlaying = false) {
         },
         {
             tooltip: '暂停',
-            icon: isDev 
+            icon: isDev
                 ? path.join(__dirname, '../build/icons/pause.png')
                 : path.join(process.resourcesPath, 'icons', 'pause.png'),
             click: () => {
@@ -508,7 +509,7 @@ export function setThumbarButtons(mainWindow, isPlaying = false) {
         },
         {
             tooltip: '下一首',
-            icon: isDev 
+            icon: isDev
                 ? path.join(__dirname, '../build/icons/next.png')
                 : path.join(process.resourcesPath, 'icons', 'next.png'),
             click: () => {
@@ -521,7 +522,7 @@ export function setThumbarButtons(mainWindow, isPlaying = false) {
     if (!isPlaying) {
         buttons[1] = {
             tooltip: '播放',
-            icon: isDev 
+            icon: isDev
                 ? path.join(__dirname, '../build/icons/play.png')
                 : path.join(process.resourcesPath, 'icons', 'play.png'),
             click: () => {

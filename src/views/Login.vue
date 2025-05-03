@@ -52,7 +52,7 @@
                     <el-empty :description="t('zheng-zai-sheng-cheng-er-wei-ma')" v-else />
                 </div>
             </div>
-            
+
             <p class="disclaimer">
                 {{ $t('meng-yin-cheng-nuo-bu-hui-bao-cun-ni-de-ren-he-zhang-hao-xin-xi-dao-yun-duan-ni-de-mi-ma-hui-zai-ben-di-jin-hang-jia-mi-hou-zai-chuan-shu-dao-ku-gou-guan-fang-meng-yin-bing-fei-ku-gou-guan-fang-wang-zhan-shu-ru-zhang-hao-xin-xi-qian-qing-shen-zhong-kao-lv-er-wei-ma-sao-ma-hou-xu-yao-deng-dai-ji-fen-zhong-cai-hui-deng-lu-cheng-gong') }}<b>{{ $t('tui-jian') }}</b>{{ $t('shi-yong-yan-zheng-ma-deng-lu') }}
             </p>
@@ -243,13 +243,18 @@ const getQrCode = async () => {
 const checkQrStatus = async () => {
     interval.value = setInterval(async () => {
         try {
-            const response = await get(`/login/qr/check?key=${qrKey.value}`);
+            const response = await get(`/login/qr/check?key=${qrKey.value}&timestamp=${Date.now()}`, {} ,{
+                headers: {
+                    'Cache-Control': 'no-cache'
+                }
+            });
             if (response.status === 1) {
                 if (response.data.status === 2) {
-                    tips.value = t('yong-hu')+` ${response.data.nickname} `+t('yi-sao-ma-deng-dai-que-ren');
+                    tips.value = t('yong-hu')+` ${response.data.nickname} `+ t('yi-sao-ma-deng-dai-que-ren');
                 } else if (response.data.status === 4) {
                     clearInterval(interval.value);
                     MoeAuth.setData({ UserInfo: response.data });
+                    router.push(route.query.redirect || '/library');
                     ElMessage.success(t('er-wei-ma-deng-lu-cheng-gong'));
                 } else if (response.data.status === 0) {
                     clearInterval(interval.value);
@@ -260,7 +265,7 @@ const checkQrStatus = async () => {
             clearInterval(interval.value);
             ElMessage.error(t('er-wei-ma-jian-ce-shi-bai'));
         }
-    }, 5000);
+    }, 1000);
 };
 
 </script>

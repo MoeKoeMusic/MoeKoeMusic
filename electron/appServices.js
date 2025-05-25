@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen, Tray, Menu, globalShortcut, dialog, shell } from 'electron';
+import { app, ipcMain, BrowserWindow, screen, Tray, Menu, globalShortcut, dialog, shell, nativeImage } from 'electron';
 import path from 'path';
 import { spawn } from 'child_process';
 import log from 'electron-log';
@@ -11,6 +11,7 @@ import { checkForUpdates } from './updater.js';
 import { Notification } from 'electron';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const store = new Store();
+const { TouchBarLabel, TouchBarButton, TouchBarGroup, TouchBarSpacer } = TouchBar;
 let mainWindow = null;
 let apiProcess = null;
 let tray = null;
@@ -259,6 +260,89 @@ export function createTray(mainWindow, title='') {
         mainWindow.show();
     });
     return tray;
+}
+
+// 创建 TouchBar
+export function createTouchBar(mainWindow) {
+    const ICON_SIZE = 16;
+
+    let isPlaying = false;
+
+    const iconPath = (iconName) => {
+        const originalIcon = nativeImage.createFromPath(
+            isDev
+                ? path.join(__dirname, `../build/icons/${iconName}.png`)
+                : path.join(process.resourcesPath, "icons", `${iconName}.png`)
+        );
+
+        // 调整图标大小
+        return originalIcon.resize({
+            width: ICON_SIZE,
+            height: ICON_SIZE,
+        });
+    };
+
+    const prevButton = new TouchBarButton({
+        icon: iconPath("prev"),
+        iconPosition: "center",
+        click: () => {
+            mainWindow.webContents.send("play-previous-track");
+        },
+    });
+
+    const playPauseButton = new TouchBarButton({
+        icon: iconPath(isPlaying ? "pause" : "play"),
+        iconPosition: "center",
+        click: () => {
+            isPlaying = !isPlaying;
+            playPauseButton.icon = iconPath(isPlaying ? "pause" : "play");
+            mainWindow.webContents.send("toggle-play-pause");
+        },
+    });
+
+    const nextButton = new TouchBarButton({
+        icon: iconPath("next"),
+        iconPosition: "center",
+        click: () => {
+            mainWindow.webContents.send("play-next-track");
+        },
+    });
+
+    // 歌词
+    const lyricsLabel = new TouchBarLabel({
+        label: "暂无歌词",
+        textColor: "#FFFFFF",
+    });
+
+    const touchBar = new TouchBar({
+        items: [
+            prevButton,
+            new TouchBarSpacer({ size: "small" }),
+            playPauseButton,
+            new TouchBarSpacer({ size: "small" }),
+            nextButton,
+            new TouchBarSpacer({ size: "flexible" }),
+            lyricsLabel,
+            new TouchBarSpacer({ size: "flexible" }),
+        ],
+    });
+
+    mainWindow.setTouchBar(touchBar);
+
+    // 监听播放状态变化
+    ipcMain.on("play-pause-action", (event, playing) => {
+        isPlaying = playing;
+        playPauseButton.icon = iconPath(isPlaying ? "pause" : "play");
+    });
+
+    // 监听歌词更新
+    ipcMain.on("update-current-lyrics", (event, currentLyric) => {
+        if (currentLyric) {
+            lyricsLabel.label = currentLyric;
+        }
+    });
+
+    return touchBar;
 }
 
 // 启动 API 服务器

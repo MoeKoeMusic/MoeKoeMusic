@@ -132,6 +132,27 @@ export default function useLyricsHandler(t) {
         });
     };
 
+    // 获取当前行歌词文本
+    const getCurrentLineText = (currentTime) => {
+        if (!lyricsData.value || lyricsData.value.length === 0) return "";
+
+        for (const lineData of lyricsData.value) {
+            const firstChar = lineData.characters[0];
+            const lastChar =
+                lineData.characters[lineData.characters.length - 1];
+
+            if (
+                firstChar &&
+                lastChar &&
+                currentTime * 1000 >= firstChar.startTime &&
+                currentTime * 1000 <= lastChar.endTime
+            ) {
+                return lineData.characters.map((char) => char.char).join("");
+            }
+        }
+        return "";
+    };
+
     return {
         lyricsData,
         originalLyrics,
@@ -141,6 +162,7 @@ export default function useLyricsHandler(t) {
         toggleLyrics,
         getLyrics,
         highlightCurrentChar,
-        resetLyricsHighlight
+        resetLyricsHighlight,
+        getCurrentLineText,
     };
 } 

@@ -1,6 +1,6 @@
 import { app, ipcMain, globalShortcut, dialog, Notification, shell, session } from 'electron';
 import { 
-    createWindow, createTray, startApiServer, 
+    createWindow, createTray, createTouchBar, startApiServer, 
     stopApiServer, registerShortcut, 
     playStartupSound, createLyricsWindow, setThumbarButtons 
 } from './appServices.js';
@@ -33,6 +33,7 @@ app.on('ready', () => {
         try {
             mainWindow = createWindow();
             createTray(mainWindow);
+            if (process.platform === "darwin") createTouchBar(mainWindow);
             playStartupSound();
             registerShortcut();
             setupAutoUpdater(mainWindow);

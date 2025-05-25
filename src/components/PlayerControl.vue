@@ -240,6 +240,11 @@ const updateCurrentTime = throttle(() => {
                     duration: audio.duration
                 });
             }
+            const currentLine = getCurrentLineText(audio.currentTime);
+            window.electron.ipcRenderer.send(
+                "update-current-lyrics",
+                currentLine
+            );
         }
     } else if (isElectron() && currentSong.value?.hash && (savedConfig?.desktopLyrics === 'on' || savedConfig?.apiMode === 'on')) {
         getLyrics(currentSong.value.hash);
@@ -253,7 +258,7 @@ const audioController = useAudioController({ onSongEnd, updateCurrentTime });
 const { playing, isMuted, volume, changeVolume, audio, playbackRate, setPlaybackRate } = audioController;
 
 const lyricsHandler = useLyricsHandler(t);
-const { lyricsData, originalLyrics, showLyrics, scrollAmount, SongTips, toggleLyrics, getLyrics, highlightCurrentChar, resetLyricsHighlight } = lyricsHandler;
+const { lyricsData, originalLyrics, showLyrics, scrollAmount, SongTips, toggleLyrics, getLyrics, highlightCurrentChar, resetLyricsHighlight, getCurrentLineText, } = lyricsHandler;
 
 const progressBar = useProgressBar(audio, resetLyricsHighlight);
 const { progressWidth, isProgressDragging, showTimeTooltip, tooltipPosition, tooltipTime, climaxPoints, formatTime, getMusicHighlights, onProgressDragStart, updateProgressFromEvent, updateTimeTooltip, hideTimeTooltip } = progressBar;

@@ -240,11 +240,13 @@ const updateCurrentTime = throttle(() => {
                     duration: audio.duration
                 });
             }
-            const currentLine = getCurrentLineText(audio.currentTime);
-            window.electron.ipcRenderer.send(
-                "update-current-lyrics",
-                currentLine
-            );
+            if (window.navigator.platform.includes("Mac")) {
+                const currentLine = getCurrentLineText(audio.currentTime);
+                window.electron.ipcRenderer.send(
+                    "update-current-lyrics",
+                    currentLine
+                );
+            }
         }
     } else if (isElectron() && currentSong.value?.hash && (savedConfig?.desktopLyrics === 'on' || savedConfig?.apiMode === 'on')) {
         getLyrics(currentSong.value.hash);

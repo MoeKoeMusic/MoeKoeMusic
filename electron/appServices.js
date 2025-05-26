@@ -1,4 +1,4 @@
-import { app, ipcMain, BrowserWindow, screen, Tray, Menu, globalShortcut, dialog, shell, nativeImage } from 'electron';
+import { app, ipcMain, BrowserWindow, screen, Tray, Menu, TouchBar, globalShortcut, dialog, shell, nativeImage } from 'electron';
 import path from 'path';
 import { spawn } from 'child_process';
 import log from 'electron-log';

@@ -1,6 +1,6 @@
 {
   "name": "moekoemusic",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "main": "electron/main.js",
   "scripts": {
     "install-all": "npm install && cd api && npm install",

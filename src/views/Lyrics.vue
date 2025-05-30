@@ -403,6 +403,7 @@ html {
     color: transparent;
     font-weight: bold;
     letter-spacing: 2px;
+    -webkit-text-stroke: 0.5px rgba(255, 255, 255, 0.5);
 }
 
 .lyrics-container {

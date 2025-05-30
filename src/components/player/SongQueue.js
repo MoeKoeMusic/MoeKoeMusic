@@ -30,9 +30,9 @@ export default function useSongQueue(t, musicQueueStore) {
 
             // 根据用户设置确定请求参数
             const MoeAuth = typeof MoeAuthStore === 'function' ? MoeAuthStore() : { isAuthenticated: false };
-            if (!MoeAuth.isAuthenticated) data.free_part = 1;
-            if (MoeAuth.isAuthenticated && settings?.quality === 'lossless' && settings?.qualityCompatibility === 'off') data.quality = 'flac';
-            if (MoeAuth.isAuthenticated && settings?.quality === 'hires' && settings?.qualityCompatibility === 'off') data.quality = 'high';
+            if (MoeAuth.isAuthenticated) data.free_part = 1;
+            if (!MoeAuth.isAuthenticated && settings?.quality === 'lossless' && settings?.qualityCompatibility === 'off') data.quality = 'flac';
+            if (!MoeAuth.isAuthenticated && settings?.quality === 'hires' && settings?.qualityCompatibility === 'off') data.quality = 'high';
 
             const response = await get('/song/url', data);
             if (response.status !== 1) {

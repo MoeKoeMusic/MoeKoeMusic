@@ -395,15 +395,16 @@ html {
 <style scoped>
 .character {
     display: inline-block;
-    color: transparent;
     position: relative;
     margin: 0 2px;
     background-clip: text;
     -webkit-background-clip: text;
-    color: transparent;
     font-weight: bold;
     letter-spacing: 2px;
-    -webkit-text-stroke: 0.5px rgba(255, 255, 255, 0.5);
+    background-image: linear-gradient(to right, #ff0000, #00ff00);
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
+    color: transparent;
+    transition: all 0.3s ease;
 }
 
 .lyrics-container {

@@ -122,6 +122,21 @@ const currentLineStyle = computed(() => ({
     transform: `translateX(${currentLineScrollX.value}px)`
 }))
 
+const throttle = (func, delay) => {
+    let lastTime = 0
+    return (...args) => {
+        const now = Date.now()
+        if (now - lastTime >= delay) {
+            lastTime = now
+            func(...args)
+        }
+    }
+}
+
+const sendWindowDrag = throttle((mouseX, mouseY) => {
+    window.electron.ipcRenderer.send('window-drag', { mouseX, mouseY })
+}, 16)
+
 const displayedLines = ref([0, 1]) 
 const defaultColor = ref(localStorage.getItem('lyrics-default-color') || '#999999')
 const highlightColor = ref(localStorage.getItem('lyrics-highlight-color') || 'var(--primary-color)')
@@ -281,10 +296,7 @@ const onDrag = (event) => {
     const deltaX = event.screenX - dragOffset.value.x
     const deltaY = event.screenY - dragOffset.value.y
 
-    window.electron.ipcRenderer.send('window-drag', {
-        mouseX: deltaX,
-        mouseY: deltaY
-    })
+    sendWindowDrag(deltaX, deltaY)
 }
 
 const endDrag = () => {

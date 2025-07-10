@@ -89,9 +89,7 @@
                     </div>
                 </div>
                 <div class="lyrics-line translated" v-if="lyrics[displayedLines[0]]?.translated">
-                    <div class="lyrics-content"
-                        :class="{ 'hovering': isHovering && !isLocked }"
-                    >
+                    <div class="lyrics-content" :style="{ color: defaultColor }" :class="{ 'hovering': isHovering && !isLocked }">
                         <span>{{ lyrics[displayedLines[0]].translated }}</span>
                     </div>
                 </div>
@@ -221,8 +219,15 @@ const updateCurrentLineIndex = () => {
 
 const updateDisplayedLines = () => {
     const currentIdx = currentLineIndex.value
-    if (lyrics.value[currentIdx]?.translated) {
+    if (lyrics.value[currentIdx]?.translated?.length) {
         displayedLines.value = [currentIdx, currentIdx + 1]
+        nextTick(() => {
+            const elements = document.querySelectorAll('.lyrics-line .character')
+            elements.forEach(el => {
+                el.style.backgroundPosition = '100% 0'
+                el.style.transition = 'none'
+            })
+        })
         return
     }
     if (currentIdx > displayedLines.value[1]) {
@@ -425,7 +430,6 @@ html {
     font-weight: bold;
     letter-spacing: 2px;
     background-image: linear-gradient(to right, #ff0000, #00ff00);
-    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
     color: transparent;
     transition: all 0.3s ease;
 }
@@ -521,6 +525,7 @@ html {
     overflow: hidden;
     position: relative;
     transition: transform 0.3s ease-out;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
 }
 
 .lyrics-line.current {

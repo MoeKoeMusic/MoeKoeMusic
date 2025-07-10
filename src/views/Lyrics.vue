@@ -88,7 +88,14 @@
                         >{{ segment.text }}</span>
                     </div>
                 </div>
-                <div class="lyrics-line next" v-if="lyrics[displayedLines[1]]">
+                <div class="lyrics-line translated" v-if="lyrics[displayedLines[0]]?.translated">
+                    <div class="lyrics-content"
+                        :class="{ 'hovering': isHovering && !isLocked }"
+                    >
+                        <span>{{ lyrics[displayedLines[0]].translated }}</span>
+                    </div>
+                </div>
+                <div class="lyrics-line next" v-else-if="lyrics[displayedLines[1]]">
                     <div class="lyrics-content"
                         :class="{ 'hovering': isHovering && !isLocked }"
                     >
@@ -214,6 +221,10 @@ const updateCurrentLineIndex = () => {
 
 const updateDisplayedLines = () => {
     const currentIdx = currentLineIndex.value
+    if (lyrics.value[currentIdx]?.translated) {
+        displayedLines.value = [currentIdx, currentIdx + 1]
+        return
+    }
     if (currentIdx > displayedLines.value[1]) {
         displayedLines.value = [currentIdx, currentIdx + 1]
         currentLineScrollX.value = 0

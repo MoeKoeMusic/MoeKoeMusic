@@ -139,11 +139,14 @@
                     @mousemove="handleLyricsDrag" @mouseup="endLyricsDrag" @mouseleave="endLyricsDrag">
                     <div v-if="lyricsData.length > 0" id="lyrics"
                         :style="{ fontSize: lyricsFontSize, transform: `translateY(${scrollAmount ? scrollAmount + 'px' : '50%'})` }">
-                        <div v-for="(lineData, lineIndex) in lyricsData" :key="lineIndex" class="line">
-                            <span v-for="(charData, charIndex) in lineData.characters" :key="charIndex" class="char"
-                                :class="{ highlight: charData.highlighted }">
-                                {{ charData.char }}
-                            </span>
+                        <div class="line-group" v-for="(lineData, lineIndex) in lyricsData" :key="lineIndex">
+                            <div class="line">
+                                <span v-for="(charData, charIndex) in lineData.characters" :key="charIndex" class="char"
+                                    :class="{ highlight: charData.highlighted }">
+                                    {{ charData.char }}
+                                </span>
+                            </div>
+                            <div class="line" v-show="lineData.translated">{{ lineData.translated }}</div>
                         </div>
                     </div>
                     <div v-else class="no-lyrics">{{ SongTips }}</div>
@@ -226,10 +229,8 @@ const updateCurrentTime = throttle(() => {
 
     const savedConfig = JSON.parse(localStorage.getItem('settings') || '{}');
     if (audio && lyricsData.value.length) {
-        if (showLyrics.value) {
-            highlightCurrentChar(audio.currentTime);
-        }
-
+        if (showLyrics.value) highlightCurrentChar(audio.currentTime);
+        
         if (isElectron()) {
             if (savedConfig?.desktopLyrics === 'on') {
                 window.electron.ipcRenderer.send('lyrics-data', {

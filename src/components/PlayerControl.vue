@@ -625,6 +625,7 @@ const handleLyricsWheel = (event) => {
     // 设置新时间
     audio.currentTime = newTime;
     progressWidth.value = (newTime / audio.duration) * 100;
+    resetLyricsHighlight(newTime);
     console.log(`[PlayerControl] 滚轮${delta > 0 ? '前进' : '后退'}${Math.abs(adjustmentSeconds)}秒，当前进度:`, newTime);
 };
 
@@ -750,6 +751,7 @@ const endLyricsDrag = () => {
     if (!isDraggingLyrics.value) return;
     isDraggingLyrics.value = false;
     audio.currentTime = tempTime.value;
+    resetLyricsHighlight(tempTime.value);
     console.log('[PlayerControl] 结束拖动歌词，设置最终进度:', tempTime.value);
 };
 

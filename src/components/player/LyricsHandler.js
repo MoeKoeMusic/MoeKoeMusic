@@ -46,26 +46,37 @@ export default function useLyricsHandler(t) {
 
     // 解析歌词
     const parseLyrics = (text) => {
-        const lines = text.split('\n');
-        const parsedLyrics = lines
-            .map((line) => {
-                const match = line.match(/^\[(\d+),(\d+)\](.*)/);
-                if (match) {
-                    const time = parseInt(match[1]);
-                    const duration = parseInt(match[2]);
-                    const lyric = match[3].replace(/<.*?>/g, '');
-                    const characters = lyric.split('').map((char, index) => ({
-                        char,
-                        startTime: time + (index * duration) / lyric.length,
-                        endTime: time + ((index + 1) * duration) / lyric.length,
-                        highlighted: false,
-                    }));
-                    return { characters };
-                }
-                return null;
-            })
-            .filter((line) => line);
-        lyricsData.value = parsedLyrics;
+        let translatedLyrics = [];
+        const lines = text.split('\r\n');
+        const translatedLyricsCode = lines.find(line => line.match(/\[language:(.*)\]/));
+        if (translatedLyricsCode) {
+            try {
+                const translatedLyrics = JSON.parse(atob(translatedLyricsCode.replace('[language:', '').replace(']', '')));
+                translatedLyrics = translatedLyrics?.content[0]?.lyricContent ?? [];
+            } catch {
+                translatedLyrics = [];
+            }
+        }
+        const prasedLyrics = lines.map((line) => {
+            const match = line.match(/^\[(\d+),(\d+)\](.*)/);
+            if (match) {
+                const time = parseInt(match[1]);
+                const duration = parseInt(match[2]);
+                const lyric = match[3].replace(/<.*?>/g, '');
+                const characters = lyric.split('').map((char, index) => ({
+                    char,
+                    startTime: time + (index * duration) / lyric.length,
+                    endTime: time + ((index + 1) * duration) / lyric.length,
+                    highlighted: false,
+                }));
+                return { characters };
+            }
+            return null;
+        }).filter((line) => line);
+        if (translatedLyrics.length)
+            prasedLyrics.forEach((line, index) => line.translated = translatedLyrics[index]);
+        lyricsData.value = prasedLyrics;
+        console.log('[LyricsHandler] 解析歌词:', lyricsData.value);
     };
 
     // 居中显示第一行歌词

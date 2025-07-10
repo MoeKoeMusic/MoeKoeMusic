@@ -55,7 +55,6 @@ export default function useLyricsHandler(t) {
                 const translatedData = languageData?.content?.filter(item => item.type === 1);
                 if (translatedData.length)
                     translatedLyrics = translatedData[0].lyricContent;
-                console.log('[LyricsHandler] 翻译歌词:', translatedLyrics);
             }
         } catch (error) {
             console.warn('[LyricsHandler] 解析翻译歌词失败！');
@@ -80,7 +79,6 @@ export default function useLyricsHandler(t) {
         if (translatedLyrics.length)
             prasedLyrics.forEach((line, index) => line.translated = translatedLyrics[index][0]);
         lyricsData.value = prasedLyrics;
-        console.log('[LyricsHandler] 解析歌词:', lyricsData.value);
     };
 
     // 居中显示第一行歌词

@@ -235,10 +235,12 @@ const updateCurrentTime = throttle(() => {
             if (savedConfig?.desktopLyrics === 'on') {
                 window.electron.ipcRenderer.send('lyrics-data', {
                     currentTime: audio.currentTime,
-                    lyricsData: JSON.parse(JSON.stringify(lyricsData.value))
+                    lyricsData: JSON.parse(JSON.stringify(lyricsData.value)),
+                    currentSongHash: currentSong.value.hash
                 });
             }
             if (savedConfig?.apiMode === 'on') {
+                // 有用吗？
                 window.electron.ipcRenderer.send('server-lyrics', {
                     currentTime: audio.currentTime,
                     lyricsData: JSON.parse(JSON.stringify(originalLyrics.value)),

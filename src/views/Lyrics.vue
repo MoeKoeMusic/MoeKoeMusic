@@ -113,10 +113,14 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
+
+let currentSongHash = ''
+
 const isPlaying = ref(false)
 const isLocked = ref(false)
 const controlsOverlay = ref(null)
 const lyricsContainerRef = ref(null)
+
 const currentTime = ref(0)
 const currentLineIndex = ref(0)
 const lyrics = ref([])
@@ -270,10 +274,8 @@ const checkMousePosition = (event) => {
 }
 
 window.electron.ipcRenderer.on('lyrics-data', (data) => {
-    if (data.currentTime < 1 || 
-        lyrics.value.length === 0 || 
-        JSON.stringify(lyrics.value) !== JSON.stringify(data.lyricsData)) {
-        
+    if (data.currentTime < 1 || lyrics.value.length === 0 || data.currentSongHash !== currentSongHash) {
+        currentSongHash = data.currentSongHash
         lyrics.value = data.lyricsData;
         processLyrics(); 
         currentLineIndex.value = 0;

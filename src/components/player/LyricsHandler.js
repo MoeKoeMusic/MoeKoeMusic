@@ -151,12 +151,10 @@ export default function useLyricsHandler(t) {
 
         for (const lineData of lyricsData.value) {
             const firstChar = lineData.characters[0];
-            const lastChar =
-                lineData.characters[lineData.characters.length - 1];
+            const lastChar = lineData.characters[lineData.characters.length - 1];
 
             if (
-                firstChar &&
-                lastChar &&
+                firstChar && lastChar &&
                 currentTime * 1000 >= firstChar.startTime &&
                 currentTime * 1000 <= lastChar.endTime
             ) {

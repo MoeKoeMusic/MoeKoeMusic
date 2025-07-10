@@ -75,7 +75,7 @@
             :style="containerStyle"
         >
             <template v-if="lyrics.length">
-                <div class="lyrics-line current">
+                <div class="lyrics-line">
                     <div class="lyrics-content" 
                         :style="currentLineStyle"
                         :class="{ 'hovering': isHovering && !isLocked }"
@@ -88,12 +88,12 @@
                         >{{ segment.text }}</span>
                     </div>
                 </div>
-                <div class="lyrics-line translated" v-if="lyrics[displayedLines[0]]?.translated">
+                <div class="lyrics-line" v-if="lyrics[displayedLines[0]]?.translated">
                     <div class="lyrics-content" :style="{ color: defaultColor }" :class="{ 'hovering': isHovering && !isLocked }">
                         <span>{{ lyrics[displayedLines[0]].translated }}</span>
                     </div>
                 </div>
-                <div class="lyrics-line next" v-else-if="lyrics[displayedLines[1]]">
+                <div class="lyrics-line" v-else-if="lyrics[displayedLines[1]]">
                     <div class="lyrics-content"
                         :class="{ 'hovering': isHovering && !isLocked }"
                     >
@@ -224,27 +224,27 @@ const updateCurrentLineIndex = () => {
 const updateDisplayedLines = () => {
     const currentIdx = currentLineIndex.value
     if (lyrics.value[currentIdx]?.translated?.length) {
-        displayedLines.value = [currentIdx, currentIdx + 1]
+        displayedLines.value = [currentIdx];
         nextTick(() => {
-            const elements = document.querySelectorAll('.lyrics-line .character')
-            elements.forEach(el => {
+            const line = document.querySelectorAll('.lyrics-line')[0]
+            line.querySelectorAll('.character').forEach(el => {
                 el.style.backgroundPosition = '100% 0'
                 el.style.transition = 'none'
             })
         })
         return
     }
-    if (currentIdx > displayedLines.value[1]) {
-        displayedLines.value = [currentIdx, currentIdx + 1]
-        currentLineScrollX.value = 0
-        nextTick(() => {
-            const elements = document.querySelectorAll('.lyrics-line .character')
-            elements.forEach(el => {
-                el.style.backgroundPosition = '100% 0'
-                el.style.transition = 'none'
-            })
+    if (currentIdx % 2) displayedLines.value = [currentIdx + 1, currentIdx]
+    else displayedLines.value = [currentIdx, currentIdx + 1]
+    currentLineScrollX.value = 0
+    nextTick(() => {
+        const lines = document.querySelectorAll('.lyrics-line')
+        const line = lines[currentIdx % 2 ? 0 : 1]
+        line.querySelectorAll('.character').forEach(el => {
+            el.style.backgroundPosition = '100% 0'
+            el.style.transition = 'none'
         })
-    }
+    })
 }
 
 // 开始拖动
@@ -528,14 +528,6 @@ html {
     position: relative;
     transition: transform 0.3s ease-out;
     filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
-}
-
-.lyrics-line.current {
-    text-align: left;
-}
-
-.lyrics-line.next {
-    text-align: right;
 }
 
 .lyrics-content {

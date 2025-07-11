@@ -9,7 +9,6 @@
     position: relative;
     width: 60%;
     text-align: center;
-    cursor: grab;
 }
 
 #lyrics {
@@ -20,8 +19,24 @@
     transition: transform 0.6s ease;
 }
 
-.line {
+.line-group {
     margin-bottom: 12px;
+}
+
+.line {
+    border: 10px;
+    display: block;
+    border-radius: 10px;
+}
+
+.line.translated {
+    color: #e3e3e3d2;
+}
+
+.line.click:hover {
+    cursor: pointer;
+    background-color: #e3e3e33b;
+    transition: background-color 0.6s ease;
 }
 
 .char {

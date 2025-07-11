@@ -35,7 +35,7 @@ export default function useLyricsHandler(t) {
                 SongTips.value = t('huo-qu-ge-ci-shi-bai');
                 return;
             }
-
+            console.log('[LyricsHandler] 请求歌词……');
             parseLyrics(lyricResponse.decodeContent);
             originalLyrics.value = lyricResponse.decodeContent;
             centerFirstLine();
@@ -91,9 +91,8 @@ export default function useLyricsHandler(t) {
         scrollAmount.value = (containerHeight - lyricsHeight) / 2;
     };
 
-    // 高亮当前字符，返回是否滚动
-    const highlightCurrentChar = (currentTime) => {
-        let isLineScroll = false;
+    // 高亮当前字符
+    const highlightCurrentChar = (currentTime, scroll = true) => {
         lyricsData.value.forEach((lineData, index) => {
             let isLineHighlighted = false;
             lineData.characters.forEach((charData) => {
@@ -103,7 +102,7 @@ export default function useLyricsHandler(t) {
                 }
             });
 
-            if (isLineHighlighted && currentLineIndex !== index) {
+            if (scroll && isLineHighlighted && currentLineIndex !== index) {
                 currentLineIndex = index;
                 const lyricsContainer = document.getElementById('lyrics-container');
                 if (!lyricsContainer) return false;
@@ -112,11 +111,9 @@ export default function useLyricsHandler(t) {
                 if (lineElement) {
                     const lineHeight = lineElement.offsetHeight;
                     scrollAmount.value = -lineElement.offsetTop + (containerHeight / 2) - (lineHeight / 2);
-                    isLineScroll = true;
                 }
             }
         });
-        return isLineScroll;
     };
 
     // 重置歌词高亮状态

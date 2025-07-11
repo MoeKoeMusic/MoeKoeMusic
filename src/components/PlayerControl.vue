@@ -141,7 +141,7 @@
                     <div v-if="lyricsData.length > 0" id="lyrics"
                         :style="{ fontSize: lyricsFontSize, transform: `translateY(${scrollAmount ? scrollAmount + 'px' : '50%'})` }">
                         <div class="line-group" v-for="(lineData, lineIndex) in lyricsData" :key="lineIndex">
-                            <div class="line" @click="handleLyricsClick(lineIndex)">
+                            <div class="line" @click="handleLyricsClick(lineIndex)" :class="{ click: lyricsFlag }">
                                 <span v-for="(charData, charIndex) in lineData.characters" :key="charIndex" class="char"
                                     :class="{ highlight: charData.highlighted }">
                                     {{ charData.char }}
@@ -194,7 +194,7 @@ const lyricsBackground = ref('on');
 const isDragging = ref(false);
 const sliderElement = ref(null);
 
-const clickLyricsFlag = ref(false);
+const lyricsFlag = ref(false);
 
 // 辅助函数
 const { isElectron, throttle, getVip, desktopLyrics } = useHelpers(t);
@@ -232,9 +232,7 @@ const updateCurrentTime = throttle(() => {
 
     const savedConfig = JSON.parse(localStorage.getItem('settings') || '{}');
     if (audio && lyricsData.value.length) {
-        if (showLyrics.value)
-            if (highlightCurrentChar(audio.currentTime))
-                clickLyricsFlag.value = false;
+        highlightCurrentChar(audio.currentTime, !lyricsFlag.value);
         
         if (isElectron()) {
             if (savedConfig?.desktopLyrics === 'on') {
@@ -287,6 +285,8 @@ const { currentSong, NextSong, addSongToQueue, addCloudMusicToQueue, addToNext, 
 
 // 添加自动切换定时器引用
 let autoSwitchTimer = null;
+// 恢复歌词正常滚动计时器
+let lyricScrollTimer = null;
 
 // 清除自动切换定时器的函数
 const clearAutoSwitchTimer = () => {
@@ -296,6 +296,16 @@ const clearAutoSwitchTimer = () => {
         autoSwitchTimer = null;
     }
 };
+
+// 恢复歌词正常滚动的节流函数
+const restoreLyricsScroll = throttle(() => {
+    if (lyricScrollTimer) clearTimeout(lyricScrollTimer);
+    lyricScrollTimer = setTimeout(() => {
+        console.log('[PlayerControl] 恢复歌词正常滚动');
+        lyricScrollTimer = null;
+        lyricsFlag.value = false;
+    }, 3000);
+}, 1000);
 
 // 计算属性
 const formattedCurrentTime = computed(() => formatTime(currentTime.value));
@@ -636,29 +646,19 @@ const handleLyricsWheel = (event) => {
     if (scrollNumber > maxScrollNumber) scrollAmount.value = maxScrollNumber;
     else if (scrollNumber < miniScrollNumber) scrollAmount.value = miniScrollNumber;
     else scrollAmount.value = scrollNumber;
-    clickLyricsFlag.value = true;
-    
-
-    // const delta = Math.sign(event.deltaY);
-    // const adjustmentSeconds = 5 * delta;
-    
-    // // 计算新时间，并确保在有效范围内
-    // const newTime = Math.max(0, Math.min(audio.duration, audio.currentTime + adjustmentSeconds));
-    
-    // // 设置新时间
-    // audio.currentTime = newTime;
-    // progressWidth.value = (newTime / audio.duration) * 100;
-    // resetLyricsHighlight(newTime);
-    // console.log(`[PlayerControl] 滚轮${delta > 0 ? '前进' : '后退'}${Math.abs(adjustmentSeconds)}秒，当前进度:`, newTime);
+    lyricsFlag.value = true;
+    restoreLyricsScroll();
 };
 
 const handleLyricsClick = (lineIndex) => {
-    if (!clickLyricsFlag.value) return;
+    if (!lyricsFlag.value) return;
     console.log('[PlayerControl] 点击歌词:', lineIndex);
     const lineStartTime = lyricsData.value[lineIndex].characters[0].startTime;
     audio.currentTime = lineStartTime / 1000;
     resetLyricsHighlight(audio.currentTime);
-    clickLyricsFlag.value = false;
+    lyricsFlag.value = false;
+    if (lyricScrollTimer) clearTimeout(lyricScrollTimer);
+    lyricScrollTimer = null;
 }
 
 // 键盘快捷键
@@ -730,11 +730,8 @@ const setupMediaShortcuts = () => {
 const toggleMute = () => {
     isMuted.value = !isMuted.value;
     audio.muted = isMuted.value;
-    if (isMuted.value) {
-        volume.value = 0;
-    } else {
-        volume.value = audio.volume * 100;
-    }
+    if (isMuted.value) volume.value = 0;
+    else volume.value = audio.volume * 100;
     localStorage.setItem('player_volume', volume.value);
     console.log('[PlayerControl] 切换静音:', isMuted.value, '音量:', volume.value, '实际audio.volume:', audio.volume);
 };
@@ -876,17 +873,14 @@ onMounted(() => {
     audio.addEventListener('pause', () => {
         playing.value = false;
         console.log('[PlayerControl] 暂停事件');
-        if (isElectron()) {
-            window.electron.ipcRenderer.send('play-pause-action', playing.value, audio.currentTime);
-        }
+        if (isElectron()) window.electron.ipcRenderer.send('play-pause-action', playing.value, audio.currentTime);
     });
 
     audio.addEventListener('play', () => {
         playing.value = true;
         console.log('[PlayerControl] 播放事件');
-        if (isElectron()) {
-            window.electron.ipcRenderer.send('play-pause-action', playing.value, audio.currentTime);
-        }
+        if (!lyricsData.value.length) getLyrics(currentSong.value.hash);
+        if (isElectron()) window.electron.ipcRenderer.send('play-pause-action', playing.value, audio.currentTime);
     });
 
     audio.addEventListener('error', (e) => {

@@ -52,9 +52,8 @@ export default function useLyricsHandler(t) {
             const languageDataCode = lines.find(line => line.match(/\[language:(.*)\]/));
             if (languageDataCode) {
                 const languageData = JSON.parse(atob(languageDataCode.replace('[language:', '').replace(']', '').replace('\r', '')));
-                const translatedData = languageData?.content?.filter(item => item.type === 1);
-                if (translatedData.length)
-                    translatedLyrics = translatedData[0].lyricContent;
+                const translatedData = languageData?.content?.find(item => item.type === 1);
+                if (translatedData) translatedLyrics = translatedData?.lyricContent ?? [];
             }
         } catch (error) {
             console.warn('[LyricsHandler] 解析翻译歌词失败！');
@@ -92,8 +91,9 @@ export default function useLyricsHandler(t) {
         scrollAmount.value = (containerHeight - lyricsHeight) / 2;
     };
 
-    // 高亮当前字符
+    // 高亮当前字符，返回是否滚动
     const highlightCurrentChar = (currentTime) => {
+        let isLineScroll = false;
         lyricsData.value.forEach((lineData, index) => {
             let isLineHighlighted = false;
             lineData.characters.forEach((charData) => {
@@ -106,15 +106,17 @@ export default function useLyricsHandler(t) {
             if (isLineHighlighted && currentLineIndex !== index) {
                 currentLineIndex = index;
                 const lyricsContainer = document.getElementById('lyrics-container');
-                if (!lyricsContainer) return;
+                if (!lyricsContainer) return false;
                 const containerHeight = lyricsContainer.offsetHeight;
                 const lineElement = document.querySelectorAll('.line-group')[index];
                 if (lineElement) {
                     const lineHeight = lineElement.offsetHeight;
                     scrollAmount.value = -lineElement.offsetTop + (containerHeight / 2) - (lineHeight / 2);
+                    isLineScroll = true;
                 }
             }
         });
+        return isLineScroll;
     };
 
     // 重置歌词高亮状态

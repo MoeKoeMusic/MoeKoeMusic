@@ -135,12 +135,13 @@
                         </button>
                     </div>
                 </div>
-                <div id="lyrics-container" @wheel="handleLyricsWheel" @mousedown="startLyricsDrag"
-                    @mousemove="handleLyricsDrag" @mouseup="endLyricsDrag" @mouseleave="endLyricsDrag">
+                <!-- <div id="lyrics-container" @wheel="handleLyricsWheel"@mousedown="startLyricsDrag"
+                    @mousemove="handleLyricsDrag" @mouseup="endLyricsDrag" @mouseleave="endLyricsDrag"> -->
+                <div id="lyrics-container" @wheel="handleLyricsWheel">
                     <div v-if="lyricsData.length > 0" id="lyrics"
                         :style="{ fontSize: lyricsFontSize, transform: `translateY(${scrollAmount ? scrollAmount + 'px' : '50%'})` }">
                         <div class="line-group" v-for="(lineData, lineIndex) in lyricsData" :key="lineIndex">
-                            <div class="line">
+                            <div class="line" @click="handleLyricsClick(lineIndex)">
                                 <span v-for="(charData, charIndex) in lineData.characters" :key="charIndex" class="char"
                                     :class="{ highlight: charData.highlighted }">
                                     {{ charData.char }}
@@ -193,6 +194,8 @@ const lyricsBackground = ref('on');
 const isDragging = ref(false);
 const sliderElement = ref(null);
 
+const clickLyricsFlag = ref(false);
+
 // 辅助函数
 const { isElectron, throttle, getVip, desktopLyrics } = useHelpers(t);
 
@@ -229,7 +232,9 @@ const updateCurrentTime = throttle(() => {
 
     const savedConfig = JSON.parse(localStorage.getItem('settings') || '{}');
     if (audio && lyricsData.value.length) {
-        if (showLyrics.value) highlightCurrentChar(audio.currentTime);
+        if (showLyrics.value)
+            if (highlightCurrentChar(audio.currentTime))
+                clickLyricsFlag.value = false;
         
         if (isElectron()) {
             if (savedConfig?.desktopLyrics === 'on') {
@@ -240,7 +245,6 @@ const updateCurrentTime = throttle(() => {
                 });
             }
             if (savedConfig?.apiMode === 'on') {
-                // 有用吗？
                 window.electron.ipcRenderer.send('server-lyrics', {
                     currentTime: audio.currentTime,
                     lyricsData: JSON.parse(JSON.stringify(originalLyrics.value)),
@@ -617,19 +621,45 @@ const handleLyricsWheel = (event) => {
     if (!audio.duration || !currentSong.value?.hash) return;
     
     event.preventDefault();
-    // 计算调整时间，向下滚动为前进，向上滚动为后退，每次5秒
-    const delta = Math.sign(event.deltaY);
-    const adjustmentSeconds = 5 * delta;
+    const lyricsContainer = document.getElementById('lyrics-container');
+    if (!lyricsContainer) return;
+    const lineGroups = document.querySelectorAll('.line-group');
+    const firstLineElement = lineGroups[0];
+    const lastLineElement = lineGroups[lineGroups.length - 1];
+    if (!firstLineElement || (firstLineElement == lastLineElement)) return;
+    const lineHeight = lastLineElement.offsetHeight;
+    const containerHeight = lyricsContainer.offsetHeight;
+    // 计算滚动的距离
+    const scrollNumber = scrollAmount.value - (event.deltaY * 1.5);
+    const maxScrollNumber = ((containerHeight - firstLineElement.offsetHeight) / 2);
+    const miniScrollNumber = -lastLineElement.offsetTop + (containerHeight / 2) - (lineHeight / 2);
+    if (scrollNumber > maxScrollNumber) scrollAmount.value = maxScrollNumber;
+    else if (scrollNumber < miniScrollNumber) scrollAmount.value = miniScrollNumber;
+    else scrollAmount.value = scrollNumber;
+    clickLyricsFlag.value = true;
     
-    // 计算新时间，并确保在有效范围内
-    const newTime = Math.max(0, Math.min(audio.duration, audio.currentTime + adjustmentSeconds));
+
+    // const delta = Math.sign(event.deltaY);
+    // const adjustmentSeconds = 5 * delta;
     
-    // 设置新时间
-    audio.currentTime = newTime;
-    progressWidth.value = (newTime / audio.duration) * 100;
-    resetLyricsHighlight(newTime);
-    console.log(`[PlayerControl] 滚轮${delta > 0 ? '前进' : '后退'}${Math.abs(adjustmentSeconds)}秒，当前进度:`, newTime);
+    // // 计算新时间，并确保在有效范围内
+    // const newTime = Math.max(0, Math.min(audio.duration, audio.currentTime + adjustmentSeconds));
+    
+    // // 设置新时间
+    // audio.currentTime = newTime;
+    // progressWidth.value = (newTime / audio.duration) * 100;
+    // resetLyricsHighlight(newTime);
+    // console.log(`[PlayerControl] 滚轮${delta > 0 ? '前进' : '后退'}${Math.abs(adjustmentSeconds)}秒，当前进度:`, newTime);
 };
+
+const handleLyricsClick = (lineIndex) => {
+    if (!clickLyricsFlag.value) return;
+    console.log('[PlayerControl] 点击歌词:', lineIndex);
+    const lineStartTime = lyricsData.value[lineIndex].characters[0].startTime;
+    audio.currentTime = lineStartTime / 1000;
+    resetLyricsHighlight(audio.currentTime);
+    clickLyricsFlag.value = false;
+}
 
 // 键盘快捷键
 const handleKeyDown = (event) => {

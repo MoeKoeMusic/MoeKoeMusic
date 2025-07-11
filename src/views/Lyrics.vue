@@ -240,7 +240,7 @@ const updateDisplayedLines = () => {
     nextTick(() => {
         const lines = document.querySelectorAll('.lyrics-line')
         const line = lines[currentIdx % 2 ? 0 : 1]
-        line.querySelectorAll('.character').forEach(el => {
+        if (line) line.querySelectorAll('.character').forEach(el => {
             el.style.backgroundPosition = '100% 0'
             el.style.transition = 'none'
         })

@@ -135,8 +135,6 @@
                         </button>
                     </div>
                 </div>
-                <!-- <div id="lyrics-container" @wheel="handleLyricsWheel"@mousedown="startLyricsDrag"
-                    @mousemove="handleLyricsDrag" @mouseup="endLyricsDrag" @mouseleave="endLyricsDrag"> -->
                 <div id="lyrics-container" @wheel="handleLyricsWheel">
                     <div v-if="lyricsData.length > 0" id="lyrics"
                         :style="{ fontSize: lyricsFontSize, transform: `translateY(${scrollAmount ? scrollAmount + 'px' : '50%'})` }">
@@ -191,8 +189,6 @@ const playlists = ref([]);
 const currentTime = ref(0);
 const lyricsFontSize = ref('24px');
 const lyricsBackground = ref('on');
-const isDragging = ref(false);
-const sliderElement = ref(null);
 
 const lyricsFlag = ref(false);
 
@@ -586,35 +582,6 @@ const setVolumeOnClick = (event) => {
         changeVolume();
         console.log('[PlayerControl] 点击设置音量:', volume.value, '实际audio.volume:', audio.volume);
     }
-};
-
-const onDragStart = (event) => {
-    sliderElement.value = event.target.closest('.volume-slider');
-    if (sliderElement.value) {
-        isDragging.value = true;
-        setVolumeOnClick(event);
-        document.addEventListener('mousemove', onDrag);
-        document.addEventListener('mouseup', onDragEnd);
-    }
-};
-
-const onDrag = (event) => {
-    if (isDragging.value && sliderElement.value) {
-        const sliderWidth = sliderElement.value.offsetWidth;
-        const rect = sliderElement.value.getBoundingClientRect();
-        const offsetX = event.clientX - rect.left;
-        const newVolume = Math.max(0, Math.min(100, Math.round((offsetX / sliderWidth) * 100)));
-        volume.value = newVolume;
-        changeVolume();
-        console.log('[PlayerControl] 拖动设置音量:', volume.value, '实际audio.volume:', audio.volume);
-    }
-};
-
-const onDragEnd = () => {
-    isDragging.value = false;
-    sliderElement.value = null;
-    document.removeEventListener('mousemove', onDrag);
-    document.removeEventListener('mouseup', onDragEnd);
 };
 
 // 音量滚轮事件

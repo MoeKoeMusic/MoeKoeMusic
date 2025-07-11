@@ -147,7 +147,7 @@
                                     {{ charData.char }}
                                 </span>
                             </div>
-                            <div class="line" v-show="lineData.translated">{{ lineData.translated }}</div>
+                            <div class="line translated" v-show="lineData.translated">{{ lineData.translated }}</div>
                         </div>
                     </div>
                     <div v-else class="no-lyrics">{{ SongTips }}</div>

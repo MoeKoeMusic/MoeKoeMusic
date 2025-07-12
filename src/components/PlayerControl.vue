@@ -189,7 +189,9 @@ const playlists = ref([]);
 const currentTime = ref(0);
 const lyricsFontSize = ref('24px');
 const lyricsBackground = ref('on');
+const sliderElement = ref(null);
 
+const isDragging = ref(false);
 const lyricsFlag = ref(false);
 
 // 辅助函数
@@ -370,8 +372,7 @@ const playSong = async (song) => {
         localStorage.setItem('current_song', JSON.stringify(currentSong.value));
 
         // 获取歌词
-        getLyrics(currentSong.value.hash);
-
+        getCurrentLyrics();
         getVip();
         getMusicHighlights(currentSong.value.hash);
     } catch (error) {
@@ -590,6 +591,33 @@ const setVolumeOnClick = (event) => {
     }
 };
 
+const onDragStart = (event) => {
+    sliderElement.value = event.target.closest('.volume-slider');
+    if (sliderElement.value) {
+        isDragging.value = true;
+        setVolumeOnClick(event);
+        document.addEventListener('mousemove', onDrag);
+        document.addEventListener('mouseup', onDragEnd);
+    }
+};
+const onDrag = (event) => {
+    if (isDragging.value && sliderElement.value) {
+        const sliderWidth = sliderElement.value.offsetWidth;
+        const rect = sliderElement.value.getBoundingClientRect();
+        const offsetX = event.clientX - rect.left;
+        const newVolume = Math.max(0, Math.min(100, Math.round((offsetX / sliderWidth) * 100)));
+        volume.value = newVolume;
+        changeVolume();
+        console.log('[PlayerControl] 拖动设置音量:', volume.value, '实际audio.volume:', audio.volume);
+    }
+};
+const onDragEnd = () => {
+    isDragging.value = false;
+    sliderElement.value = null;
+    document.removeEventListener('mousemove', onDrag);
+    document.removeEventListener('mouseup', onDragEnd);
+};
+
 // 音量滚轮事件
 const handleVolumeScroll = (event) => {
     event.preventDefault();
@@ -707,54 +735,6 @@ const toggleMute = () => {
     else volume.value = audio.volume * 100;
     localStorage.setItem('player_volume', volume.value);
     console.log('[PlayerControl] 切换静音:', isMuted.value, '音量:', volume.value, '实际audio.volume:', audio.volume);
-};
-
-// 添加拖动相关状态变量
-const isDraggingLyrics = ref(false);
-const lyricsDragStartY = ref(0);
-const lyricsDragStartTime = ref(0);
-const tempTime = ref(0);
-
-// 开始拖动歌词
-const startLyricsDrag = (event) => {
-    if (!audio.duration || !currentSong.value?.hash) return;
-
-    isDraggingLyrics.value = true;
-    lyricsDragStartY.value = event.clientY;
-    lyricsDragStartTime.value = audio.currentTime;
-    tempTime.value = audio.currentTime;
-
-    console.log('[PlayerControl] 开始拖动歌词');
-};
-
-// 处理歌词拖动
-const handleLyricsDrag = (event) => {
-    if (!isDraggingLyrics.value) return;
-
-    // 计算垂直移动距离
-    const deltaY = event.clientY - lyricsDragStartY.value;
-
-    // 根据移动距离计算时间调整，向上拖动前进，向下拖动后退
-    // 灵敏度因子：每移动100像素调整30秒
-    const sensitivityFactor = 30 / 100;
-    const timeAdjustment = -deltaY * sensitivityFactor;
-
-    // 计算新时间并确保在有效范围内
-    tempTime.value = Math.max(0, Math.min(audio.duration, lyricsDragStartTime.value + timeAdjustment));
-
-    // 更新进度条显示
-    progressWidth.value = (tempTime.value / audio.duration) * 100;
-
-    console.log(`[PlayerControl] 拖动歌词预览进度: ${tempTime.value.toFixed(2)}s / ${audio.duration.toFixed(2)}s`);
-};
-
-// 结束拖动歌词
-const endLyricsDrag = () => {
-    if (!isDraggingLyrics.value) return;
-    isDraggingLyrics.value = false;
-    audio.currentTime = tempTime.value;
-    resetLyricsHighlight(tempTime.value);
-    console.log('[PlayerControl] 结束拖动歌词，设置最终进度:', tempTime.value);
 };
 
 const showSpeedMenu = ref(false);

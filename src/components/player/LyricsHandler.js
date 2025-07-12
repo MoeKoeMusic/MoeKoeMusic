@@ -36,7 +36,7 @@ export default function useLyricsHandler(t) {
                 return;
             }
             console.log('[LyricsHandler] 请求歌词……');
-            parseLyrics(lyricResponse.decodeContent);
+            parseLyrics(lyricResponse.decodeContent, settings?.lyricsTranslation === 'on');
             originalLyrics.value = lyricResponse.decodeContent;
             centerFirstLine();
         } catch (error) {
@@ -45,13 +45,14 @@ export default function useLyricsHandler(t) {
     };
 
     // 解析歌词
-    const parseLyrics = (text) => {
+    const parseLyrics = (text, parseTranslation = true) => {
         let translatedLyrics = [];
         const lines = text.split('\n');
         try {
-            const languageDataCode = lines.find(line => line.match(/\[language:(.*)\]/));
-            if (languageDataCode) {
-                const languageData = JSON.parse(atob(languageDataCode.replace('[language:', '').replace(']', '').replace('\r', '')));
+            const languageDataCode = lines.find(line => line.startsWith('[language:'));
+            if (languageDataCode && parseTranslation) {
+                const match = languageDataCode.match(/\[language:(.*)\]/g);
+                const languageData = JSON.parse(atob(match[0].replace('[language:', '').replace(']', '')));
                 const translatedData = languageData?.content?.find(item => item.type === 1);
                 if (translatedData) translatedLyrics = translatedData?.lyricContent ?? [];
             }

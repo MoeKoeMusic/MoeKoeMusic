@@ -254,8 +254,8 @@ const updateCurrentTime = throttle(() => {
                 );
             }
         }
-    } else if (isElectron() && currentSong.value?.hash && (savedConfig?.desktopLyrics === 'on' || savedConfig?.apiMode === 'on')) {
-        getLyrics(currentSong.value.hash);
+    } else if (isElectron() && (savedConfig?.desktopLyrics === 'on' || savedConfig?.apiMode === 'on')) {
+        getCurrentLyrics();
     }
 
     localStorage.setItem('player_progress', audio.currentTime);
@@ -302,6 +302,12 @@ const restoreLyricsScroll = throttle(() => {
         lyricsFlag.value = false;
     }, 3000);
 }, 1000);
+
+// 反斗获取歌词
+const getCurrentLyrics = throttle(() => {
+    const savedConfig = JSON.parse(localStorage.getItem('settings') || '{}');
+    if (currentSong.value.hash) getLyrics(currentSong.value.hash, savedConfig);
+}, 3000);
 
 // 计算属性
 const formattedCurrentTime = computed(() => formatTime(currentTime.value));
@@ -846,7 +852,7 @@ onMounted(() => {
     audio.addEventListener('play', () => {
         playing.value = true;
         console.log('[PlayerControl] 播放事件');
-        if (!lyricsData.value.length) getLyrics(currentSong.value.hash);
+        if (!lyricsData.value.length) getCurrentLyrics();
         if (isElectron()) window.electron.ipcRenderer.send('play-pause-action', playing.value, audio.currentTime);
     });
 

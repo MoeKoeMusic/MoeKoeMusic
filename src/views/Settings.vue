@@ -129,6 +129,7 @@ const selectedSettings = ref({
     lyricsBackground: { displayText: t('da-kai'), value: 'on' },
     desktopLyrics: { displayText: t('guan-bi'), value: 'off' },
     lyricsFontSize: { displayText: t('zhong'), value: '24px' },
+    lyricsTranslation: { displayText: t('da-kai'), value: 'on' },
     font: { displayText: '默认字体', value: '' },
     fontUrl: { displayText: '默认字体', value: '' },
     greetings: { displayText: t('kai-qi'), value: 'on' },
@@ -140,7 +141,7 @@ const selectedSettings = ref({
     apiMode: { displayText: t('guan-bi'), value: 'off' },
     touchBar: { displayText: t('guan-bi'), value: 'off' },
     autoStart: { displayText: t('guan-bi'), value: 'off' },
-    startMinimized: { displayText: t('guan-bi'), value: 'off' }
+    startMinimized: { displayText: t('guan-bi'), value: 'off' },
 });
 
 // 设置分区配置
@@ -209,6 +210,12 @@ const settingSections = computed(() => [
             {
                 key: 'desktopLyrics',
                 label: t('xian-shi-zhuo-mian-ge-ci')
+            },
+            {
+                key: 'lyricsTranslation',
+                label: '歌词翻译',
+                showRefreshHint: true,
+                refreshHintText: t('zhong-qi-hou-sheng-xiao')
             }
         ]
     },
@@ -360,6 +367,13 @@ const selectionTypeMap = {
     },
     highDpi: {
         title: t('shi-pei-gao-dpi'),
+        options: [
+            { displayText: t('da-kai'), value: 'on' },
+            { displayText: t('guan-bi'), value: 'off' }
+        ]
+    },
+    lyricsTranslation: {
+        title: '歌词翻译',
         options: [
             { displayText: t('da-kai'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }

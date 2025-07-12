@@ -139,13 +139,13 @@
                     <div v-if="lyricsData.length > 0" id="lyrics"
                         :style="{ fontSize: lyricsFontSize, transform: `translateY(${scrollAmount ? scrollAmount + 'px' : '50%'})` }">
                         <div class="line-group" v-for="(lineData, lineIndex) in lyricsData" :key="lineIndex">
-                            <div class="line" @click="handleLyricsClick(lineIndex)" :class="{ click: lyricsFlag }">
+                            <div class="line" @click="handleLyricsClick(lineIndex)" :class="{ click: lyricsFlag, [savedConfig?.lyricsAlign]: true }">
                                 <span v-for="(charData, charIndex) in lineData.characters" :key="charIndex" class="char"
                                     :class="{ highlight: charData.highlighted }">
                                     {{ charData.char }}
                                 </span>
                             </div>
-                            <div class="line translated" v-show="lineData.translated">{{ lineData.translated }}</div>
+                            <div class="line translated" :class="{ [savedConfig?.lyricsAlign]: true }" v-show="lineData.translated">{{ lineData.translated }}</div>
                         </div>
                     </div>
                     <div v-else class="no-lyrics">{{ SongTips }}</div>
@@ -190,6 +190,7 @@ const currentTime = ref(0);
 const lyricsFontSize = ref('24px');
 const lyricsBackground = ref('on');
 const sliderElement = ref(null);
+const savedConfig = ref(JSON.parse(localStorage.getItem('settings') || '{}'));
 
 const isDragging = ref(false);
 const lyricsFlag = ref(false);
@@ -228,19 +229,18 @@ const updateCurrentTime = throttle(() => {
         progressWidth.value = (currentTime.value / audio.duration) * 100;
     }
 
-    const savedConfig = JSON.parse(localStorage.getItem('settings') || '{}');
     if (audio && lyricsData.value.length) {
         highlightCurrentChar(audio.currentTime, !lyricsFlag.value);
         
         if (isElectron()) {
-            if (savedConfig?.desktopLyrics === 'on') {
+            if (savedConfig.value?.desktopLyrics === 'on') {
                 window.electron.ipcRenderer.send('lyrics-data', {
                     currentTime: audio.currentTime,
                     lyricsData: JSON.parse(JSON.stringify(lyricsData.value)),
                     currentSongHash: currentSong.value.hash
                 });
             }
-            if (savedConfig?.apiMode === 'on') {
+            if (savedConfig.value?.apiMode === 'on') {
                 window.electron.ipcRenderer.send('server-lyrics', {
                     currentTime: audio.currentTime,
                     lyricsData: JSON.parse(JSON.stringify(originalLyrics.value)),
@@ -248,7 +248,7 @@ const updateCurrentTime = throttle(() => {
                     duration: audio.duration
                 });
             }
-            if (window.electron.platform == 'darwin' && savedConfig?.touchBar == 'on') {
+            if (window.electron.platform == 'darwin' && savedConfig.value?.touchBar == 'on') {
                 const currentLine = getCurrentLineText(audio.currentTime);
                 window.electron.ipcRenderer.send(
                     "update-current-lyrics",
@@ -256,7 +256,7 @@ const updateCurrentTime = throttle(() => {
                 );
             }
         }
-    } else if (isElectron() && (savedConfig?.desktopLyrics === 'on' || savedConfig?.apiMode === 'on')) {
+    } else if (isElectron() && (savedConfig.value?.desktopLyrics === 'on' || savedConfig.value?.apiMode === 'on')) {
         getCurrentLyrics();
     }
 
@@ -307,9 +307,8 @@ const restoreLyricsScroll = throttle(() => {
 
 // 反斗获取歌词
 const getCurrentLyrics = throttle(() => {
-    const savedConfig = JSON.parse(localStorage.getItem('settings') || '{}');
-    if (currentSong.value.hash) getLyrics(currentSong.value.hash, savedConfig);
-}, 3000);
+    if (currentSong.value.hash) getLyrics(currentSong.value.hash, savedConfig.value);
+}, 1000);
 
 // 计算属性
 const formattedCurrentTime = computed(() => formatTime(currentTime.value));

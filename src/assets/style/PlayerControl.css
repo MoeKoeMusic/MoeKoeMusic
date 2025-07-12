@@ -8,7 +8,6 @@
     margin-top: 80px;
     position: relative;
     width: 60%;
-    text-align: center;
 }
 
 #lyrics {
@@ -30,6 +29,15 @@
     padding: 0 10px;
     width: fit-content;
     transition: background-color .3s;
+}
+
+.line.left {
+    text-align: left;
+}
+
+.line.center {
+    text-align: center;
+    margin: 0 auto;
 }
 
 .line.translated {

@@ -176,13 +176,11 @@ npm run build
         ```
     - Linux:
       - ARM64架构 (aarch64)
-        
             ```
             npm run build:api:linux-aarch64
             ```
         
       - x86_64架构 (x64)
-        
             ```
             npm run build:api:linux-x64
             ```

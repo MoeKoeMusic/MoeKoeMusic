@@ -28,7 +28,7 @@
       "owner": "iAJue",
       "repo": "MoeKoeMusic"
     },
-    "compression": "maximum",
+    "compression": "store",
     "extraResources": [
       {
         "from": "build/icons/",

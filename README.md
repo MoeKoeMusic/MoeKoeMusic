@@ -144,13 +144,13 @@ npm run build
   ```
   -	Linux:
     - ARM64架构 (aarch64)
-      
+        ```
         npm run electron:build:linux-aarch64 [AppImage 格式]
-      
+        ```
     - x86_64架构 (x64)
-      
+        ```
         npm run electron:build:linux-x64 [AppImage 格式]
-      
+        ```
       
   -	macOS: 
   ```sh

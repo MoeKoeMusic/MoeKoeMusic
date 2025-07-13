@@ -217,9 +217,7 @@ ipcMain.on('desktop-lyrics-action', (event, action) => {
             }
             break;
         case 'display-lyrics':
-            if (!mainWindow.lyricsWindow) {
-                createLyricsWindow();
-            }
+            if (!mainWindow.lyricsWindow) createLyricsWindow();
             break;
     }
 });

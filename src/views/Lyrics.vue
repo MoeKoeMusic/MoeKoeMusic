@@ -263,7 +263,7 @@ const startDrag = (event) => {
 // 检查鼠标是否在交互区域
 const checkMousePosition = (event) => {
     if (isLocked.value) {
-        const isMouseInControls = event.target.closest('.controls-overlay') !== null
+        const isMouseInControls = event.target.closest('.lock-button') !== null
         window.electron.ipcRenderer.send('set-ignore-mouse-events', !isMouseInControls)
         return
     }

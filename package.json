@@ -123,8 +123,7 @@
     "linux": {
       "icon": "build/icons/linux_256x256.png",
       "target": [
-        "AppImage",
-        "deb"
+        "AppImage" 
       ],
       "category": "Utility",
       "artifactName": "${productName}.${ext}"

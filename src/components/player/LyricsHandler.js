@@ -46,20 +46,22 @@ export default function useLyricsHandler(t) {
 
     // 解析歌词
     const parseLyrics = (text, parseTranslation = true) => {
-        let translatedLyrics = [];
+        let translationLyrics = [];
         const lines = text.split('\n');
         try {
-            const languageDataCode = lines.find(line => line.startsWith('[language:'));
-            if (languageDataCode && parseTranslation) {
-                const match = languageDataCode.match(/\[language:(.*)\]/g);
-                const languageData = JSON.parse(atob(match[0].replace('[language:', '').replace(']', '')));
-                const translatedData = languageData?.content?.find(item => item.type === 1);
-                if (translatedData) translatedLyrics = translatedData?.lyricContent ?? [];
+            const languageLine = lines.find(line => line.match(/\[language:(.*)\]/));
+            if (parseTranslation && languageLine) {
+                const languageCode = languageLine.slice(10, -2);
+                if (languageCode) {
+                    const languageData = JSON.parse(atob(languageCode));
+                    const translation = languageData?.content?.find(section => section.type === 1);
+                    translationLyrics = translation?.lyricContent || [];
+                }
             }
         } catch (error) {
             console.warn('[LyricsHandler] 解析翻译歌词失败！');
-            translatedLyrics = [];
         }
+
         const prasedLyrics = lines.map((line) => {
             const match = line.match(/^\[(\d+),(\d+)\](.*)/);
             if (match) {
@@ -76,8 +78,46 @@ export default function useLyricsHandler(t) {
             }
             return null;
         }).filter((line) => line);
-        if (translatedLyrics.length)
-            prasedLyrics.forEach((line, index) => line.translated = translatedLyrics[index][0]);
+
+        // 正常 KRC 解析，反正留着，等哪天作者有心情了去支持吧
+        // 本人试过效果不太好，也可能是我菜（
+
+        // const parsedLyrics = [];
+        // const charRegex = /<(\d+),(\d+),\d+>([^<]+)/g;
+
+        // lines.forEach(line => {
+        //     // 匹配主时间标签 [start,duration]
+        //     const lineMatch = line.match(/^\[(\d+),(\d+)\](.*)/);
+        //     if (!lineMatch) return;
+
+        //     const start = parseInt(lineMatch[1]);
+        //     const lyricContent = lineMatch[3];
+        //     const characters = [];
+        //     // 解析字符级时间标签 <start,duration,unknown>text
+        //     let charMatch;
+
+        //     while ((charMatch = charRegex.exec(lyricContent)) !== null) {
+        //         const text = charMatch[3];
+        //         const charDuration = parseInt(charMatch[2]);
+        //         const charStart = start + parseInt(charMatch[1]);
+        //         characters.push({
+        //             char: text,
+        //             startTime: charStart,
+        //             durationTime: charDuration,
+        //             endTime: charStart + charDuration,
+        //             highlighted: false
+        //         });
+        //     }
+
+        //     // 保存有效歌词行
+        //     if (characters.length > 0) {
+        //         parsedLyrics.push({ characters });
+        //     }
+        // });
+
+        if (translationLyrics.length)
+            prasedLyrics.forEach((line, index) => line.translated = translationLyrics[index][0]);
+
         lyricsData.value = prasedLyrics;
     };
 

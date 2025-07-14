@@ -356,7 +356,6 @@ html {
 .character {
     display: inline-block;
     position: relative;
-    margin: 0 2px;
     background-clip: text;
     -webkit-background-clip: text;
     font-weight: bold;

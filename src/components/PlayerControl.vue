@@ -12,11 +12,11 @@
             </div>
         </div>
         <div class="player-bar">
-            <div class="album-art" @click="toggleLyrics(currentTime)">
+            <div class="album-art" @click="toggleLyrics(currentSong.hash, currentTime)">
                 <img v-if="currentSong.img" :src="currentSong.img" alt="Album Art" />
                 <i v-else class="fas fa-music"></i>
             </div>
-            <div class="song-info" @click="toggleLyrics(currentTime)">
+            <div class="song-info" @click="toggleLyrics(currentSong.hash, currentTime)">
                 <div class="song-title">{{ currentSong?.name || "MoeKoeMusic" }}</div>
                 <div class="artist">{{ currentSong?.author || "MoeJue" }}</div>
             </div>
@@ -82,7 +82,7 @@
             :style="(lyricsBackground == 'on' ? ({ backgroundImage: `url(${currentSong?.img || 'https://random.MoeJue.cn/randbg.php'})` }) : ({ background: 'var(--secondary-color)' }))">
             <div class="lyrics-screen">
                 <div class="close-btn">
-                    <i class="fas fa-chevron-down" @click="toggleLyrics(currentTime)"></i>
+                    <i class="fas fa-chevron-down" @click="toggleLyrics(currentSong.hash, currentTime)"></i>
                 </div>
 
                 <div class="left-section">
@@ -683,7 +683,7 @@ const handleKeyDown = (event) => {
             playSongFromQueue('next');
             break;
         case 'Escape':
-            if (showLyrics.value) toggleLyrics(audio.currentTime);
+            if (showLyrics.value) toggleLyrics(currentSong.value.hash, audio.currentTime);
             break;
     }
 };

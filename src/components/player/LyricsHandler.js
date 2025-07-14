@@ -10,11 +10,11 @@ export default function useLyricsHandler(t) {
     let currentLineIndex = 0;
 
     // 显示/隐藏歌词
-    const toggleLyrics = (currentTime) => {
+    const toggleLyrics = (hash, currentTime) => {
         showLyrics.value = !showLyrics.value;
         SongTips.value = t('huo-qu-ge-ci-zhong');
         // 如果显示歌词，滚动到当前播放行
-        if (!lyricsData.value.length) getLyrics();
+        if (!lyricsData.value.length && hash) getLyrics(hash);
         else if (showLyrics.value) {
             nextTick(() => {
                 // 从全局 audio 对象获取当前播放时间

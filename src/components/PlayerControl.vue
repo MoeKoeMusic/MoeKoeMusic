@@ -12,11 +12,11 @@
             </div>
         </div>
         <div class="player-bar">
-            <div class="album-art" @click="toggleLyrics">
+            <div class="album-art" @click="toggleLyrics(currentTime)">
                 <img v-if="currentSong.img" :src="currentSong.img" alt="Album Art" />
                 <i v-else class="fas fa-music"></i>
             </div>
-            <div class="song-info" @click="toggleLyrics">
+            <div class="song-info" @click="toggleLyrics(currentTime)">
                 <div class="song-title">{{ currentSong?.name || "MoeKoeMusic" }}</div>
                 <div class="artist">{{ currentSong?.author || "MoeJue" }}</div>
             </div>
@@ -82,7 +82,7 @@
             :style="(lyricsBackground == 'on' ? ({ backgroundImage: `url(${currentSong?.img || 'https://random.MoeJue.cn/randbg.php'})` }) : ({ background: 'var(--secondary-color)' }))">
             <div class="lyrics-screen">
                 <div class="close-btn">
-                    <i class="fas fa-chevron-down" @click="toggleLyrics"></i>
+                    <i class="fas fa-chevron-down" @click="toggleLyrics(currentTime)"></i>
                 </div>
 
                 <div class="left-section">
@@ -229,10 +229,10 @@ const updateCurrentTime = throttle(() => {
         progressWidth.value = (currentTime.value / audio.duration) * 100;
     }
 
+    const savedConfig = JSON.parse(localStorage.getItem('settings') || '{}');
     if (audio && lyricsData.value.length) {
-        const savedConfig = JSON.parse(localStorage.getItem('settings') || '{}');
         if (savedConfig?.lyricsAlign != lyricsAlign.value) lyricsAlign.value = savedConfig.lyricsAlign;
-        
+
         highlightCurrentChar(audio.currentTime, !lyricsFlag.value);
         if (isElectron()) {
             if (savedConfig?.desktopLyrics === 'on') {
@@ -270,7 +270,7 @@ const audioController = useAudioController({ onSongEnd, updateCurrentTime });
 const { playing, isMuted, volume, changeVolume, audio, playbackRate, setPlaybackRate } = audioController;
 
 const lyricsHandler = useLyricsHandler(t);
-const { lyricsData, originalLyrics, showLyrics, scrollAmount, SongTips, toggleLyrics, getLyrics, highlightCurrentChar, resetLyricsHighlight, getCurrentLineText, } = lyricsHandler;
+const { lyricsData, originalLyrics, showLyrics, scrollAmount, SongTips, toggleLyrics, getLyrics, highlightCurrentChar, resetLyricsHighlight, getCurrentLineText, scrollToCurrentLine } = lyricsHandler;
 
 const progressBar = useProgressBar(audio, resetLyricsHighlight);
 const { progressWidth, isProgressDragging, showTimeTooltip, tooltipPosition, tooltipTime, climaxPoints, formatTime, getMusicHighlights, onProgressDragStart, updateProgressFromEvent, updateTimeTooltip, hideTimeTooltip } = progressBar;
@@ -309,6 +309,7 @@ const restoreLyricsScroll = throttle(() => {
 
 // 反斗获取歌词
 const getCurrentLyrics = throttle(() => {
+    lyricsData.value = [];
     const savedConfig = JSON.parse(localStorage.getItem('settings') || '{}');
     if (currentSong.value.hash) getLyrics(currentSong.value.hash, savedConfig);
 }, 1000);
@@ -333,7 +334,6 @@ const playSong = async (song) => {
         }
 
         currentSong.value = structuredClone(song);
-        lyricsData.value = [];
 
         audio.src = song.url;
         setPlaybackRate(currentSpeed.value);
@@ -659,6 +659,7 @@ const handleLyricsClick = (lineIndex) => {
     const lineStartTime = lyricsData.value[lineIndex].characters[0].startTime;
     audio.currentTime = lineStartTime / 1000;
     resetLyricsHighlight(audio.currentTime);
+    scrollToCurrentLine(lineIndex);
     lyricsFlag.value = false;
     if (lyricScrollTimer) clearTimeout(lyricScrollTimer);
     lyricScrollTimer = null;
@@ -681,9 +682,7 @@ const handleKeyDown = (event) => {
             playSongFromQueue('next');
             break;
         case 'Escape':
-            if (showLyrics.value) {
-                toggleLyrics();
-            }
+            if (showLyrics.value) toggleLyrics(audio.currentTime);
             break;
     }
 };

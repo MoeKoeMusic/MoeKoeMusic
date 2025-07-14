@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { ref, nextTick } from 'vue';
 import { get } from '../../utils/request';
 
 export default function useLyricsHandler(t) {
@@ -10,9 +10,19 @@ export default function useLyricsHandler(t) {
     let currentLineIndex = 0;
 
     // 显示/隐藏歌词
-    const toggleLyrics = () => {
+    const toggleLyrics = (currentTime) => {
         showLyrics.value = !showLyrics.value;
         SongTips.value = t('huo-qu-ge-ci-zhong');
+        // 如果显示歌词，滚动到当前播放行
+        if (showLyrics.value && lyricsData.value.length > 0) {
+            nextTick(() => {
+                // 从全局 audio 对象获取当前播放时间
+                const currentLineIndex = getCurrentLineIndex(currentTime);
+                if (currentLineIndex !== -1) scrollToCurrentLine(currentLineIndex);
+                else centerFirstLine();
+            }, 100);
+        }
+        
         return showLyrics.value;
     };
 
@@ -36,7 +46,7 @@ export default function useLyricsHandler(t) {
                 SongTips.value = t('huo-qu-ge-ci-shi-bai');
                 return;
             }
-            console.log('[LyricsHandler] 请求KRC歌词……');
+            console.log('[LyricsHandler] 请求歌词……');
             parseLyrics(lyricResponse.decodeContent, settings?.lyricsTranslation === 'on');
             originalLyrics.value = lyricResponse.decodeContent;
             centerFirstLine();
@@ -136,6 +146,21 @@ export default function useLyricsHandler(t) {
         scrollAmount.value = (containerHeight - lyricsHeight) / 2;
     };
 
+    // 滚动到当前歌词行
+    const scrollToCurrentLine = (lineIndex) => {
+        if (currentLineIndex === lineIndex) return;
+        
+        currentLineIndex = lineIndex;
+        const lyricsContainer = document.getElementById('lyrics-container');
+        if (!lyricsContainer) return false;
+        const containerHeight = lyricsContainer.offsetHeight;
+        const lineElement = document.querySelectorAll('.line-group')[lineIndex];
+        if (lineElement) {
+            const lineHeight = lineElement.offsetHeight;
+            scrollAmount.value = -lineElement.offsetTop + (containerHeight / 2) - (lineHeight / 2);
+        }
+    };
+
     // 高亮当前字符
     const highlightCurrentChar = (currentTime, scroll = true) => {
         const currentTimeMs = currentTime * 1000;
@@ -170,16 +195,8 @@ export default function useLyricsHandler(t) {
             }
 
             // 处理滚动
-            if (scroll && hasHighlightedChar && currentLineIndex !== lineIndex) {
-                currentLineIndex = lineIndex;
-                const lyricsContainer = document.getElementById('lyrics-container');
-                if (!lyricsContainer) return false;
-                const containerHeight = lyricsContainer.offsetHeight;
-                const lineElement = document.querySelectorAll('.line-group')[lineIndex];
-                if (lineElement) {
-                    const lineHeight = lineElement.offsetHeight;
-                    scrollAmount.value = -lineElement.offsetTop + (containerHeight / 2) - (lineHeight / 2);
-                }
+            if (scroll && hasHighlightedChar) {
+                scrollToCurrentLine(lineIndex);
             }
         });
         
@@ -201,10 +218,10 @@ export default function useLyricsHandler(t) {
     };
 
     // 重置歌词高亮状态
-    const resetLyricsHighlight = (currentTimeInSeconds) => {
+    const resetLyricsHighlight = (currentTime) => {
         if (!lyricsData.value) return;
 
-        const currentTimeMs = currentTimeInSeconds * 1000;
+        const currentTimeMs = currentTime * 1000;
         let currentActiveLineIndex = -1;
 
         lyricsData.value.forEach((lineData, lineIndex) => {
@@ -226,17 +243,29 @@ export default function useLyricsHandler(t) {
 
             if (isCurrentLine) {
                 currentActiveLineIndex = lineIndex;
-                currentLineIndex = lineIndex;
-                const lyricsContainer = document.getElementById('lyrics-container');
-                if (!lyricsContainer) return;
-                const containerHeight = lyricsContainer.offsetHeight;
-                const lineElement = document.querySelectorAll('.line-group')[lineIndex];
-                if (lineElement) {
-                    const lineHeight = lineElement.offsetHeight;
-                    scrollAmount.value = -lineElement.offsetTop + (containerHeight / 2) - (lineHeight / 2);
-                }
+                scrollToCurrentLine(lineIndex);
             }
         });
+    };
+
+    // 获取当前播放行索引
+    const getCurrentLineIndex = (currentTime) => {
+        if (!lyricsData.value || lyricsData.value.length === 0) return -1;
+
+        const currentTimeMs = currentTime * 1000;
+        for (let index = 0; index < lyricsData.value.length; index++) {
+            const lineData = lyricsData.value[index];
+            const nextLineData = lyricsData.value[index + 1];
+            const firstChar = lineData.characters[0];
+            const nextFirstChar = nextLineData?.characters[0];
+
+            if (
+                firstChar && nextFirstChar &&
+                currentTimeMs >= firstChar.startTime &&
+                currentTimeMs <= nextFirstChar.startTime
+            ) return index + 1;
+        }
+        return lyricsData.value.length - 1;
     };
 
     // 获取当前行歌词文本
@@ -269,5 +298,6 @@ export default function useLyricsHandler(t) {
         highlightCurrentChar,
         resetLyricsHighlight,
         getCurrentLineText,
+        scrollToCurrentLine,
     };
 } 

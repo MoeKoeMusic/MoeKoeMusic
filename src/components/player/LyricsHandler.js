@@ -49,7 +49,7 @@ export default function useLyricsHandler(t) {
     const parseLyrics = (text, parseTranslation = true) => {
         let translationLyrics = [];
         const lines = text.split('\n');
-        
+
         try {
             const languageLine = lines.find(line => line.match(/\[language:(.*)\]/));
             if (parseTranslation && languageLine) {

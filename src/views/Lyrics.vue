@@ -81,11 +81,11 @@
                         :class="{ 'hovering': isHovering && !isLocked }"
                     >
                         <span
-                            v-for="(segment, index) in processedLyrics[displayedLines[0]]"
+                            v-for="(segment, index) in lyrics[displayedLines[0]]?.characters"
                             :key="`line1-${index}`"
                             class="character"
                             :style="getSegmentStyle(segment)"
-                        >{{ segment.text }}</span>
+                        >{{ segment.char }}</span>
                     </div>
                 </div>
                 <div class="lyrics-line" v-if="lyrics[displayedLines[0]]?.translated">
@@ -94,15 +94,13 @@
                     </div>
                 </div>
                 <div class="lyrics-line" v-else-if="lyrics[displayedLines[1]]">
-                    <div class="lyrics-content"
-                        :class="{ 'hovering': isHovering && !isLocked }"
-                    >
+                    <div class="lyrics-content" :class="{ 'hovering': isHovering && !isLocked }">
                         <span
-                            v-for="(segment, index) in processedLyrics[displayedLines[1]]"
+                            v-for="(segment, index) in lyrics[displayedLines[1]].characters"
                             :key="`line2-${index}`"
                             class="character"
                             :style="getSegmentStyle(segment)"
-                        >{{ segment.text }}</span>
+                        >{{ segment.char }}</span>
                     </div>
                 </div>
             </template>
@@ -160,28 +158,6 @@ const handleColorChange = (color, type) => {
     }
 }
 
-const getCharacterStyle = (char) => {
-    const startTime = char.startTime / 1000
-    const endTime = char.endTime / 1000
-    const progress = (currentTime.value - startTime) / (endTime - startTime)
-    
-    let fillPercent = 0
-    if (currentTime.value < startTime) {
-        fillPercent = 0
-    } else if (currentTime.value >= endTime) {
-        fillPercent = 100
-    } else {
-        fillPercent = Math.max(0, Math.min(100, progress * 100))
-    }
-    
-    return {
-        backgroundImage: `linear-gradient(to right, ${highlightColor.value} 50%, ${defaultColor.value} 50%)`,
-        backgroundSize: '200% 100%',
-        backgroundPosition: `${100 - fillPercent}% 0`,
-        transition: 'background-position 0.3s ease-out'
-    }
-}
-
 const sendAction = (action) => {
     window.electron.ipcRenderer.send('desktop-lyrics-action', action)
 }
@@ -227,10 +203,12 @@ const updateDisplayedLines = () => {
         displayedLines.value = [currentIdx];
         nextTick(() => {
             const line = document.querySelectorAll('.lyrics-line')[0]
-            line.querySelectorAll('.character').forEach(el => {
-                el.style.backgroundPosition = '100% 0'
-                el.style.transition = 'none'
-            })
+            if (line) {
+                line.querySelectorAll('.character').forEach(element => {
+                    element.style.transition = 'none'
+                    element.style.backgroundPosition = '100% 0'
+                })
+            }
         })
         return
     }
@@ -240,10 +218,12 @@ const updateDisplayedLines = () => {
     nextTick(() => {
         const lines = document.querySelectorAll('.lyrics-line')
         const line = lines[currentIdx % 2 ? 0 : 1]
-        if (line) line.querySelectorAll('.character').forEach(el => {
-            el.style.backgroundPosition = '100% 0'
-            el.style.transition = 'none'
-        })
+        if (line) {
+            line.querySelectorAll('.character').forEach(element => {
+                element.style.transition = 'none'
+                element.style.backgroundPosition = '100% 0'
+            })
+        }
     })
 }
 
@@ -277,7 +257,6 @@ window.electron.ipcRenderer.on('lyrics-data', (data) => {
     if (data.currentTime < 1 || lyrics.value.length === 0 || data.currentSongHash !== currentSongHash) {
         currentSongHash = data.currentSongHash
         lyrics.value = data.lyricsData;
-        processLyrics(); 
         currentLineIndex.value = 0;
         currentTime.value = 0;
         currentLineScrollX.value = 0;
@@ -347,71 +326,22 @@ const containerStyle = computed(() => ({
     fontSize: `${fontSize.value}px`
 }))
 
-const processedLyrics = ref([])
-
-const processLyrics = () => {
-    if (!lyrics.value || lyrics.value.length === 0) {
-        processedLyrics.value = []
-        return
-    }
-    
-    processedLyrics.value = lyrics.value.map(line => {
-        if (!line?.characters?.length) return []
-        
-        const segments = []
-        let currentSegment = null
-        let isEnglish = false
-        
-        for (let i = 0; i < line.characters.length; i++) {
-            const char = line.characters[i]
-            const isCurrentCharEnglish = /[a-zA-Z]/.test(char.char)
-            
-            if (i === 0 || isCurrentCharEnglish !== isEnglish) {
-                if (currentSegment) {
-                    segments.push(currentSegment)
-                }
-                
-                currentSegment = {
-                    text: char.char,
-                    startTime: char.startTime,
-                    endTime: char.endTime
-                }
-                
-                isEnglish = isCurrentCharEnglish
-            } else {
-                currentSegment.text += char.char
-                currentSegment.endTime = char.endTime
-            }
-        }
-        
-        if (currentSegment) {
-            segments.push(currentSegment)
-        }
-        
-        return segments
-    })
-}
-
 // 获取段落样式
 const getSegmentStyle = (segment) => {
     const startTime = segment.startTime / 1000
     const endTime = segment.endTime / 1000
-    const progress = (currentTime.value + 0.5 - startTime) / (endTime - startTime)
+    const progress = (currentTime.value - startTime) / (endTime - startTime)
     
     let fillPercent = 0
-    if (currentTime.value + 0.5 < startTime) {
-        fillPercent = 0
-    } else if (currentTime.value + 0.5 >= endTime) {
-        fillPercent = 100
-    } else {
-        fillPercent = Math.max(0, Math.min(100, progress * 100))
-    }
+    if (currentTime.value < startTime) fillPercent = 0
+    else if (currentTime.value >= endTime) fillPercent = 100
+    else fillPercent = Math.max(0, Math.min(100, progress * 100))
     
     return {
-        backgroundImage: `linear-gradient(to right, ${highlightColor.value} 50%, ${defaultColor.value} 50%)`,
         backgroundSize: '200% 100%',
+        transition: 'background-position .15s ease-out',
         backgroundPosition: `${100 - fillPercent}% 0`,
-        transition: 'background-position 0.3s ease-out'
+        backgroundImage: `linear-gradient(to right, ${highlightColor.value} 50%, ${defaultColor.value} 50%)`,
     }
 }
 </script>
@@ -433,7 +363,8 @@ html {
     letter-spacing: 2px;
     background-image: linear-gradient(to right, #ff0000, #00ff00);
     color: transparent;
-    transition: all 0.3s ease;
+    transform: translateZ(0);
+    will-change: background-position;
 }
 
 .lyrics-container {
@@ -451,6 +382,8 @@ html {
     left: 0;
     right: 0;
     height: auto;
+    transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    transform: translateZ(0); /* 启用硬件加速 */
 }
 
 .lyrics-content-wrapper {
@@ -459,6 +392,7 @@ html {
     justify-content: center;
     align-items: center;
     width: 100%;
+    transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
 .lyrics-container-hover:not(.locked):hover {
@@ -467,7 +401,7 @@ html {
 
 .controls-overlay {
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
     margin-bottom: 10px;
     height: 40px;
     position: relative;
@@ -517,6 +451,17 @@ html {
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+    transform: scale(1);
+}
+
+.controls-wrapper button:hover {
+    transform: scale(1.1);
+    background: #333333c4;
+}
+
+.controls-wrapper button:active {
+    transform: scale(0.95);
 }
 
 .controls-wrapper i {
@@ -526,16 +471,19 @@ html {
 .lyrics-line {
     overflow: hidden;
     position: relative;
-    transition: transform 0.3s ease-out;
+    transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
     filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .lyrics-content {
     display: inline-block;
     white-space: nowrap;
-    transition: all 0.3s ease-out;
+    transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
     padding: 4px 8px;
     border-radius: 4px;
+    transform: translateX(0);
 }
 
 .lyrics-container:not(.locked) .lyrics-content.hovering:hover {
@@ -561,6 +509,13 @@ html {
     align-items: center;
     gap: 2px;
     width: auto !important;
+    transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+    transform: scale(1);
+}
+
+.font-control:hover {
+    opacity: 1;
+    transform: scale(1.05);
 }
 
 .font-control i {
@@ -570,10 +525,6 @@ html {
 .font-control i.fa-font {
     font-size: 14px;
     margin: 0 1px;
-}
-
-.font-control:hover {
-    opacity: 1;
 }
 
 .font-icon {
@@ -594,6 +545,13 @@ html {
     align-items: center;
     justify-content: center;
     border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+    transform: scale(1);
+}
+
+.color-button:hover {
+    transform: scale(1.1);
+    border-color: rgba(255, 255, 255, 0.4) !important;
 }
 
 .color-preview {
@@ -601,6 +559,7 @@ html {
     height: 16px;
     border-radius: 4px;
     border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
 .hidden-color-input {

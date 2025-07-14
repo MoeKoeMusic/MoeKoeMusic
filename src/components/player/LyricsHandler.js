@@ -30,12 +30,13 @@ export default function useLyricsHandler(t) {
                 return;
             }
 
-            const lyricResponse = await get(`/lyric?id=${lyricSearchResponse.candidates[0].id}&accesskey=${lyricSearchResponse.candidates[0].accesskey}&decode=true`);
+            // 明确指定使用KRC格式
+            const lyricResponse = await get(`/lyric?id=${lyricSearchResponse.candidates[0].id}&accesskey=${lyricSearchResponse.candidates[0].accesskey}&fmt=krc&decode=true`);
             if (lyricResponse.status !== 200) {
                 SongTips.value = t('huo-qu-ge-ci-shi-bai');
                 return;
             }
-            console.log('[LyricsHandler] 请求歌词……');
+            console.log('[LyricsHandler] 请求KRC歌词……');
             parseLyrics(lyricResponse.decodeContent, settings?.lyricsTranslation === 'on');
             originalLyrics.value = lyricResponse.decodeContent;
             centerFirstLine();
@@ -48,6 +49,7 @@ export default function useLyricsHandler(t) {
     const parseLyrics = (text, parseTranslation = true) => {
         let translationLyrics = [];
         const lines = text.split('\n');
+        
         try {
             const languageLine = lines.find(line => line.match(/\[language:(.*)\]/));
             if (parseTranslation && languageLine) {
@@ -62,63 +64,65 @@ export default function useLyricsHandler(t) {
             console.warn('[LyricsHandler] 解析翻译歌词失败！');
         }
 
-        const prasedLyrics = lines.map((line) => {
-            const match = line.match(/^\[(\d+),(\d+)\](.*)/);
-            if (match) {
-                const time = parseInt(match[1]);
-                const duration = parseInt(match[2]);
-                const lyric = match[3].replace(/<.*?>/g, '');
-                const characters = lyric.split('').map((char, index) => ({
-                    char,
-                    startTime: time + (index * duration) / lyric.length,
-                    endTime: time + ((index + 1) * duration) / lyric.length,
-                    highlighted: false,
-                }));
-                return { characters };
+        const parsedLyrics = [];
+        const charRegex = /<(\d+),(\d+),\d+>([^<]+)/g;
+
+        lines.forEach(line => {
+            // 匹配主时间标签 [start,duration]
+            const lineMatch = line.match(/^\[(\d+),(\d+)\](.*)/);
+            if (!lineMatch) return;
+
+            const start = parseInt(lineMatch[1]);
+            const lyricContent = lineMatch[3];
+            const characters = [];
+            
+            // 解析字符级时间标签 <start,duration,unknown>text
+            let charMatch;
+
+            while ((charMatch = charRegex.exec(lyricContent)) !== null) {
+                const text = charMatch[3];
+                const charDuration = parseInt(charMatch[2]);
+                const charStart = start + parseInt(charMatch[1]);
+                
+                // 直接使用文本组，不拆分
+                characters.push({
+                    char: text,
+                    startTime: charStart,
+                    endTime: charStart + charDuration,
+                    highlighted: false
+                });
             }
-            return null;
-        }).filter((line) => line);
 
-        // 正常 KRC 解析，反正留着，等哪天作者有心情了去支持吧
-        // 本人试过效果不太好，也可能是我菜（
+            // 如果没有找到字符级时间标签，使用行级时间标签进行等分
+            if (characters.length === 0) {
+                const duration = parseInt(lineMatch[2]);
+                const lyric = lyricContent.replace(/<.*?>/g, '');
+                if (lyric.trim()) {
+                    for (let index = 0; index < lyric.length; index++) {
+                        characters.push({
+                            char: lyric[index],
+                            startTime: start + (index * duration) / lyric.length,
+                            endTime: start + ((index + 1) * duration) / lyric.length,
+                            highlighted: false
+                        });
+                    }
+                }
+            }
 
-        // const parsedLyrics = [];
-        // const charRegex = /<(\d+),(\d+),\d+>([^<]+)/g;
+            // 保存有效歌词行
+            if (characters.length > 0) {
+                parsedLyrics.push({ characters });
+            }
+        });
 
-        // lines.forEach(line => {
-        //     // 匹配主时间标签 [start,duration]
-        //     const lineMatch = line.match(/^\[(\d+),(\d+)\](.*)/);
-        //     if (!lineMatch) return;
+        if (translationLyrics.length) {
+            parsedLyrics.forEach((line, index) => {
+                if (translationLyrics[index] && translationLyrics[index][0])
+                    line.translated = translationLyrics[index][0];
+            });
+        }
 
-        //     const start = parseInt(lineMatch[1]);
-        //     const lyricContent = lineMatch[3];
-        //     const characters = [];
-        //     // 解析字符级时间标签 <start,duration,unknown>text
-        //     let charMatch;
-
-        //     while ((charMatch = charRegex.exec(lyricContent)) !== null) {
-        //         const text = charMatch[3];
-        //         const charDuration = parseInt(charMatch[2]);
-        //         const charStart = start + parseInt(charMatch[1]);
-        //         characters.push({
-        //             char: text,
-        //             startTime: charStart,
-        //             durationTime: charDuration,
-        //             endTime: charStart + charDuration,
-        //             highlighted: false
-        //         });
-        //     }
-
-        //     // 保存有效歌词行
-        //     if (characters.length > 0) {
-        //         parsedLyrics.push({ characters });
-        //     }
-        // });
-
-        if (translationLyrics.length)
-            prasedLyrics.forEach((line, index) => line.translated = translationLyrics[index][0]);
-
-        lyricsData.value = prasedLyrics;
+        lyricsData.value = parsedLyrics;
     };
 
     // 居中显示第一行歌词
@@ -134,44 +138,94 @@ export default function useLyricsHandler(t) {
 
     // 高亮当前字符
     const highlightCurrentChar = (currentTime, scroll = true) => {
-        lyricsData.value.forEach((lineData, index) => {
-            let isLineHighlighted = false;
+        const currentTimeMs = currentTime * 1000;
+        let currentActiveLineIndex = -1;
+        
+        lyricsData.value.forEach((lineData, lineIndex) => {
+            let isLineActive = false;
+            let hasHighlightedChar = false;
+            
             lineData.characters.forEach((charData) => {
-                if (currentTime * 1000 >= charData.startTime && !charData.highlighted) {
-                    charData.highlighted = true;
-                    isLineHighlighted = true;
+                // 更精确的时间判断
+                if (currentTimeMs >= charData.startTime && currentTimeMs <= charData.endTime) {
+                    if (!charData.highlighted) {
+                        charData.highlighted = true;
+                        hasHighlightedChar = true;
+                    }
+                    isLineActive = true;
+                } else if (currentTimeMs > charData.endTime) {
+                    // 已经播放过的字符保持高亮
+                    if (!charData.highlighted) {
+                        charData.highlighted = true;
+                    }
+                } else {
+                    // 还未播放的字符取消高亮
+                    charData.highlighted = false;
                 }
             });
 
-            if (scroll && isLineHighlighted && currentLineIndex !== index) {
-                currentLineIndex = index;
+            // 如果当前行有活跃字符，记录为当前行
+            if (isLineActive) {
+                currentActiveLineIndex = lineIndex;
+            }
+
+            // 处理滚动
+            if (scroll && hasHighlightedChar && currentLineIndex !== lineIndex) {
+                currentLineIndex = lineIndex;
                 const lyricsContainer = document.getElementById('lyrics-container');
                 if (!lyricsContainer) return false;
                 const containerHeight = lyricsContainer.offsetHeight;
-                const lineElement = document.querySelectorAll('.line-group')[index];
+                const lineElement = document.querySelectorAll('.line-group')[lineIndex];
                 if (lineElement) {
                     const lineHeight = lineElement.offsetHeight;
                     scrollAmount.value = -lineElement.offsetTop + (containerHeight / 2) - (lineHeight / 2);
                 }
             }
         });
+        
+        // 如果没有找到活跃行，尝试找到最接近的行
+        if (currentActiveLineIndex === -1 && lyricsData.value.length > 0) {
+            for (let i = 0; i < lyricsData.value.length; i++) {
+                const lineData = lyricsData.value[i];
+                const firstChar = lineData.characters[0];
+                const lastChar = lineData.characters[lineData.characters.length - 1];
+                
+                if (firstChar && lastChar && 
+                    currentTimeMs >= firstChar.startTime && 
+                    currentTimeMs <= lastChar.endTime) {
+                    currentActiveLineIndex = i;
+                    break;
+                }
+            }
+        }
     };
 
     // 重置歌词高亮状态
     const resetLyricsHighlight = (currentTimeInSeconds) => {
         if (!lyricsData.value) return;
 
+        const currentTimeMs = currentTimeInSeconds * 1000;
+        let currentActiveLineIndex = -1;
+
         lyricsData.value.forEach((lineData, lineIndex) => {
+            let isCurrentLine = false;
+            
             lineData.characters.forEach(charData => {
-                charData.highlighted = (currentTimeInSeconds * 1000 >= charData.startTime);
+                // 更精确的时间判断
+                if (currentTimeMs >= charData.startTime && currentTimeMs <= charData.endTime) {
+                    charData.highlighted = true;
+                    isCurrentLine = true;
+                } else if (currentTimeMs > charData.endTime) {
+                    // 已经播放过的字符保持高亮
+                    charData.highlighted = true;
+                } else {
+                    // 还未播放的字符取消高亮
+                    charData.highlighted = false;
+                }
             });
 
-            const isCurrentLine = lineData.characters.some(char =>
-                currentTimeInSeconds * 1000 >= char.startTime &&
-                currentTimeInSeconds * 1000 <= char.endTime
-            );
-
             if (isCurrentLine) {
+                currentActiveLineIndex = lineIndex;
                 currentLineIndex = lineIndex;
                 const lyricsContainer = document.getElementById('lyrics-container');
                 if (!lyricsContainer) return;

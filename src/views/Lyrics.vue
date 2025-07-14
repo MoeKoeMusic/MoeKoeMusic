@@ -360,7 +360,6 @@ html {
     background-clip: text;
     -webkit-background-clip: text;
     font-weight: bold;
-    letter-spacing: 2px;
     background-image: linear-gradient(to right, #ff0000, #00ff00);
     color: transparent;
     transform: translateZ(0);

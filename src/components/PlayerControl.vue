@@ -126,8 +126,7 @@
                             <i class="fas fa-step-forward"></i>
                         </button>
                         <button class="control-btn" @click="togglePlaybackMode">
-                            <i v-if="currentPlaybackModeIndex != '2'" :class="currentPlaybackMode.icon"
-                                :title="currentPlaybackMode.title"></i>
+                            <i v-if="currentPlaybackModeIndex != '2'" :class="currentPlaybackMode.icon" :title="currentPlaybackMode.title"></i>
                             <span v-else class="loop-icon" :title="currentPlaybackMode.title">
                                 <i class="fas fa-repeat"></i>
                                 <sup>1</sup>
@@ -304,10 +303,12 @@ const restoreLyricsScroll = throttle(() => {
         console.log('[PlayerControl] 恢复歌词正常滚动');
         lyricScrollTimer = null;
         lyricsFlag.value = false;
-    }, 3000);
+        const currentLine = getCurrentLineText(audio.currentTime);
+        scrollToCurrentLine(currentLine);
+    }, 5000);
 }, 1000);
 
-// 反斗获取歌词
+// 获取歌词的节流函数
 const getCurrentLyrics = throttle(() => {
     lyricsData.value = [];
     const savedConfig = JSON.parse(localStorage.getItem('settings') || '{}');
@@ -370,12 +371,14 @@ const playSong = async (song) => {
             document.title = song.name;
         }
 
+        // 清空歌词数据
+        lyricsData.value = [];
         // 保存当前歌曲到本地存储
         localStorage.setItem('current_song', JSON.stringify(currentSong.value));
 
+        getVip();
         // 获取歌词
         getCurrentLyrics();
-        getVip();
         getMusicHighlights(currentSong.value.hash);
     } catch (error) {
         console.error('[PlayerControl] 播放音乐时发生错误:', error);
@@ -536,9 +539,7 @@ const playSongFromQueue = async (direction) => {
         // 如果出错，尝试播放下一首
         if (direction === 'next') {
             console.log('[PlayerControl] 发生错误，3秒后尝试播放下一首');
-            setTimeout(() => {
-                playSongFromQueue('next');
-            }, 3000);
+            setTimeout(() => playSongFromQueue('next'), 3000);
         }
     }
 };

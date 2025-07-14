@@ -14,13 +14,14 @@ export default function useLyricsHandler(t) {
         showLyrics.value = !showLyrics.value;
         SongTips.value = t('huo-qu-ge-ci-zhong');
         // 如果显示歌词，滚动到当前播放行
-        if (showLyrics.value && lyricsData.value.length > 0) {
+        if (!lyricsData.value.length) getLyrics();
+        else if (showLyrics.value) {
             nextTick(() => {
                 // 从全局 audio 对象获取当前播放时间
                 const currentLineIndex = getCurrentLineIndex(currentTime);
                 if (currentLineIndex !== -1) scrollToCurrentLine(currentLineIndex);
                 else centerFirstLine();
-            }, 100);
+            });
         }
         
         return showLyrics.value;

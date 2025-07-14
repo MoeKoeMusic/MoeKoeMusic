@@ -28,7 +28,7 @@
     border-radius: 10px;
     padding: 0 10px;
     width: fit-content;
-    transition: background-color .3s;
+    transition: background-color .3s ease-in;
 }
 
 .line.left {
@@ -44,9 +44,25 @@
     color: #e3e3e3b1;
 }
 
+.line::after {
+    content: '\f04b';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    float: right;
+    display: block;
+    opacity: 0;
+    color: #e3e3e392;
+    margin-left: 10px;
+    transition: opacity .3s ease-in;
+}
+
 .line.click:hover {
     cursor: pointer;
     background-color: #e3e3e33b;
+}
+
+.line.click:hover::after {
+    opacity: 1;
 }
 
 .char {

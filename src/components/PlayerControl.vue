@@ -310,7 +310,6 @@ const restoreLyricsScroll = throttle(() => {
 
 // 获取歌词的节流函数
 const getCurrentLyrics = throttle(() => {
-    lyricsData.value = [];
     const savedConfig = JSON.parse(localStorage.getItem('settings') || '{}');
     if (currentSong.value.hash) getLyrics(currentSong.value.hash, savedConfig);
 }, 1000);

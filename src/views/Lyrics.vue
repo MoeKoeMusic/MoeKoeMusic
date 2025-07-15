@@ -207,7 +207,7 @@ const updateDisplayedLines = () => {
         if (currentIdx % 2) displayedLines.value = [currentIdx + 1, currentIdx]
         else displayedLines.value = [currentIdx, currentIdx + 1]
         currentLineScrollX.value = 0
-    }, 500)
+    }, 200)
 }
 
 // 开始拖动
@@ -237,7 +237,7 @@ const checkMousePosition = (event) => {
 }
 
 window.electron.ipcRenderer.on('lyrics-data', (data) => {
-    if (data.currentTime < 1 || lyrics.value.length === 0 || data.currentSongHash !== currentSongHash) {
+    if (data.currentTime < 1 || data.lyricsData.length === 0 || data.currentSongHash !== currentSongHash) {
         currentSongHash = data.currentSongHash
         lyrics.value = data.lyricsData;
         currentLineIndex.value = 0;

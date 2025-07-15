@@ -1,6 +1,7 @@
 {
   "name": "moekoemusic",
   "version": "1.4.8",
+  "homepage": "https://github.com/iAJue/MoeKoeMusic",
   "main": "electron/main.js",
   "scripts": {
     "install-all": "npm install && cd api && npm install",
@@ -13,9 +14,11 @@
     "dev": "npm run api & npm run serve & npm run electron:serve",
     "build:api:win": "npm run --prefix ./api pkgwin",
     "build:api:linux": "npm run --prefix ./api pkglinux",
+    "build:api:linux-aarch64": "npm run --prefix ./api pkglinux-aarch64",
     "build:api:macos": "npm run --prefix ./api pkgmacos",
     "electron:build:win": "run-s build:api:win \"electron:build -- --win --publish never\"",
     "electron:build:linux": "run-s build:api:linux \"electron:build -- --linux --publish never\"",
+    "electron:build:linux-aarch64": "run-s build:api:linux-aarch64 \"electron:build -- --linux --publish never\"",
     "electron:build:macos": "run-s build:api:macos \"electron:build -- --mac --universal --publish never\"",
     "electron:build": "cross-env NODE_ENV=production electron-builder"
   },

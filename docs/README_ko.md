@@ -1,3 +1,4 @@
+> **주의**: 이 한국어 문서는 업데이트가 지연될 수 있으니, 최신 내용은 [중국어 간체 버전](https://github.com/iAJue/MoeKoeMusic/README.md)을 참고하세요.
 <br />
 <p align="center">
 <img src="https://github.com/iAJue/MoeKoeMusic/raw/main/images/logo.png" alt="Logo" width="156" height="156">
@@ -50,8 +51,8 @@
 ## 📢 Todo List
 - [ ] 📺 뮤직비디오 재생 지원
 - [x] 🌚 Light/Dark Mode 자동 전환
-- [ ] 👆 Touch Bar 지원
-- [ ] 🖥️ PWA 지원, Chrome/Edge에서 주소 표시줄 오른쪽에 있는➕ 컴퓨터에 설치
+- [x] 👆 Touch Bar 지원
+- [x] 🖥️ PWA 지원, Chrome/Edge에서 주소 표시줄 오른쪽에 있는➕ 컴퓨터에 설치
 - [ ] 🟥 Last.fm Scrobble 지원
 - [ ] 🎧 지원 Mpris
 - [x] ⌨️ 단축키 및 전역 단축키 사용자 정의

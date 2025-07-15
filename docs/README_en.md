@@ -1,3 +1,4 @@
+> **Note**: This English document may not be updated in a timely manner. For the latest content, please refer to the [Simplified Chinese version](https://github.com/iAJue/MoeKoeMusic/README.md).
 <br />
 <p align="center">
 <img src="https://github.com/iAJue/MoeKoeMusic/raw/main/images/logo.png " alt="Logo" width="156" height="156">
@@ -51,8 +52,8 @@ I said on my personal introduction page that I particularly enjoy listening to m
 ## 📢 Todo List
 - [ ]  📺  Support MV playback
 - [x]  🌚 Light/Dark Mode  Automatic switching
-- [ ]  👆  Support Touch Bar
-- [ ]  🖥️  Support PWA, you can click on the right side of the address bar in Chrome/Edge ➕  Install to computer
+- [x]  👆  Support Touch Bar
+- [x]  🖥️  Support PWA, you can click on the right side of the address bar in Chrome/Edge ➕  Install to computer
 - [ ]  🟥  Supports Last.fm Scrobble
 - [ ]  🎧  Support Mpris
 - [x]  ⌨️   Global shortcut keys

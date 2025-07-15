@@ -220,7 +220,7 @@ const settingSections = computed(() => [
             },
             {
                 key: 'lyricsAlign',
-                label: '歌词对齐',
+                label: '对齐方式',
             }
         ]
     },

@@ -134,7 +134,7 @@ export default function useSongQueue(t, musicQueueStore) {
 
             // 设置URL
             if (response.data && response.data.url) {
-                currentSong.value.url = response.data.url.replace('http://', 'https://');
+                currentSong.value.url = response.data.url;
                 console.log('[SongQueue] 获取到云盘音乐URL:', currentSong.value.url);
             } else {
                 console.error('[SongQueue] 未获取到云盘音乐URL');

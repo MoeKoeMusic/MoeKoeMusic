@@ -1,3 +1,4 @@
+> **注意**: この日本語ドキュメントはタイムリーに更新されない場合があります。最新の内容については[簡体字中国語版](https://github.com/iAJue/MoeKoeMusic/README.md)をご参照ください。
 <br />
 <p align="center">
 <img src="https://github.com/iAJue/MoeKoeMusic/raw/main/images/logo.png" alt="Logo" width="156" height="156">
@@ -50,8 +51,8 @@
 ## 📢 Todo List
 - [ ] 📺 MV再生をサポート
 - [x] 🌚 Light/Dark Mode 自動切り替え
-- [ ] 👆 Touch Bar対応
-- [ ] 🖥️ PWA対応、Chrome/Edgeでアドレスバー右の➕ コンピュータにインストール
+- [x] 👆 Touch Bar対応
+- [x] 🖥️ PWA対応、Chrome/Edgeでアドレスバー右の➕ コンピュータにインストール
 - [ ] 🟥 Last.fm Scrobbleをサポート
 - [ ] 🎧 Mprisのサポート
 - [x] ⌨️ ショートカットとグローバルショートカットのカスタマイズ

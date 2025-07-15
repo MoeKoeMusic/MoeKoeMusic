@@ -1,3 +1,4 @@
+> **注意**: 此繁體中文文檔可能更新不及時，最新內容請參考[簡體中文版本](https://github.com/iAJue/MoeKoeMusic/README.md)。
 <br />
 <p align="center">
 <img src="https://github.com/iAJue/MoeKoeMusic/raw/main/images/logo.png "alt="Logo"width="156"height="156">
@@ -50,8 +51,8 @@
 ## 📢 Todo List
 - [ ] 📺  支持MV播放
 - [x] 🌚 Light/Dark Mode  自動切換
-- [ ] 👆  支持Touch Bar
-- [ ] 🖥️  支持PWA，可在Chrome/Edge裏點擊地址欄右邊的 ➕  安裝到電腦
+- [x] 👆  支持Touch Bar
+- [x] 🖥️  支持PWA，可在Chrome/Edge裏點擊地址欄右邊的 ➕  安裝到電腦
 - [ ] 🟥  支持Last.fm Scrobble
 - [ ] 🎧  支持Mpris
 - [x] ⌨️  全域快速鍵

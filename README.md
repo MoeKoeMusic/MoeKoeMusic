@@ -143,9 +143,9 @@ npm run build
   npm run electron:build:win [默认 NSIS 安装包]
   ```
   -	Linux: 
-  ```sh
-  npm run electron:build:linux [默认 AppImage 格式]
-  ```
+    - x86_64架构: `npm run electron:build:linux [默认 AppImage 格式]`
+    - ARM64架构(ARM v8+): `npm run electron:build:linux-aarch64 [默认 AppImage 格式]`
+
   -	macOS: 
   ```sh
   npm run electron:build:macos [默认 macOS 双架构]
@@ -169,9 +169,9 @@ npm run build
         npm run build:api:win
         ```
     - Linux:
-        ```sh
-        npm run build:api:linux
-        ```
+    
+        - x86-64架构: `npm run build:api:linux`
+        - ARM64架构(ARMv8+): `npm run build:api:linux-aarch64`
     - macOS:
       ```sh
       npm run build:api:macos
@@ -215,6 +215,7 @@ npm run build
    ```
 #### 3. 打包 Linux 平台
    - 默认 AppImage 格式（适用于大多数 Linux 发行版）：
+
    ```
    npm run electron:build -- --linux
    ```

@@ -110,7 +110,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
 let currentSongHash = ''
 
@@ -178,7 +178,7 @@ const toggleLock = () => {
 
 // 更新当前行索引
 const updateCurrentLineIndex = () => {
-    const currentTimeMs = currentTime.value * 1000
+    const currentTimeMs = currentTime.value
     
     for (let i = 0; i < lyrics.value.length; i++) {
         const line = lyrics.value[i]
@@ -201,30 +201,13 @@ const updateDisplayedLines = () => {
     const currentIdx = currentLineIndex.value
     if (lyrics.value[currentIdx]?.translated?.length) {
         displayedLines.value = [currentIdx];
-        nextTick(() => {
-            const line = document.querySelectorAll('.lyrics-line')[0]
-            if (line) {
-                line.querySelectorAll('.character').forEach(element => {
-                    element.style.transition = 'none'
-                    element.style.backgroundPosition = '100% 0'
-                })
-            }
-        })
         return
     }
-    if (currentIdx % 2) displayedLines.value = [currentIdx + 1, currentIdx]
-    else displayedLines.value = [currentIdx, currentIdx + 1]
-    currentLineScrollX.value = 0
-    nextTick(() => {
-        const lines = document.querySelectorAll('.lyrics-line')
-        const line = lines[currentIdx % 2 ? 0 : 1]
-        if (line) {
-            line.querySelectorAll('.character').forEach(element => {
-                element.style.transition = 'none'
-                element.style.backgroundPosition = '100% 0'
-            })
-        }
-    })
+    setTimeout(() => {
+        if (currentIdx % 2) displayedLines.value = [currentIdx + 1, currentIdx]
+        else displayedLines.value = [currentIdx, currentIdx + 1]
+        currentLineScrollX.value = 0
+    }, 500)
 }
 
 // 开始拖动
@@ -262,7 +245,7 @@ window.electron.ipcRenderer.on('lyrics-data', (data) => {
         currentLineScrollX.value = 0;
         displayedLines.value = [0, 1];
     } 
-    currentTime.value = data.currentTime;
+    currentTime.value = data.currentTime * 1000;
     updateCurrentLineIndex();
 })
 
@@ -285,6 +268,7 @@ onMounted(() => {
     document.addEventListener('mousemove', onDrag)
     document.addEventListener('mouseup', endDrag)
     fontSize.value = parseInt(localStorage.getItem('lyrics-font-size') || '32')
+    setInterval(() => isPlaying.value && (currentTime.value += 10), 10)
 })
 
 const onDrag = (event) => {
@@ -328,8 +312,8 @@ const containerStyle = computed(() => ({
 
 // 获取段落样式
 const getSegmentStyle = (segment) => {
-    const startTime = segment.startTime / 1000
-    const endTime = segment.endTime / 1000
+    const startTime = segment.startTime
+    const endTime = segment.endTime
     const progress = (currentTime.value - startTime) / (endTime - startTime)
     
     let fillPercent = 0
@@ -339,7 +323,6 @@ const getSegmentStyle = (segment) => {
     
     return {
         backgroundSize: '200% 100%',
-        transition: 'background-position .15s ease-out',
         backgroundPosition: `${100 - fillPercent}% 0`,
         backgroundImage: `linear-gradient(to right, ${highlightColor.value} 50%, ${defaultColor.value} 50%)`,
     }
@@ -363,6 +346,7 @@ html {
     color: transparent;
     transform: translateZ(0);
     will-change: background-position;
+    white-space: pre;
 }
 
 .lyrics-container {
@@ -469,10 +453,10 @@ html {
 .lyrics-line {
     overflow: hidden;
     position: relative;
-    transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
     filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
     opacity: 1;
     transform: translateY(0);
+    will-change: background-position;
 }
 
 .lyrics-content {

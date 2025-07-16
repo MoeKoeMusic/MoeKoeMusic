@@ -1,5 +1,7 @@
 import { ref } from 'vue';
 import { get } from '../../utils/request';
+import { MoeAuthStore } from '../../stores/store';
+
 
 export default function useSongQueue(t, musicQueueStore) {
     const currentSong = ref({ name: '', author: '', img: '', url: '', hash: '' });

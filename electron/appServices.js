@@ -139,7 +139,7 @@ export function createLyricsWindow() {
     });
     if (isDev) {
         lyricsWindow.loadURL('http://localhost:8080/#/lyrics');
-        lyricsWindow.webContents.openDevTools();
+        lyricsWindow.webContents.openDevTools({ mode: 'detach' });
     } else {
         lyricsWindow.loadFile(path.join(__dirname, '../dist/index.html'), {
             hash: 'lyrics'

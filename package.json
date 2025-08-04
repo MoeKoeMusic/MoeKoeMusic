@@ -109,6 +109,9 @@
         "dmg",
         "zip"
       ],
+      
+      "arch": ["universal"], // 构建通用二进制
+
       "identity": null,
       "artifactName": "${productName}.${ext}",
       "protocols": [

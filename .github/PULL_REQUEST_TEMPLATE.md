@@ -1,13 +1,3 @@
----
-name: 🚀 通用 PR 模板 | General PR Template
-about: 用于提交任何类型的代码更改
-title: '{type}: {subject}'
-labels: ''
-assignees: ''
-
-# type 可选项，比如 fix, feat, docs, style, refactor, test, chore 等
----
-
 ## ✨ 变更类型 Type of Change
 
 - [ ] Bug 修复 (fix)

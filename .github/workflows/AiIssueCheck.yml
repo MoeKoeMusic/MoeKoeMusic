@@ -10,6 +10,16 @@ permissions:
 
 jobs:
   check-issue:
+    if: |
+      github.event_name == 'issues' &&
+      (
+        github.event.action == 'opened' ||
+        (
+          github.event.action == 'edited' &&
+          github.event.issue.state == 'open' &&
+          contains(github.event.issue.labels.*.name, 'invalid')
+        )
+      )
     runs-on: ubuntu-latest
     steps:
       - name: Debug API Key existence

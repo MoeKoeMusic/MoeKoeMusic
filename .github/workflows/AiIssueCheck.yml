@@ -39,6 +39,7 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ISSUE_RULES: ${{ vars.ISSUE_RULES }}
+          OPENAI_API_URL: ${{ secrets.OPENAI_API_URL }}
         with:
           script: |
             const issue = context.payload.issue
@@ -105,7 +106,7 @@ jobs:
                 labels: ["invalid"]
               })
             } else {
-              const passBody = `✅ 感谢补充，现在你的 Issue 已经符合要求了，我们会尽快处理～\n\n💖 听说点了Star许愿的成功率更高哦~`
+              const passBody = `✅ 感谢提交 Issue，你的 Issue 已经符合要求了，我们会尽快处理～\n\n💖 听说点了Star许愿的成功率更高哦~`
 
               if (botComment) {
                 await github.rest.issues.updateComment({

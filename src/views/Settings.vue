@@ -18,7 +18,7 @@
                 <ExtensionManager v-if="section.title === '插件'" />
                 <div v-else class="settings-cards">
                     <div v-for="(item, itemIndex) in section.items" :key="itemIndex"
-                        class="setting-card" @click="item.action ? item.action() : openSelection(item.key)">
+                        class="setting-card" @click="item.action ? item.action(item.helpLink) : openSelection(item.key, item.helpLink)">
                         <div class="setting-card-header">
                             <i :class="getItemIcon(item.key)"></i>
                             <span>{{ item.label }}</span>
@@ -48,12 +48,32 @@
 
         <div v-if="isSelectionOpen" class="modal">
             <div class="modal-content">
+                <a
+                    v-if="currentHelpLink"
+                    class="help-link"
+                    @click="openHelpLink"
+                    title="帮助"
+                    aria-label="帮助"
+                >
+                    <i class="fas fa-question-circle"></i>
+                </a>
                 <h3>{{ selectionTypeMap[selectionType].title }}</h3>
-                <ul>
+                <ul v-if="selectionType !== 'font'">
                     <li v-for="option in selectionTypeMap[selectionType].options" :key="option" @click="selectOption(option)">
                         {{ option.displayText }}
                     </li>
                 </ul>
+
+                <div v-if="selectionType === 'font'" class="api-settings-container" @focusout="handleFontFocusOut">
+                    <div class="api-setting-item">
+                        <label>字体URL地址</label>
+                        <input type="text" v-model="fontUrlInput" class="api-input" placeholder="请输入字体URL地址" />
+                    </div>
+                    <div class="api-setting-item">
+                        <label>字体名称</label>
+                        <input type="text" v-model="fontFamilyInput" class="api-input" placeholder="请输入字体名称" />
+                    </div>
+                </div>
 
                 <div v-if="selectionType === 'quality'" class="compatibility-option">
                     <label>
@@ -196,9 +216,9 @@ const settingSections = computed(() => [
             {
                 key: 'font',
                 label: '字体设置',
-                action: openFontSettings,
                 showRefreshHint: true,
-                refreshHintText: t('shua-xin-hou-sheng-xiao')
+                refreshHintText: t('shua-xin-hou-sheng-xiao'),
+                helpLink:'https://music.moekoe.cn/guide/font-settings.html'
             }
         ]
     },
@@ -277,9 +297,10 @@ const settingSections = computed(() => [
             },
             {
                 key: 'networkMode',
-                label: '网络环境',
+                label: '网络模式',
                 showRefreshHint: true,
-                refreshHintText: '重启后生效'
+                refreshHintText: '重启后生效',
+                helpLink:'https://music.moekoe.cn/guide/network-modes.html'
             },
             {
                 key: 'startMinimized',
@@ -361,7 +382,10 @@ const getItemIcon = (key) => {
 };
 
 const isSelectionOpen = ref(false);
+const currentHelpLink = ref('');
 const selectionType = ref('');
+const fontUrlInput = ref('');
+const fontFamilyInput = ref('');
 
 // 选项配置
 const selectionTypeMap = {
@@ -555,9 +579,10 @@ const showRefreshHint = ref({
     networkMode: false
 });
 
-const openSelection = (type) => {
+const openSelection = (type, helpLink) => {
     isSelectionOpen.value = true;
     selectionType.value = type;
+    currentHelpLink.value = helpLink || selectionTypeMap[type]?.helpLink || '';
 
     if (type === 'quality') {
         qualityCompatibilityMode.value = selectedSettings.value.qualityCompatibility?.value === 'on';
@@ -565,6 +590,21 @@ const openSelection = (type) => {
 
     if (type === 'highDpi') {
         dpiScale.value = parseFloat(selectedSettings.value.dpiScale?.value || '1.0');
+    }
+
+    if (type === 'font') {
+        fontUrlInput.value = selectedSettings.value.fontUrl?.value || '';
+        fontFamilyInput.value = selectedSettings.value.font?.value || '';
+    }
+};
+
+const openHelpLink = () => {
+    const url = currentHelpLink.value;
+    if (!url) return;
+    if (isElectron()) {
+        window.electron.ipcRenderer.send('open-url', url);
+    } else {
+        window.open(url, '_blank');
     }
 };
 
@@ -618,11 +658,27 @@ const selectOption = (option) => {
     };
     actions[selectionType.value]?.();
     saveSettings();
-    if(selectionType.value != 'apiMode') closeSelection();
-    const refreshHintTypes = ['lyricsBackground', 'lyricsFontSize', 'gpuAcceleration', 'highDpi', 'apiMode', 'touchBar', 'preventAppSuspension', 'networkMode'];
+    if(!['apiMode','font','fontUrl'].includes(selectionType.value)) closeSelection();
+    const refreshHintTypes = ['lyricsBackground', 'lyricsFontSize', 'gpuAcceleration', 'highDpi', 'apiMode', 'touchBar', 'preventAppSuspension', 'networkMode', 'font'];
     if (refreshHintTypes.includes(selectionType.value)) {
         showRefreshHint.value[selectionType.value] = true;
     }
+};
+
+const updateFontSetting = (key) => {
+    const prevType = selectionType.value;
+    const value = key === 'font' ? (fontFamilyInput.value || '') : (fontUrlInput.value || '');
+    const displayText = key === 'font' ? (value || '默认字体') : (value || '默认字体');
+    selectionType.value = key;
+    selectOption({ displayText, value });
+    selectionType.value = prevType;
+};
+
+const handleFontFocusOut = (e) => {
+    const container = e.currentTarget;
+    if (container && e.relatedTarget && container.contains(e.relatedTarget)) return;
+    updateFontSetting('fontUrl');
+    updateFontSetting('font');
 };
 
 const isElectron = () => {
@@ -859,18 +915,6 @@ const clearShortcut = (key) => {
     shortcuts.value[key] = '';
 };
 
-const openFontSettings = async () => {
-    const url = await window.$modal.prompt('请输入字体文件地址', selectedSettings.value.fontUrl?.value || '');
-    const family = await window.$modal.prompt('请输入字体名称', selectedSettings.value.font?.value || '');
-    selectedSettings.value.font = { displayText: family, value: family };
-    selectedSettings.value.fontUrl = { displayText: url, value: url };
-    saveSettings();
-    showRefreshHint.value.font = true;
-    if(family == ''){
-        selectedSettings.value.font = { displayText: '默认字体', value: '' };
-    }
-};
-
 const qualityCompatibilityMode = ref(false);
 const dpiScale = ref(1.0);
 
@@ -1045,6 +1089,7 @@ const installPWA = async () => {
     text-align: center;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     animation: slideIn 0.3s ease-in-out;
+    position: relative;
 }
 
 .modal-content h3 {
@@ -1086,6 +1131,20 @@ const installPWA = async () => {
 
 .modal-content button:hover {
     background-color: var(--color-primary)
+}
+
+.help-link {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    color: var(--color-primary);
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+.help-link:hover {
+    opacity: 0.85;
 }
 
 @keyframes fadeIn {

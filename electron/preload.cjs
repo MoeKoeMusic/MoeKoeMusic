@@ -29,3 +29,31 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getExtensionsDirectory: () => ipcRenderer.invoke('get-extensions-directory'),
     ensureExtensionsDirectory: () => ipcRenderer.invoke('ensure-extensions-directory'),
 });
+
+
+contextBridge.exposeInMainWorld('mprisApi', {
+  // 切换循环模式
+  switchRepeatMode: (mode) => ipcRenderer.send('switchRepeatMode', mode), // mode: 'off' | 'one' | 'on'
+  // 保存歌词到 Osdlyric
+  sendLyrics: (track, lyrics) => ipcRenderer.send('sendLyrics', {track, lyrics}),
+  // 切换随机播放
+  switchShuffle: (shuffle) => ipcRenderer.send('switchShuffle', shuffle), // shuffle: true/false
+  sendMetaData,
+  sendPlayerCurrentTrackTime,
+  onSetPosition: (callback) => {
+    ipcRenderer.on('setPosition', (_, positionUs) => {
+      callback(positionUs)
+    })
+  },
+  onNext: (callback) => ipcRenderer.on('next', callback),
+  onPrevious: (callback) => ipcRenderer.on('previous', callback),
+  onPlayM: (callback) => ipcRenderer.on('play', callback),
+  onPlayPause: (callback) => ipcRenderer.on('playpause', callback),
+  onPauseM: (callback) => ipcRenderer.on('pause', callback),
+  onRepeat: (callback) => ipcRenderer.on('repeat', callback),
+  onShuffle: (callback) => ipcRenderer.on('shuffle', callback),
+  setVolume: (volume) => ipcRenderer.send('setVolume', volume),
+  onVolumeChanged: (callback) => ipcRenderer.on('volume_changed', (_, volume) => {
+    callback(volume)
+  }),
+});

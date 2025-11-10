@@ -154,10 +154,12 @@
     "wait-on": "^8.0.1"
   },
   "dependencies": {
+    "dbus-next": "github:dcodeIO/node-dbus-next",
     "electron-is-dev": "^3.0.1",
     "electron-log": "^5.2.0",
     "electron-store": "^10.0.0",
     "electron-updater": "^6.6.2",
+    "mpris-service": "^2.1.2",
     "music-metadata": "^11.7.3",
     "pinia": "^2.2.4",
     "pinia-plugin-persistedstate": "^4.1.1",

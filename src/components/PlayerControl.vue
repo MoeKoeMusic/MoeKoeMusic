@@ -399,9 +399,10 @@ const playSong = async (song) => {
         console.log('[PlayerControl] 设置音频源:', song.url);
 
         try {
-            mediaSession.changeMediaSession(currentSong.value);
+            mediaSession.changeMediaSession(currentSong.value,audio.duration);
             // 更新SMTC位置状态
             if (audio.duration) {
+                mediaSession.changeMediaSession(currentSong.value,audio.duration);
                 mediaSession.updatePositionState(audio.currentTime, audio.duration, currentSpeed.value);
             }
             const playPromise = audio.play();
@@ -845,6 +846,7 @@ const changePlaybackSpeed = (speed) => {
     
     // 更新SMTC位置状态以反映新的播放速率
     if (audio.duration && currentSong.value?.hash) {
+        mediaSession.changeMediaSession(currentSong.value,audio.duration);
         mediaSession.updatePositionState(audio.currentTime, audio.duration, speed);
     }
 };

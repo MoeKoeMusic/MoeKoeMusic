@@ -29,3 +29,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getExtensionsDirectory: () => ipcRenderer.invoke('get-extensions-directory'),
     ensureExtensionsDirectory: () => ipcRenderer.invoke('ensure-extensions-directory'),
 });
+
+// 这里暴露获取系统类型接口
+contextBridge.exposeInMainWorld('process', {
+  platform: process.platform,
+})

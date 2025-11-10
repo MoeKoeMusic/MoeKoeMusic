@@ -57,3 +57,11 @@ contextBridge.exposeInMainWorld('mprisApi', {
     callback(volume)
   }),
 });
+
+function sendMetaData(metadata) {
+  ipcRenderer.send('metadata', metadata);
+}
+
+function sendPlayerCurrentTrackTime(t) {
+  ipcRenderer.send("playerCurrentTrackTime", t)
+}

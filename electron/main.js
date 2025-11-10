@@ -11,6 +11,7 @@ import apiService from './apiService.js';
 import Store from 'electron-store';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import {createMpris} from "./mpris.js";
 
 let mainWindow = null;
 let blockerId = null;
@@ -36,11 +37,18 @@ if (!gotTheLock) {
     });
 }
 
+// disable chromium mpris
+  app.commandLine.appendSwitch(
+    'disable-features',
+    'HardwareMediaKeyHandling,MediaSessionService'
+  );
+
 app.on('ready', () => {
     startApiServer().then(() => {
         try {
             mainWindow = createWindow();
             createTray(mainWindow);
+            createMpris(mainWindow);
             if (process.platform === "darwin" && store.get('settings')?.touchBar == 'on') createTouchBar(mainWindow);
             playStartupSound();
             registerShortcut();

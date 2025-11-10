@@ -1,3 +1,5 @@
+import {error} from "electron-log";
+
 export default function useMediaSession() {
   // 初始化媒体会话
   const initMediaSession = (handlers) => {
@@ -32,7 +34,7 @@ export default function useMediaSession() {
   };
   
   // 更新媒体会话信息
-  const changeMediaSession = (song) => {
+  const changeMediaSession = (song,time) => {
     if (!("mediaSession" in navigator) || !navigator.mediaSession) return;
 
     const defaultArtwork = './assets/images/logo.png';
@@ -48,12 +50,16 @@ export default function useMediaSession() {
     const updateMediaSession = async () => {
       try {
         const artworkSrc = await checkImageAccessibility(song.img || defaultArtwork);
-        navigator.mediaSession.metadata = new MediaMetadata({
+        console.log(time)
+        const metadata = {
           title: song.name,
           artist: song.author,
           album: song.album,
-          artwork: [{ src: artworkSrc }]
-        });
+          artwork: [{ src: artworkSrc }] || [],
+          length: Number(time) || 10
+        };
+        navigator.mediaSession.metadata = new window.MediaMetadata(metadata);
+        mprisApi.sendMetaData(metadata)
       } catch (error) {
         console.error("Failed to update media session metadata:", error);
       }
@@ -74,6 +80,7 @@ export default function useMediaSession() {
           playbackRate: playbackRate,
           position: currentTime
         });
+        mprisApi.sendPlayerCurrentTrackTime(currentTime)
       }
     } catch (error) {
       console.error("Failed to update position state:", error);

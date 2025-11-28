@@ -16,6 +16,10 @@ dist-ssr
 test
 bin/*
 
+# Kugou API Compilation Products
+api/node_modules
+api/bin
+
 # Editor directories and files
 .codebuddy/*
 .vscode/*

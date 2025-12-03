@@ -22,6 +22,7 @@
     "start": "node app.js",
     "pkgwin": "pkg . -t node14-win-x64 -C GZip -o bin/app_win --no-bytecode",
     "pkglinux": "pkg . -t node14-linux-x64 -C GZip -o bin/app_linux --no-bytecode",
+    "pkglinux-aarch64": "pkg . -t node14-linux-arm64 -C GZip -o bin/app_linux --no-bytecode",
     "pkgmacos": "pkg . -t node14-macos-x64 -C GZip -o bin/app_macos --no-bytecode",
     "pkgwin_lite": "pkg . -t node14-win-x64 --options platform=lite -C GZip -o bin/app_win --no-bytecode",
     "pkgjs": "esbuild index.js --bundle --minify --outfile=bin/api_js/app.js --platform=node && mkdir -p bin/api_js/util bin/api_js/module && esbuild util/*.js --bundle --minify --outdir=bin/api_js/util --platform=node && esbuild module/*.js --bundle --minify --outdir=bin/api_js/module --platform=node"

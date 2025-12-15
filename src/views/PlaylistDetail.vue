@@ -55,7 +55,7 @@
         <!-- 歌曲列表 -->
         <div class="track-list-container">
             <div class="track-list-header">
-                <h2 class="track-list-title"><span>{{ $t('ge-qu-lie-biao') }}</span> ( {{ tracks.length }} )</h2>
+                <h2 class="track-list-title"><span>{{ $t('ge-qu-lie-biao') }}</span> ( {{ displayTrackCount }} )</h2>
                 <div class="track-list-actions">
                     <div class="batch-action-container">
                         <button class="batch-action-btn" @click="toggleBatchSelection" :class="{ 'active': batchSelectionMode }">
@@ -249,6 +249,12 @@ const isAllSelected = computed(() => {
 // 视图模式相关状态
 const viewMode = ref('list'); // 'list' or 'grid'
 
+// 计算显示的歌曲数量
+const displayTrackCount = computed(() => {
+    // 当还有更多数据未加载时，显示 totalCount；否则显示实际加载的 tracks.length
+    return hasMore.value ? totalCount.value : tracks.value.length;
+});
+
 const props = defineProps({
     playerControl: Object
 });
@@ -317,7 +323,10 @@ const fetchArtistSongs = async () => {
         
         if (response.status === 1) {
             totalCount.value = detail.value.song_count || 0;
-            const formattedTracks = response.data.map(track => ({
+            const rawSongs = response.data || [];
+            const formattedTracks = rawSongs
+            .filter(track => !!track.hash)
+            .map(track => ({
                 hash: track.hash || '',
                 OriSongName: track.audio_name + ' - ' + track.author_name,
                 name: track.audio_name || '',
@@ -336,7 +345,7 @@ const fetchArtistSongs = async () => {
             currentPage.value++;
             
             // 判断是否还有更多数据
-            hasMore.value = formattedTracks.length >= pageSize.value && tracks.value.length < totalCount.value;
+            hasMore.value = rawSongs.length >= pageSize.value && tracks.value.length < totalCount.value;
         }
     } catch (error) {
         window.$modal.alert(t('ge-qu-shu-ju-cuo-wu'));
@@ -364,7 +373,8 @@ const fetchPlaylistTracks = async () => {
         if (response.status === 1) {
             detail.value = response.data?.list_info;
             totalCount.value = detail.value.count || 0;
-            const formattedTracks = response.data?.songs
+            const rawSongs = response.data?.songs || [];
+            const formattedTracks = rawSongs
             .filter(track => !!track.hash)
             .map(track => {
                 const nameParts = track.name.split(' - ');
@@ -382,13 +392,11 @@ const fetchPlaylistTracks = async () => {
                     originalData: track
                 };
             });
-            
+
             tracks.value = formattedTracks;
             filteredTracks.value = formattedTracks;
             currentPage.value++;
-            
-            // 判断是否还有更多数据
-            hasMore.value = formattedTracks.length >= pageSize.value && tracks.value.length < totalCount.value;
+            hasMore.value = rawSongs.length >= pageSize.value && tracks.value.length < totalCount.value;
         }
     } catch (error) {
         window.$modal.alert(t('ge-qu-shu-ju-cuo-wu'));
@@ -418,7 +426,10 @@ const loadMoreTracks = async () => {
             });
             
             if (response.status === 1 && response.data.length > 0) {
-                const formattedTracks = response.data.map(track => ({
+                const rawSongs = response.data;                
+                const formattedTracks = rawSongs
+                .filter(track => !!track.hash)
+                .map(track => ({
                     hash: track.hash || '',
                     OriSongName: track.audio_name + ' - ' + track.author_name,
                     name: track.audio_name || '',
@@ -435,7 +446,7 @@ const loadMoreTracks = async () => {
                 tracks.value = [...tracks.value, ...formattedTracks];
                 filteredTracks.value = tracks.value;
                 currentPage.value++;
-                hasMore.value = formattedTracks.length >= pageSize.value && tracks.value.length < totalCount.value;
+                hasMore.value = rawSongs.length >= pageSize.value && tracks.value.length < totalCount.value;
             } else {
                 hasMore.value = false;
             }
@@ -448,7 +459,8 @@ const loadMoreTracks = async () => {
             });
             
             if (response.status === 1 && response.data.songs?.length > 0) {
-                const formattedTracks = response.data.songs
+                const rawSongs = response.data.songs;
+                const formattedTracks = rawSongs
                 .filter(track => !!track.hash)
                 .map(track => {
                     const nameParts = track.name.split(' - ');
@@ -466,11 +478,11 @@ const loadMoreTracks = async () => {
                         originalData: track
                     };
                 });
-                
+
                 tracks.value = [...tracks.value, ...formattedTracks];
                 filteredTracks.value = tracks.value;
                 currentPage.value++;
-                hasMore.value = formattedTracks.length >= pageSize.value && tracks.value.length < totalCount.value;
+                hasMore.value = rawSongs.length >= pageSize.value && tracks.value.length < totalCount.value;
             } else {
                 hasMore.value = false;
             }
@@ -515,6 +527,9 @@ const handleScroll = (event) => {
 
 // 搜索歌曲
 const searchTracks = () => {
+    if (hasMore.value) {
+        loadAndAppendRemainingTracks();
+    }
     filteredTracks.value = tracks.value.filter(track => 
         track.name.toLowerCase().trim().includes(searchQuery.value.toLowerCase().trim()) ||
         track.author.toLowerCase().trim().includes(searchQuery.value.toLowerCase().trim())
@@ -524,6 +539,30 @@ const searchTracks = () => {
 // 播放歌曲
 const playSong = (hash, name, img, author) => {
     props.playerControl.addSongToQueue(hash, name, img, author);
+};
+
+// 加载所有剩余歌曲并追加到播放队列
+const loadAndAppendRemainingTracks = async () => {
+    const loadedHashes = new Set(filteredTracks.value);
+
+    while (hasMore.value) {
+        if (isLoadingMore.value) {
+            // 等待当前加载完成
+            await new Promise(resolve => setTimeout(resolve, 100));
+            continue;
+        }
+        await loadMoreTracks();
+        // 找出新加载的歌曲（不在之前已加载集合中的）
+        const newTracks = filteredTracks.value.filter(t => !loadedHashes.has(t));
+        if (newTracks.length > 0) {
+            // 将新歌曲追加到播放队列
+            props.playerControl.addPlaylistToQueue(newTracks, true);
+            // 更新已加载集合
+            newTracks.forEach(t => {
+                loadedHashes.add(t);
+            });
+        }
+    }
 };
 
 // 添加整个播放列表到队列
@@ -543,7 +582,14 @@ const addPlaylistToQueue = (event, append = false) => {
     setTimeout(() => {
         flyingNotes.value = flyingNotes.value.filter(n => n.id !== note.id);
     }, 1500);
+
+    // 先将当前已加载的歌曲加入播放队列并开始播放
     props.playerControl.addPlaylistToQueue(filteredTracks.value, append);
+
+    // 如果还有未加载的歌曲，后台继续加载并追加到队列
+    if (hasMore.value) {
+        loadAndAppendRemainingTracks();
+    }
 };
 
 // 切换关注状态

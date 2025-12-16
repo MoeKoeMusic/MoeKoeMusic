@@ -382,7 +382,6 @@ const fetchArtistSongs = async () => {
 
     loading.value = false;
 
-    // 初始加载后确保有3页缓冲数据
     ensureBufferData();
 };
 
@@ -436,7 +435,6 @@ const fetchPlaylistTracks = async () => {
 
     loading.value = false;
 
-    // 初始加载后确保有3页缓冲数据
     ensureBufferData();
 };
 
@@ -536,7 +534,7 @@ const loadMoreTracks = async () => {
 // 记录最后的滚动位置信息
 let lastVisibleBottomIndex = 0;
 
-// 确保始终有足够的缓冲数据（当前位置后面保持3页）
+// 确保始终有足够的缓冲数据
 const ensureBufferData = () => {
     const totalItems = filteredTracks.value.length;
     const remainingItems = totalItems - lastVisibleBottomIndex;
@@ -547,7 +545,6 @@ const ensureBufferData = () => {
     }
 };
 
-// 处理滚动事件，提前加载更多数据
 const handleScroll = (event) => {
     const { scrollTop, clientHeight } = event.target;
     const itemSize = viewMode.value === 'list' ? 50 : 70;
@@ -555,7 +552,6 @@ const handleScroll = (event) => {
     const visibleBottomIndex = Math.ceil((scrollTop + clientHeight) / itemSize);
     lastVisibleBottomIndex = visibleBottomIndex;
 
-    // 确保当前位置后面有3页缓冲数据
     ensureBufferData();
 };
 

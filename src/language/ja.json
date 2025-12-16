@@ -192,5 +192,6 @@
   "qie-huan-bo-fang-mo-shi": "再生モードを切り替えます",
   "pwa-app": "PWA アプリケーション",
   "install": "インストール",
-  "yin-pin-jia-zai-shi-bai": "音楽のロードに失敗しました"
+  "yin-pin-jia-zai-shi-bai": "音楽のロードに失敗しました",
+  "zheng-zai-jia-zai-quan-bu-ge-qu": "すべての曲を読み込んでいます..."
 }

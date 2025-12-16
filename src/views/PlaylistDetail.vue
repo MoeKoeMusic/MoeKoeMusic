@@ -111,7 +111,7 @@
             <div v-if="isSearching" class="search-loading-overlay">
                 <div class="search-loading-spinner">
                     <i class="fas fa-spinner fa-spin"></i>
-                    <span>正在加载全部歌曲...</span>
+                    <span>{{ $t('zheng-zai-jia-zai-quan-bu-ge-qu') }}</span>
                 </div>
             </div>
 
@@ -549,7 +549,7 @@ const ensureBufferData = () => {
 
 // 处理滚动事件，提前加载更多数据
 const handleScroll = (event) => {
-    const { scrollTop, scrollHeight, clientHeight } = event.target;
+    const { scrollTop, clientHeight } = event.target;
     const itemSize = viewMode.value === 'list' ? 50 : 70;
     // 计算当前可见区域底部对应的item索引
     const visibleBottomIndex = Math.ceil((scrollTop + clientHeight) / itemSize);
@@ -557,8 +557,6 @@ const handleScroll = (event) => {
 
     // 确保当前位置后面有3页缓冲数据
     ensureBufferData();
-
-    // 判断是否真正滚动到底部（用于显示加载提示）
 };
 
 // 搜索歌曲
@@ -1221,9 +1219,9 @@ const changeArtistSort = (sortType) => {
 .search-loading-overlay {
     height: 800px;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    background-color: var(--background-color);
+    padding-top: 150px;
     border-radius: 0 0 5px 5px;
 }
 
@@ -1245,23 +1243,6 @@ const changeArtistSort = (sortType) => {
     color: #999;
 }
 
-.load-more-status {
-    text-align: center;
-    padding: 15px 0;
-    color: #999;
-    font-size: 14px;
-}
-
-.loading-more {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.no-more {
-    color: #ccc;
-}
 
 .track-list::-webkit-scrollbar {
     width: 8px !important; 

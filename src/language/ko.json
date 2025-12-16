@@ -192,5 +192,6 @@
   "qie-huan-bo-fang-mo-shi": "재생 모드를 전환합니다",
   "pwa-app": "PWA 응용 프로그램",
   "install": "설치",
-  "yin-pin-jia-zai-shi-bai": "음원 로드 실패"
+  "yin-pin-jia-zai-shi-bai": "음원 로드 실패",
+  "zheng-zai-jia-zai-quan-bu-ge-qu": "모든 노래를 로드하는 중..."
 }

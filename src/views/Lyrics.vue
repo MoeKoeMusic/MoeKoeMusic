@@ -134,6 +134,13 @@ const throttle = (func, delay) => {
     }
 }
 
+// Linux 下 setIgnoreMouseEvents 的 forward 选项不可用，避免直接吃掉鼠标事件导致无法点击
+const isLinux = window?.electron?.platform === 'linux'
+const setIgnoreMouseEvents = (ignore) => {
+    if (isLinux) return
+    window.electron.ipcRenderer.send('set-ignore-mouse-events', ignore)
+}
+
 const sendWindowDrag = throttle((mouseX, mouseY) => {
     window.electron.ipcRenderer.send('window-drag', { mouseX, mouseY })
 }, 16)
@@ -166,7 +173,7 @@ const toggleLock = () => {
     localStorage.setItem('lyrics-lock', isLocked.value)
     if (isLocked.value) {
         isHovering.value = false
-        window.electron.ipcRenderer.send('set-ignore-mouse-events', true)
+        setIgnoreMouseEvents(true)
     }
 }
 
@@ -232,7 +239,7 @@ const checkMousePosition = (event) => {
             document.querySelector('.controls-overlay')?.classList.remove('show-locked-controls')
         }
         
-        window.electron.ipcRenderer.send('set-ignore-mouse-events', !(isMouseInControls))
+        setIgnoreMouseEvents(!(isMouseInControls))
         return
     }
     
@@ -263,7 +270,7 @@ const checkMousePosition = (event) => {
     }
     
     // 设置鼠标事件穿透，当在控制区域或悬停状态时不穿透
-    window.electron.ipcRenderer.send('set-ignore-mouse-events', !(isMouseInControls || isHovering.value))
+    setIgnoreMouseEvents(!(isMouseInControls || isHovering.value))
 }
 
 window.electron.ipcRenderer.on('lyrics-data', (data) => {
@@ -305,7 +312,7 @@ const changeFontSize = (delta) => {
 
 onMounted(() => {
     isLocked.value = localStorage.getItem('lyrics-lock') === 'true'
-    window.electron.ipcRenderer.send('set-ignore-mouse-events', true)
+    setIgnoreMouseEvents(true)
     
     document.addEventListener('mousemove', checkMousePosition)
     document.addEventListener('mousedown', startDrag)

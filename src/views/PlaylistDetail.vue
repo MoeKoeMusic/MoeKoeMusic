@@ -22,7 +22,7 @@
                     <button class="follow-btn" v-if="isArtist" @click="toggleFollow" :disabled="followLoading">
                         <i class="fas fa-heart"></i> {{ isFollowed ? '已关注' : '关注' }}
                     </button>
-                    <button class="fav-btn" v-if="!isArtist && detail.list_create_userid != MoeAuth.UserInfo?.userid && !route.query.listid" 
+                    <button class="fav-btn" v-if="!isArtist && detail.list_create_userid != MoeAuth.UserInfo?.userid && !route.query.listid"
                         @click="toggleFavorite(detail.list_create_gid)" :class="{ 'active': isPlaylistFavorited }">
                         <i class="fas fa-heart"></i>
                     </button>
@@ -107,13 +107,21 @@
                 </div>
             </div>
 
-            <RecycleScroller ref="recycleScrollerRef" :items="filteredTracks" :item-size="viewMode === 'list' ? 50 : 70" class="track-list" key-field="hash" @scroll="handleScroll">
+            <!-- 搜索加载动画 -->
+            <div v-if="isSearching" class="search-loading-overlay">
+                <div class="search-loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>正在加载全部歌曲...</span>
+                </div>
+            </div>
+
+            <RecycleScroller v-else ref="recycleScrollerRef" :items="filteredTracks" :item-size="viewMode === 'list' ? 50 : 70" class="track-list" key-field="hash" @scroll="handleScroll">
                 <template #default="{ item, index }">
-                    <div class="li" :key="item.hash" 
+                    <div class="li" :key="item.hash"
                         :class="{ 'cover-view': viewMode === 'grid', 'selected': selectedTracks.includes(index) }"
                         @click="batchSelectionMode ? selectTrack(index, $event) : playSong(item.hash, item.name, item.cover, item.author)"
                         @contextmenu.prevent="showContextMenu($event, item)">
-                        
+
                         <!-- 复选框或序号 -->
                         <div class="track-checkbox" v-if="batchSelectionMode">
                             <input type="checkbox" :checked="selectedTracks.includes(index)" @click.stop="selectTrack(index, $event)">
@@ -137,23 +145,13 @@
                         <div class="track-artist" :title="item.author">{{ item.author }}</div>
                         <div class="track-album" :title="item.album">{{ item.album }}</div>
                         <div class="track-timelen">
-                            <button v-if="props.playerControl?.currentSong.hash == item.hash && viewMode === 'list'" 
+                            <button v-if="props.playerControl?.currentSong.hash == item.hash && viewMode === 'list'"
                                 class="queue-play-btn fas fa-music"></button>
                             {{ $formatMilliseconds(item.timelen) }}
                         </div>
                     </div>
                 </template>
             </RecycleScroller>
-
-            <!-- 加载状态提示：只有滚动到底部且正在加载时才显示 -->
-            <div class="load-more-status" v-if="!loading">
-                <div v-if="isAtBottom && isLoadingMore" class="loading-more">
-                    <i class="fas fa-spinner fa-spin"></i> {{ $t('jia-zai-zhong') }}
-                </div>
-                <div v-else-if="!hasMore && tracks.length > 0" class="no-more">
-                    {{ $t('mei-you-geng-duo-le') }}
-                </div>
-            </div>
         </div>
 
         <!-- 歌手简介部分 -->
@@ -199,18 +197,45 @@ const detail = ref({});
 const tracks = ref([]);
 const filteredTracks = ref([]);
 const searchQuery = ref('');
-const pageSize = ref(30);
-const currentPage = ref(1);
+const basePageSize = 60; // 基础页面大小
 const hasMore = ref(true);
 const isLoadingMore = ref(false);
-const isAtBottom = ref(false);
 const totalCount = ref(0);
 const contextMenuRef = ref(null);
 const recycleScrollerRef = ref(null);
 const loading = ref(true);
+const isSearching = ref(false); // 搜索加载状态
 const isDropdownVisible = ref(false);
 const flyingNotes = ref([]);
 let noteId = 0;
+
+// 请求次数追踪，用于计算下一次的pageSize
+const requestCount = ref(0);
+
+// 计算下一次请求的pageSize
+const getPageSize = () => {
+    if (requestCount.value === 0) {
+        return basePageSize;
+    } else if (requestCount.value === 1) {
+        return basePageSize;
+    } else {
+        return Math.min(basePageSize * Math.pow(2, requestCount.value - 1), 480);
+    }
+};
+
+// 获取下一次请求的page
+const getPage = () => {
+    if (requestCount.value === 0) {
+        return 1;
+    } else if (requestCount.value <= 4) {
+        // pageSize 还在递增阶段 (60, 60, 120, 240, 480)，page 固定为 2
+        return 2;
+    } else {
+        // pageSize 达到最大值 480 后，通过递增 page 继续加载
+        // requestCount=5 时 page=3, requestCount=6 时 page=4, ...
+        return requestCount.value - 2;
+    }
+};
 
 // 歌手特有状态
 const isFollowed = ref(true);
@@ -310,17 +335,20 @@ const getArtistInfo = async () => {
 
 // 获取歌手歌曲
 const fetchArtistSongs = async () => {
-    currentPage.value = 1;
+    requestCount.value = 0;
     hasMore.value = true;
-    
+
     try {
+        const curPage = getPage();
+        const curPageSize = getPageSize();
+
         const response = await get('/artist/audios', {
             id: route.query.singerid,
             sort: artistSortType.value,
-            page: currentPage.value,
-            pagesize: pageSize.value
+            page: curPage,
+            pagesize: curPageSize
         });
-        
+
         if (response.status === 1) {
             totalCount.value = detail.value.song_count || 0;
             const rawSongs = response.data || [];
@@ -339,37 +367,40 @@ const fetchArtistSongs = async () => {
                 privilege: track.privilege || 0,
                 originalData: track
             }));
-            
+
             tracks.value = formattedTracks;
             filteredTracks.value = formattedTracks;
-            currentPage.value++;
-            
+            requestCount.value++; // 增加请求计数
+
             // 判断是否还有更多数据
-            hasMore.value = rawSongs.length >= pageSize.value && tracks.value.length < totalCount.value;
+            hasMore.value = rawSongs.length >= curPageSize && tracks.value.length < totalCount.value;
         }
     } catch (error) {
         window.$modal.alert(t('ge-qu-shu-ju-cuo-wu'));
         return;
     }
-    
+
     loading.value = false;
-    
+
     // 初始加载后确保有3页缓冲数据
     ensureBufferData();
 };
 
 // 获取歌单歌曲
 const fetchPlaylistTracks = async () => {
-    currentPage.value = 1;
+    requestCount.value = 0; // 重置请求计数
     hasMore.value = true;
-    
+
     try {
+        const curPage = getPage();
+        const curPageSize = getPageSize();
+
         const response = await get('/playlist/track/all', {
             id: route.query.global_collection_id,
-            page: currentPage.value,
-            pagesize: pageSize.value
+            page: curPage,
+            pagesize: curPageSize
         });
-        
+
         if (response.status === 1) {
             detail.value = response.data?.list_info;
             totalCount.value = detail.value.count || 0;
@@ -395,16 +426,16 @@ const fetchPlaylistTracks = async () => {
 
             tracks.value = formattedTracks;
             filteredTracks.value = formattedTracks;
-            currentPage.value++;
-            hasMore.value = rawSongs.length >= pageSize.value && tracks.value.length < totalCount.value;
+            requestCount.value++; // 增加请求计数
+            hasMore.value = rawSongs.length >= curPageSize && tracks.value.length < totalCount.value;
         }
     } catch (error) {
         window.$modal.alert(t('ge-qu-shu-ju-cuo-wu'));
         return;
     }
-    
+
     loading.value = false;
-    
+
     // 初始加载后确保有3页缓冲数据
     ensureBufferData();
 };
@@ -412,21 +443,24 @@ const fetchPlaylistTracks = async () => {
 // 加载更多歌曲
 const loadMoreTracks = async () => {
     if (isLoadingMore.value || !hasMore.value) return;
-    
+
     isLoadingMore.value = true;
-    
+
     try {
         if (isArtist.value) {
             // 加载更多歌手歌曲
+            const curPage = getPage();
+            const curPageSize = getPageSize();
+
             const response = await get('/artist/audios', {
                 id: route.query.singerid,
                 sort: artistSortType.value,
-                page: currentPage.value,
-                pagesize: pageSize.value
+                page: curPage,
+                pagesize: curPageSize
             });
-            
+
             if (response.status === 1 && response.data.length > 0) {
-                const rawSongs = response.data;                
+                const rawSongs = response.data;
                 const formattedTracks = rawSongs
                 .filter(track => !!track.hash)
                 .map(track => ({
@@ -442,22 +476,25 @@ const loadMoreTracks = async () => {
                     privilege: track.privilege || 0,
                     originalData: track
                 }));
-                
+
                 tracks.value = [...tracks.value, ...formattedTracks];
                 filteredTracks.value = tracks.value;
-                currentPage.value++;
-                hasMore.value = rawSongs.length >= pageSize.value && tracks.value.length < totalCount.value;
+                requestCount.value++; // 增加请求计数
+                hasMore.value = rawSongs.length >= curPageSize && tracks.value.length < totalCount.value;
             } else {
                 hasMore.value = false;
             }
         } else {
             // 加载更多歌单歌曲
+            const curPage = getPage();
+            const curPageSize = getPageSize();
+
             const response = await get('/playlist/track/all', {
                 id: route.query.global_collection_id,
-                page: currentPage.value,
-                pagesize: pageSize.value
+                page: curPage,
+                pagesize: curPageSize
             });
-            
+
             if (response.status === 1 && response.data.songs?.length > 0) {
                 const rawSongs = response.data.songs;
                 const formattedTracks = rawSongs
@@ -481,8 +518,8 @@ const loadMoreTracks = async () => {
 
                 tracks.value = [...tracks.value, ...formattedTracks];
                 filteredTracks.value = tracks.value;
-                currentPage.value++;
-                hasMore.value = rawSongs.length >= pageSize.value && tracks.value.length < totalCount.value;
+                requestCount.value++; // 增加请求计数
+                hasMore.value = rawSongs.length >= curPageSize && tracks.value.length < totalCount.value;
             } else {
                 hasMore.value = false;
             }
@@ -503,7 +540,7 @@ let lastVisibleBottomIndex = 0;
 const ensureBufferData = () => {
     const totalItems = filteredTracks.value.length;
     const remainingItems = totalItems - lastVisibleBottomIndex;
-    const bufferSize = pageSize.value * 3;
+    const bufferSize = 90;
 
     if (remainingItems < bufferSize && hasMore.value && !isLoadingMore.value) {
         loadMoreTracks();
@@ -522,15 +559,19 @@ const handleScroll = (event) => {
     ensureBufferData();
 
     // 判断是否真正滚动到底部（用于显示加载提示）
-    isAtBottom.value = scrollHeight - scrollTop - clientHeight < 50;
 };
 
 // 搜索歌曲
-const searchTracks = () => {
+const searchTracks = async () => {
     if (hasMore.value) {
-        loadAndAppendRemainingTracks();
+        isSearching.value = true;
+        try {
+            await loadAndAppendRemainingTracks();
+        } finally {
+            isSearching.value = false;
+        }
     }
-    filteredTracks.value = tracks.value.filter(track => 
+    filteredTracks.value = tracks.value.filter(track =>
         track.name.toLowerCase().trim().includes(searchQuery.value.toLowerCase().trim()) ||
         track.author.toLowerCase().trim().includes(searchQuery.value.toLowerCase().trim())
     );
@@ -1174,6 +1215,34 @@ const changeArtistSort = (sortType) => {
     scrollbar-width: thin;
     scrollbar-color: transparent transparent;
     overflow: auto;
+}
+
+/* 搜索加载动画 */
+.search-loading-overlay {
+    height: 800px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--background-color);
+    border-radius: 0 0 5px 5px;
+}
+
+.search-loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    color: var(--text-color);
+}
+
+.search-loading-spinner i {
+    font-size: 48px;
+    color: var(--primary-color);
+}
+
+.search-loading-spinner span {
+    font-size: 16px;
+    color: #999;
 }
 
 .load-more-status {

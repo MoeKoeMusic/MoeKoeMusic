@@ -1016,6 +1016,7 @@ onUnmounted(() => {
 
 // 对外暴露接口
 defineExpose({
+    playing,
     addSongToQueue: async (hash, name, img, author) => {
         clearAutoSwitchTimer();
 

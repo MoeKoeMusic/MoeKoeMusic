@@ -127,7 +127,12 @@
                         <div class="track-checkbox" v-if="batchSelectionMode">
                             <input type="checkbox" :checked="selectedTracks.includes(index)" @click.stop="selectTrack(index, $event)">
                         </div>
-                        <div class="track-number" v-else>{{ index + 1 }}</div>
+                        <div class="track-number" v-else :class="{ 'current': isCurrentSong(item.hash) }">
+                            <div v-if="isCurrentPlaying(item.hash)" class="sound-wave">
+                                <span></span><span></span><span></span>
+                            </div>
+                            <span v-else>{{ index + 1 }}</span>
+                        </div>
 
                         <!-- 网格模式封面 -->
                         <div class="track-cover" v-if="viewMode === 'grid'">
@@ -139,7 +144,7 @@
 
                         <!-- 歌曲信息 -->
                         <div class="track-title-container">
-                            <div class="track-title" :title="item.name">{{ item.name }}
+                            <div class="track-title" :title="item.name" :class="{ 'current': isCurrentSong(item.hash) }">{{ item.name }}
                                 <span v-if="item.privilege == 10" class="icon vip-icon">VIP</span>
                                 <span v-if="item.isHQ" class="icon sq-icon">HQ</span>
                                 <span v-else-if="item.isSQ" class="icon sq-icon">SQ</span>
@@ -1078,6 +1083,16 @@ const changeArtistSort = (sortType) => {
         fetchArtistSongs();
     }
 };
+
+// 判断是否为当前歌曲（不管是否正在播放）
+const isCurrentSong = (hash) => {
+    return props.playerControl?.currentSong?.hash === hash;
+};
+
+// 判断是否为当前正在播放的歌曲
+const isCurrentPlaying = (hash) => {
+    return isCurrentSong(hash) && props.playerControl?.playing;
+};
 </script>
 
 <style scoped>
@@ -1435,6 +1450,56 @@ const changeArtistSort = (sortType) => {
     font-weight: bold;
     margin-right: 10px;
     width: 30px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    height: 20px;
+}
+
+.track-number.current {
+    color: var(--primary-color);
+}
+
+.track-title.current {
+    color: var(--primary-color);
+}
+
+/* 声波动画 */
+.sound-wave {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 16px;
+}
+
+.sound-wave span {
+    width: 3px;
+    background-color: var(--primary-color);
+    animation: wave 0.8s ease-in-out infinite;
+}
+
+.sound-wave span:nth-child(1) {
+    height: 6px;
+    animation-delay: 0s;
+}
+
+.sound-wave span:nth-child(2) {
+    height: 12px;
+    animation-delay: 0.2s;
+}
+
+.sound-wave span:nth-child(3) {
+    height: 8px;
+    animation-delay: 0.4s;
+}
+
+@keyframes wave {
+    0%, 100% {
+        transform: scaleY(0.5);
+    }
+    50% {
+        transform: scaleY(1);
+    }
 }
 
 .track-title-container {

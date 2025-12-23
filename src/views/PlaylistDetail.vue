@@ -499,7 +499,8 @@ const fetchPlaylistTracks = async () => {
         const response = await get('/playlist/track/all', {
             id: route.query.global_collection_id,
             page: curPage,
-            pagesize: curPageSize
+            pagesize: curPageSize,
+            _t: Date.now()
         });
 
         if (response.status === 1) {
@@ -640,7 +641,8 @@ const loadMoreTracks = async () => {
             const response = await get('/playlist/track/all', {
                 id: route.query.global_collection_id,
                 page: curPage,
-                pagesize: curPageSize
+                pagesize: curPageSize,
+                _t: Date.now()
             });
 
             if (response.status === 1 && response.data.songs?.length > 0) {

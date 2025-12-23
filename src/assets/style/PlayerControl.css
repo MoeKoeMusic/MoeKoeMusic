@@ -56,12 +56,12 @@
     transition: opacity .3s ease-in;
 }
 
-.line.click:hover {
+.line:hover {
     cursor: pointer;
     background-color: #e3e3e33b;
 }
 
-.line.click:hover::after {
+.line:hover::after {
     opacity: 1;
 }
 

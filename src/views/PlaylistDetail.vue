@@ -225,26 +225,21 @@ const requestCount = ref(0);
 
 // 计算下一次请求的pageSize
 const getPageSize = () => {
-    if (requestCount.value === 0) {
-        return basePageSize;
-    } else if (requestCount.value === 1) {
+    if (requestCount.value < 2) {
         return basePageSize;
     } else {
-        return Math.min(basePageSize * Math.pow(2, requestCount.value - 1), 480);
+        return Math.min(basePageSize * Math.pow(2, requestCount.value - 1), 240);
     }
 };
 
-// 获取下一次请求的page
+// 获取下一次请求的page 60 60 120 240 240
 const getPage = () => {
     if (requestCount.value === 0) {
         return 1;
-    } else if (requestCount.value <= 4) {
-        // pageSize 还在递增阶段 (60, 60, 120, 240, 480)，page 固定为 2
+    } else if (requestCount.value <= 3) {
         return 2;
     } else {
-        // pageSize 达到最大值 480 后，通过递增 page 继续加载
-        // requestCount=5 时 page=3, requestCount=6 时 page=4, ...
-        return requestCount.value - 2;
+        return requestCount.value - 1;
     }
 };
 
@@ -677,7 +672,6 @@ const loadMoreTracks = async () => {
         console.error('加载更多歌曲失败:', error);
     } finally {
         isLoadingMore.value = false;
-        // 加载完成后继续检查是否需要加载更多以保持3页缓冲
         ensureBufferData();
     }
 };

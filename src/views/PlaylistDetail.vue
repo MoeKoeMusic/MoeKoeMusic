@@ -230,7 +230,7 @@ const getPageSize = () => {
     } else if (requestCount.value === 1) {
         return basePageSize;
     } else {
-        return Math.min(basePageSize * Math.pow(2, requestCount.value - 1), 480);
+        return Math.min(basePageSize * Math.pow(2, requestCount.value - 1), 240);
     }
 };
 
@@ -238,11 +238,11 @@ const getPageSize = () => {
 const getPage = () => {
     if (requestCount.value === 0) {
         return 1;
-    } else if (requestCount.value <= 4) {
-        // pageSize 还在递增阶段 (60, 60, 120, 240, 480)，page 固定为 2
+    } else if (requestCount.value <= 3) {
+        // pageSize 还在递增阶段 (60, 60, 120, 240, 240,240)，page 固定为 2
         return 2;
     } else {
-        // pageSize 达到最大值 480 后，通过递增 page 继续加载
+        // pageSize 达到最大值 240 后，通过递增 page 继续加载
         // requestCount=5 时 page=3, requestCount=6 时 page=4, ...
         return requestCount.value - 2;
     }

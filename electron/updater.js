@@ -5,15 +5,15 @@ import Store from 'electron-store';
 import { t } from './i18n.js';
 
 const store = new Store();
-autoUpdater.autoDownload = false;
-autoUpdater.autoInstallOnAppQuit = false;
-
+autoUpdater.autoDownload = false; // 自动下载更新
+autoUpdater.autoInstallOnAppQuit = false; // 自动安装更新
+// 开发环境模拟打包状态
 Object.defineProperty(app, 'isPackaged', {
     get() {
         return true;
     }
 });
-
+// 设置更新服务器地址
 export function setupAutoUpdater(mainWindow) {
     autoUpdater.setFeedURL({
         provider: 'github',
@@ -23,7 +23,7 @@ export function setupAutoUpdater(mainWindow) {
     });
 
     autoUpdater.channel = 'latest';
-
+    // 检查更新错误
     autoUpdater.on('error', (error) => {
         console.error('Update check failed:', error.message);
         dialog.showMessageBox({
@@ -33,7 +33,7 @@ export function setupAutoUpdater(mainWindow) {
             : t('update-failed')
         });
     });
-
+    // 检查到新版本
     autoUpdater.on('update-available', (info) => {
         const notes = info.releaseNotes?.replace(/<[^>]*>/g, '') || t('no-release-notes');
         const msg = t('new-version-msg').replace('{version}', info.version).replace('{notes}', notes);
@@ -49,7 +49,7 @@ export function setupAutoUpdater(mainWindow) {
             }
         });
     });
-
+    // 当前已是最新版本
     autoUpdater.on('update-not-available', () => {
         const settings = store.get('settings') || {};
         if (!settings.silentCheck) {
@@ -61,12 +61,12 @@ export function setupAutoUpdater(mainWindow) {
             });
         }
     });
-
+    // 更新下载进度
     autoUpdater.on('download-progress', (progressObj) => {
         mainWindow.setProgressBar(progressObj.percent / 100);
         mainWindow.webContents.send('update-progress', progressObj);
     });
-
+    // 更新下载完成
     autoUpdater.on('update-downloaded', () => {
         mainWindow.setProgressBar(-1);
         dialog.showMessageBox({
@@ -82,7 +82,7 @@ export function setupAutoUpdater(mainWindow) {
         });
     });
 }
-
+// 检查更新
 export function checkForUpdates(silent = false) {
     if (process.platform !== 'win32') {
         if (!silent) {

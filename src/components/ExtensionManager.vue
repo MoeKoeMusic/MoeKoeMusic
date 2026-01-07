@@ -84,7 +84,7 @@ const extensions = ref([])
 const extensionsLoading = ref(false)
 const fileInput = ref(null)
 
-// Refresh plugins
+// 刷新插件 Refresh plugins
 const refreshExtensions = async () => {
     extensionsLoading.value = true
     try {
@@ -101,7 +101,7 @@ const refreshExtensions = async () => {
     }
 }
 
-// Open plugins directory
+// 打开插件目录 Open plugins directory
 const openExtensionsDir = async () => {
     try {
         const result = await window.electronAPI?.openExtensionsDir()
@@ -114,7 +114,7 @@ const openExtensionsDir = async () => {
     }
 }
 
-// Open plugin popup
+// 打开插件弹窗 Open plugin popup
 const openExtensionPopup = async (extensionId, extensionName) => {
     try {
         const result = await window.electronAPI.openExtensionPopup(extensionId, extensionName)
@@ -127,7 +127,7 @@ const openExtensionPopup = async (extensionId, extensionName) => {
     }
 }
 
-// Uninstall plugin
+// 卸载插件 Uninstall plugin
 const uninstallExtension = async (extensionId, extensionName) => {
     try {
         if (confirm(t('que-ren-xie-zai-cha-jian').replace('{name}', extensionName))) {
@@ -143,7 +143,7 @@ const uninstallExtension = async (extensionId, extensionName) => {
     }
 }
 
-// Handle icon loading error
+// 处理图标加载错误 Handle icon loading error
 const handleIconError = (event) => {
     event.target.style.display = 'none'
     const iconContainer = event.target.parentElement
@@ -157,7 +157,7 @@ const handleIconError = (event) => {
     }
 }
 
-// Trigger file selection for plugin installation
+// 触发文件选择 Trigger file selection for plugin installation
 const installPlugin = async () => {
     try {
         const result = await window.electronAPI?.showOpenDialog({
@@ -175,7 +175,7 @@ const installPlugin = async () => {
     }
 };
 
-// Handle plugin installation
+// 处理插件安装 Handle plugin installation
 const handlePluginInstall = async (filePath) => {
     try {
         extensionsLoading.value = true;

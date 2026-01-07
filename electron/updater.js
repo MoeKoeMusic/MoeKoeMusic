@@ -2,17 +2,18 @@ import { app, dialog } from 'electron';
 import electronUpdater from 'electron-updater';
 const { autoUpdater } = electronUpdater;
 import Store from 'electron-store';
+import { t } from './i18n.js';
 
 const store = new Store();
-autoUpdater.autoDownload = false; // 自动下载更新
-autoUpdater.autoInstallOnAppQuit = false; // 自动安装更新
-// 开发环境模拟打包状态
+autoUpdater.autoDownload = false;
+autoUpdater.autoInstallOnAppQuit = false;
+
 Object.defineProperty(app, 'isPackaged', {
     get() {
         return true;
     }
 });
-// 设置更新服务器地址
+
 export function setupAutoUpdater(mainWindow) {
     autoUpdater.setFeedURL({
         provider: 'github',
@@ -20,27 +21,27 @@ export function setupAutoUpdater(mainWindow) {
         repo: 'MoeKoeMusic',
         releaseType: 'release'
     });
-    
+
     autoUpdater.channel = 'latest';
-    
-    // 检查更新错误
+
     autoUpdater.on('error', (error) => {
-        console.error('更新检查失败:', error.message);
+        console.error('Update check failed:', error.message);
         dialog.showMessageBox({
         type: 'error',
-        message: error.message.includes('ETIMEDOUT') 
-            ? '更新服务器连接超时，请检查网络' 
-            : '更新检查失败，请重试'
+        message: error.message.includes('ETIMEDOUT')
+            ? t('update-timeout')
+            : t('update-failed')
         });
     });
 
-    // 检查到新版本
     autoUpdater.on('update-available', (info) => {
+        const notes = info.releaseNotes?.replace(/<[^>]*>/g, '') || t('no-release-notes');
+        const msg = t('new-version-msg').replace('{version}', info.version).replace('{notes}', notes);
         dialog.showMessageBox({
             type: 'info',
-            title: '发现新版本',
-            message: `发现新版本 ${info.version}\n\n${info.releaseNotes?.replace(/<[^>]*>/g, '') || '暂无更新说明'}`,
-            buttons: ['立即更新', '稍后提醒'],
+            title: t('new-version'),
+            message: msg,
+            buttons: [t('update-now'), t('later')],
             cancelId: 1
         }).then(result => {
             if (result.response === 0) {
@@ -49,33 +50,30 @@ export function setupAutoUpdater(mainWindow) {
         });
     });
 
-    // 当前已是最新版本
     autoUpdater.on('update-not-available', () => {
         const settings = store.get('settings') || {};
         if (!settings.silentCheck) {
             dialog.showMessageBox({
                 type: 'info',
-                title: '更新提示',
-                message: '当前已是最新版本',
-                buttons: ['确定']
+                title: t('update-hint'),
+                message: t('already-latest'),
+                buttons: [t('ok')]
             });
         }
     });
 
-    // 更新下载进度
     autoUpdater.on('download-progress', (progressObj) => {
         mainWindow.setProgressBar(progressObj.percent / 100);
         mainWindow.webContents.send('update-progress', progressObj);
     });
 
-    // 更新下载完成
     autoUpdater.on('update-downloaded', () => {
         mainWindow.setProgressBar(-1);
         dialog.showMessageBox({
             type: 'info',
-            title: '更新就绪',
-            message: '新版本已下载完成，立即安装？',
-            buttons: ['现在安装', '稍后安装'],
+            title: t('update-ready'),
+            message: t('update-ready-msg'),
+            buttons: [t('install-now'), t('install-later')],
             cancelId: 1
         }).then(result => {
             if (result.response === 0) {
@@ -85,15 +83,14 @@ export function setupAutoUpdater(mainWindow) {
     });
 }
 
-// 检查更新
 export function checkForUpdates(silent = false) {
     if (process.platform !== 'win32') {
         if (!silent) {
             dialog.showMessageBox({
                 type: 'info',
-                title: '更新提示',
-                message: '非 Windows 平台暂不支持在线更新，请前往官网或应用市场下载最新版本。',
-                buttons: ['确定']
+                title: t('update-hint'),
+                message: t('non-windows-update'),
+                buttons: [t('ok')]
             });
         }
         return;
@@ -109,6 +106,6 @@ export function checkForUpdates(silent = false) {
     }
 
     autoUpdater.checkForUpdates().catch(error => {
-        console.error('检查更新出错:', error);
+        console.error('Update check error:', error);
     });
 }

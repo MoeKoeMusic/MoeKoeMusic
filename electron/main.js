@@ -11,6 +11,7 @@ import apiService from './apiService.js';
 import Store from 'electron-store';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { t } from './i18n.js';
 
 let mainWindow = null;
 let blockerId = null;
@@ -55,9 +56,9 @@ app.on('ready', () => {
             createTray(null);
             dialog.showMessageBox({
                 type: 'error',
-                title: '错误',
-                message: '初始化应用时发生错误。',
-                buttons: ['确定']
+                title: t('error'),
+                message: t('init-error'),
+                buttons: [t('ok')]
             }).then(result => {
                 if (result.response === 0) {
                     app.isQuitting = true;
@@ -70,9 +71,9 @@ app.on('ready', () => {
         createTray(null);
         dialog.showMessageBox({
             type: 'error',
-            title: '错误',
-            message: 'API 服务启动失败，请检查！',
-            buttons: ['确定']
+            title: t('error'),
+            message: t('api-error'),
+            buttons: [t('ok')]
         }).then(result => {
             if (result.response === 0) {
                 app.isQuitting = true;
@@ -244,8 +245,8 @@ ipcMain.on('desktop-lyrics-action', (event, action) => {
             if (lyricsWindow) {
                 lyricsWindow.close();
                 new Notification({
-                    title: '桌面歌词已关闭',
-                    body: '仅本次生效',
+                    title: t('desktop-lyrics-closed'),
+                    body: t('this-time-only'),
                     icon: path.join(__dirname, '../build/icons/logo.png')
                 }).show();
                 mainWindow.lyricsWindow = null;
@@ -285,6 +286,6 @@ ipcMain.on('open-url', (event, url) => {
 })
 
 ipcMain.on('set-tray-title', (event, title) => {
-    createTray(mainWindow, '正在播放：' + title);
+    createTray(mainWindow, t('now-playing') + title);
     mainWindow.setTitle(title);
 })

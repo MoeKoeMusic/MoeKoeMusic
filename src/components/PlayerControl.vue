@@ -21,21 +21,21 @@
                 <div class="artist">{{ currentSong?.author || "MoeJue" }}</div>
             </div>
             <div class="controls">
-                <button class="control-btn" @click="playSongFromQueue('previous')">
+                <button class="control-btn" :title="t('shang-yi-shou')" @click="playSongFromQueue('previous')">
                     <i class="fas fa-step-backward"></i>
                 </button>
-                <button class="control-btn" @click="togglePlayPause">
+                <button class="control-btn" :title="t('zan-ting-bo-fang')" @click="togglePlayPause">
                     <i :class="playing ? 'fas fa-pause' : 'fas fa-play'"></i>
                 </button>
-                <button class="control-btn" @click="playSongFromQueue('next')">
+                <button class="control-btn" :title="t('xia-yi-shou')" @click="playSongFromQueue('next')">
                     <i class="fas fa-step-forward"></i>
                 </button>
             </div>
             <div class="extra-controls">
-                <button class="extra-btn" title="桌面歌词" v-if="isElectron()" @click="desktopLyrics"><i
+                <button class="extra-btn" :title="t('zhuo-mian-ge-ci')" v-if="isElectron()" @click="desktopLyrics"><i
                         class="fas">词</i></button>
                 <div class="playback-speed">
-                    <button class="extra-btn" @click="toggleSpeedMenu" title="播放速度">
+                    <button class="extra-btn" @click="toggleSpeedMenu" :title="t('bo-fang-su-du')">
                         <i class="fas fa-tachometer-alt"></i>
                     </button>
                     <div v-if="showSpeedMenu" class="speed-menu">
@@ -45,11 +45,11 @@
                         </div>
                     </div>
                 </div>
-                <button class="extra-btn" title="我喜欢" @click="playlistSelect.toLike()"><i
+                <button class="extra-btn" :title="t('wo-xi-huan')" @click="playlistSelect.toLike()"><i
                         class="fas fa-heart"></i></button>
-                <button class="extra-btn" title="收藏至" @click="playlistSelect.fetchPlaylists()"><i
+                <button class="extra-btn" :title="t('shou-cang-zhi')" @click="playlistSelect.fetchPlaylists()"><i
                         class="fas fa-add"></i></button>
-                <button class="extra-btn" title="分享歌曲" @click="share(currentSong.name, currentSong.hash)"><i
+                <button class="extra-btn" :title="t('fen-xiang-ge-qu')" @click="share(currentSong.name, currentSong.hash)"><i
                         class="fas fa-share"></i></button>
                 <button class="extra-btn" @click="togglePlaybackMode">
                     <i v-if="currentPlaybackModeIndex != '2'" :class="currentPlaybackMode.icon"
@@ -59,7 +59,7 @@
                         <sup>1</sup>
                     </span>
                 </button>
-                <button class="extra-btn" @click="queueList.openQueue()"><i class="fas fa-list"></i></button>
+                <button class="extra-btn" :title="t('bo-fang-lie-biao')" @click="queueList.openQueue()"><i class="fas fa-list"></i></button>
                 <!-- 音量控制 -->
                 <div class="volume-control" @wheel="handleVolumeScroll">
                     <i :class="isMuted ? 'fas fa-volume-mute' : 'fas fa-volume-up'" @click="toggleMute"></i>
@@ -84,7 +84,7 @@
                 <div class="close-btn">
                     <i class="fas fa-chevron-down" @click="toggleLyrics(currentSong.hash, currentTime)"></i>
                 </div>
-                <div class="lyrics-mode-btn" v-if="hasMultiLyricsMode" @click="switchLyricsMode" :title="lyricsMode === 'translation' ? '切换到音译' : '切换到翻译'">
+                <div class="lyrics-mode-btn" v-if="hasMultiLyricsMode" @click="switchLyricsMode" :title="lyricsMode === 'translation' ? t('qie-huan-dao-yin-yi') : t('qie-huan-dao-fan-yi')">
                     <i class="fas fa-language"></i>
                 </div>
 
@@ -128,19 +128,19 @@
                     </div>
 
                     <div class="player-controls">
-                        <button class="control-btn like-btn" title="我喜欢" @click="playlistSelect.toLike()">
+                        <button class="control-btn like-btn" :title="t('wo-xi-huan')" @click="playlistSelect.toLike()">
                             <i class="fas fa-heart"></i>
                         </button>
-                        <button class="control-btn" @click="playSongFromQueue('previous')">
+                        <button class="control-btn" :title="t('shang-yi-shou')" @click="playSongFromQueue('previous')">
                             <i class="fas fa-step-backward"></i>
                         </button>
-                        <button class="control-btn" @click="togglePlayPause">
+                        <button class="control-btn" :title="t('zan-ting-bo-fang')" @click="togglePlayPause">
                             <i :class="playing ? 'fas fa-pause' : 'fas fa-play'"></i>
                         </button>
-                        <button class="control-btn" @click="playSongFromQueue('next')">
+                        <button class="control-btn" :title="t('xia-yi-shou')" @click="playSongFromQueue('next')">
                             <i class="fas fa-step-forward"></i>
                         </button>
-                        <button class="control-btn" @click="togglePlaybackMode">
+                        <button class="control-btn" :title="t('qie-huan-bo-fang-mo-shi')" @click="togglePlaybackMode">
                             <i v-if="currentPlaybackModeIndex != '2'" :class="currentPlaybackMode.icon" :title="currentPlaybackMode.title"></i>
                             <span v-else class="loop-icon" :title="currentPlaybackMode.title">
                                 <i class="fas fa-repeat"></i>

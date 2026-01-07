@@ -15,7 +15,7 @@
                  class="setting-section" 
                  v-show="activeTab === sectionIndex">
                 <h3>{{ section.title }}</h3>
-                <ExtensionManager v-if="section.title === '插件'" />
+                <ExtensionManager v-if="section.title === t('cha-jian')" />
                 <div v-else class="settings-cards">
                     <div v-for="(item, itemIndex) in section.items" :key="itemIndex"
                         class="setting-card" @click="item.action ? item.action(item.helpLink) : openSelection(item.key, item.helpLink)">
@@ -37,7 +37,7 @@
             <div class="reset-settings-container">
                 <button @click="openResetConfirmation" class="reset-settings-button">
                     <i class="fas fa-sync-alt"></i>
-                    恢复出厂设置
+                    {{ $t('hui-fu-chu-chang-she-zhi') }}
                 </button>
             </div>
             <div class="version-info">
@@ -52,8 +52,8 @@
                     v-if="currentHelpLink"
                     class="help-link"
                     @click="openHelpLink"
-                    title="帮助"
-                    aria-label="帮助"
+                    :title="$t('bang-zhu')"
+                    :aria-label="$t('bang-zhu')"
                 >
                     <i class="fas fa-question-circle"></i>
                 </a>
@@ -66,25 +66,25 @@
 
                 <div v-if="selectionType === 'font'" class="api-settings-container" @focusout="handleFontFocusOut">
                     <div class="api-setting-item">
-                        <label>字体URL地址</label>
-                        <input type="text" v-model="fontUrlInput" class="api-input" placeholder="请输入字体URL地址" />
+                        <label>{{ $t('zi-ti-url-di-zhi') }}</label>
+                        <input type="text" v-model="fontUrlInput" class="api-input" :placeholder="$t('qing-shu-ru-zi-ti-url-di-zhi')" />
                     </div>
                     <div class="api-setting-item">
-                        <label>字体名称</label>
-                        <input type="text" v-model="fontFamilyInput" class="api-input" placeholder="请输入字体名称" />
+                        <label>{{ $t('zi-ti-ming-cheng') }}</label>
+                        <input type="text" v-model="fontFamilyInput" class="api-input" :placeholder="$t('qing-shu-ru-zi-ti-ming-cheng')" />
                     </div>
                 </div>
 
                 <div v-if="selectionType === 'quality'" class="compatibility-option">
                     <label>
                         <input type="checkbox" v-model="qualityCompatibilityMode" />
-                        兼容模式(mp3格式)
-                        <div class="compatibility-hint">如果高音质播放失败，请开启此选项</div>
+                        {{ $t('jian-rong-mo-shi-mp3') }}
+                        <div class="compatibility-hint">{{ $t('gao-yin-zhi-shi-bai-ti-shi') }}</div>
                     </label>
                 </div>
 
                 <div v-if="selectionType === 'highDpi'" class="scale-slider-container">
-                    <div class="scale-slider-label">缩放因子: {{ dpiScale }} <span class="scale-slider-hint">调整后需要重启应用生效</span></div>
+                    <div class="scale-slider-label">{{ $t('suo-fang-yin-zi') }}: {{ dpiScale }} <span class="scale-slider-hint">{{ $t('tiao-zheng-hou-xu-zhong-qi') }}</span></div>
                     <div class="scale-slider-wrapper">
                         <input
                             type="range"
@@ -105,43 +105,43 @@
 
                 <div v-if="selectionType === 'apiMode' && selectedSettings.apiMode.value === 'on'" class="api-settings-container">
                     <div class="api-setting-item">
-                        <label>API 地址</label>
+                        <label>{{ $t('api-di-zhi') }}</label>
                         <input type="text" value="http://127.0.0.1:6521" readonly class="api-input" />
                     </div>
                     <div class="api-setting-item">
-                        <label>WebSocket 地址</label>
+                        <label>{{ $t('websocket-di-zhi') }}</label>
                         <input type="text" value="ws://127.0.0.1:6520" readonly class="api-input" />
                     </div>
                     <div class="api-hint">
-                        这些是默认的 API 地址，当前版本不支持自定义修改
+                        {{ $t('mo-ren-api-ti-shi') }}
                     </div>
                 </div>
                 <div v-if="selectionType === 'proxy' && selectedSettings.proxy.value === 'on'" class="proxy-settings-container">
                     <div class="api-setting-item">
-                        <input 
-                            type="text" 
-                            v-model="proxyForm.url" 
-                            class="api-input" 
-                            placeholder="请输入http或https代理地址，如: http://127.0.0.1:7890" 
+                        <input
+                            type="text"
+                            v-model="proxyForm.url"
+                            class="api-input"
+                            :placeholder="$t('dai-li-placeholder')"
                         />
                     </div>
                     <div class="proxy-actions">
-                        <button 
-                            @click="testProxyConnection" 
+                        <button
+                            @click="testProxyConnection"
                             :disabled="proxyForm.testing"
                             class="test-button"
                         >
-                            {{ proxyForm.testing ? '正在测试...' : '测试连接' }}
+                            {{ proxyForm.testing ? $t('zheng-zai-ce-shi') : $t('ce-shi-lian-jie') }}
                         </button>
                         <button class="primary" @click="saveProxy">
-                            保存设置
+                            {{ $t('bao-cun-she-zhi-an-niu') }}
                         </button>
                     </div>
                     <div v-if="proxyForm.testResult" :class="['proxy-test-result', proxyForm.testStatus]">
                         {{ proxyForm.testResult }}
                     </div>
                 </div>
-                <button @click="closeSelection">{{ $t('guan-bi') }}</button>
+                <button @click="closeSelection">{{ $t('guan-bi-an-niu') }}</button>
             </div>
         </div>
 
@@ -155,7 +155,7 @@
                         <div class="shortcut-input"
                              @click="startRecording(key)"
                              :class="{ 'recording': recordingKey === key }">
-                            {{ shortcuts[key] || '点击设置快捷键' }}
+                            {{ shortcuts[key] || $t('dian-ji-she-zhi-kuai-jie-jian') }}
                             <div v-if="shortcuts[key]"
                                  class="clear-shortcut"
                                  @click.stop="clearShortcut(key)">
@@ -198,9 +198,9 @@ const selectedSettings = ref({
     statusBarLyrics: { displayText: t('guan-bi'), value: 'off' },
     lyricsFontSize: { displayText: t('zhong'), value: '24px' },
     lyricsTranslation: { displayText: t('da-kai'), value: 'on' },
-    lyricsAlign: { displayText: '居中', value: 'center' },
-    font: { displayText: '默认字体', value: '' },
-    fontUrl: { displayText: '默认字体', value: '' },
+    lyricsAlign: { displayText: t('ju-zhong'), value: 'center' },
+    font: { displayText: t('mo-ren-zi-ti'), value: '' },
+    fontUrl: { displayText: t('mo-ren-zi-ti'), value: '' },
     greetings: { displayText: t('kai-qi'), value: 'on' },
     gpuAcceleration: { displayText: t('guan-bi'), value: 'off' },
     minimizeToTray: { displayText: t('da-kai'), value: 'on' },
@@ -212,10 +212,10 @@ const selectedSettings = ref({
     autoStart: { displayText: t('guan-bi'), value: 'off' },
     startMinimized: { displayText: t('guan-bi'), value: 'off' },
     preventAppSuspension: { displayText: t('guan-bi'), value: 'off' },
-    networkMode: { displayText: '主网', value: 'mainnet' },
+    networkMode: { displayText: t('zhu-wang'), value: 'mainnet' },
     proxy: { displayText: t('guan-bi'), value: 'off' },
     proxyUrl: { displayText: '', value: '' },
-    dataSource: { displayText: '概念版', value: 'concept' },
+    dataSource: { displayText: t('gai-nian-ban-xuan-xiang'), value: 'concept' },
     loudnessNormalization: { displayText: t('guan-bi'), value: 'off' },
 });
 
@@ -245,7 +245,7 @@ const settingSections = computed(() => [
             },
             {
                 key: 'font',
-                label: '字体设置',
+                label: t('zi-ti-she-zhi'),
                 showRefreshHint: true,
                 refreshHintText: t('shua-xin-hou-sheng-xiao'),
                 helpLink:'https://music.moekoe.cn/guide/font-settings.html'
@@ -262,10 +262,10 @@ const settingSections = computed(() => [
             },
             {
                 key: 'loudnessNormalization',
-                label: '平衡音频响度',
+                label: t('ping-heng-yin-pin-xiang-du'),
                 icon: '🎚️ ',
                 showRefreshHint: true,
-                refreshHintText: '开启需刷新页面后生效'
+                refreshHintText: t('shua-xin-hou-sheng-xiao')
             },
             {
                 key: 'greetings',
@@ -274,7 +274,7 @@ const settingSections = computed(() => [
             },
             {
                 key: 'dataSource',
-                label: '数据源',
+                label: t('shu-ju-yuan'),
                 icon: '🔌 ',
                 showRefreshHint: true,
                 refreshHintText: t('zhong-qi-hou-sheng-xiao'),
@@ -303,22 +303,22 @@ const settingSections = computed(() => [
             },
             {
                 key: 'statusBarLyrics',
-                label: '状态栏歌词',
+                label: t('zhuang-tai-lan-ge-ci'),
                 showRefreshHint: true,
                 refreshHintText: t('zhong-qi-hou-sheng-xiao')
             },
             {
                 key: 'lyricsTranslation',
-                label: '歌词翻译'
+                label: t('ge-ci-fan-yi')
             },
             {
                 key: 'lyricsAlign',
-                label: '对齐方式',
+                label: t('dui-qi-fang-shi'),
             }
         ]
     },
     {
-        title: '插件',
+        title: t('cha-jian'),
         items: []
     },
     {
@@ -342,28 +342,28 @@ const settingSections = computed(() => [
             },
             {
                 key: 'autoStart',
-                label: '开机自启动'
+                label: t('kai-ji-zi-qi-dong')
             },
             {
                 key: 'networkMode',
-                label: '网络模式',
+                label: t('wang-luo-mo-shi'),
                 showRefreshHint: true,
-                refreshHintText: '重启后生效',
+                refreshHintText: t('zhong-qi-hou-sheng-xiao'),
                 helpLink:'https://music.moekoe.cn/guide/network-modes.html'
             },
             {
                 key: 'startMinimized',
-                label: '启动时最小化'
+                label: t('qi-dong-shi-zui-xiao-hua')
             },
             {
                 key: 'preventAppSuspension',
-                label: '阻止系统休眠',
+                label: t('zu-zhi-xi-tong-xiu-mian'),
                 showRefreshHint: true,
                 refreshHintText: t('zhong-qi-hou-sheng-xiao')
             },
             {
                 key: 'apiMode',
-                label: 'API模式',
+                label: t('api-mo-shi'),
                 showRefreshHint: true,
                 refreshHintText: t('zhong-qi-hou-sheng-xiao')
             },
@@ -387,7 +387,7 @@ const settingSections = computed(() => [
             },
             {
                 key: 'proxy',
-                label: '网络代理',
+                label: t('wang-luo-dai-li'),
                 showRefreshHint: true,
                 refreshHintText: t('zhong-qi-hou-sheng-xiao'),
                 helpLink:'https://music.moekoe.cn/guide/proxy-settings.html'
@@ -402,7 +402,7 @@ const getSectionIcon = (title) => {
         [t('jie-mian')]: 'fas fa-palette',
         [t('sheng-yin')]: 'fas fa-volume-up',
         [t('ge-ci')]: 'fas fa-music',
-        '插件': 'fas fa-puzzle-piece',
+        [t('cha-jian')]: 'fas fa-puzzle-piece',
         [t('xi-tong')]: 'fas fa-cog'
     };
     return iconMap[title] || 'fas fa-cog';
@@ -452,8 +452,9 @@ const selectionTypeMap = {
         title: t('xuan-ze-yu-yan'),
         options: [
             { displayText: '🇨🇳 简体中文', value: 'zh-CN' },
-            { displayText: '🇨🇳 繁体中文', value: 'zh-TW' },
+            { displayText: '🇨🇳 繁體中文', value: 'zh-TW' },
             { displayText: '🇺🇸 English', value: 'en' },
+            { displayText: '🇷🇺 Русский', value: 'ru' },
             { displayText: '🇯🇵 日本語', value: 'ja' },
             { displayText: '🇰🇷 한국어', value: 'ko' }
         ]
@@ -506,9 +507,9 @@ const selectionTypeMap = {
         ]
     },
     statusBarLyrics: {
-        title: '状态栏歌词',
+        title: t('zhuang-tai-lan-ge-ci'),
         options: [
-            { displayText: t('da-kai')+ ' (仅支持Mac)', value: 'on' },
+            { displayText: t('da-kai') + t('jin-zhi-chi-mac'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
         ]
     },
@@ -549,46 +550,46 @@ const selectionTypeMap = {
         ]
     },
     lyricsTranslation: {
-        title: '歌词翻译',
+        title: t('ge-ci-fan-yi'),
         options: [
             { displayText: t('da-kai'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
         ]
     },
     lyricsAlign: {
-        title: '歌词对齐',
+        title: t('dui-qi-fang-shi'),
         options: [
-            { displayText: '左对齐', value: 'left' },
-            { displayText: '居中', value: 'center' },
+            { displayText: t('ju-zuo'), value: 'left' },
+            { displayText: t('ju-zhong'), value: 'center' },
         ]
     },
     qualityCompatibility: {
-        title: '兼容模式',
+        title: t('jian-rong-mo-shi'),
         options: [
             { displayText: t('kai-qi'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
         ]
     },
     dpiScale: {
-        title: '缩放因子',
+        title: t('suo-fang-yin-zi'),
         options: [
             { displayText: '1.0', value: '1.0' }
         ]
     },
     font: {
-        title: '字体设置',
+        title: t('zi-ti-she-zhi'),
         options: [
-            { displayText: '默认字体', value: '' }
+            { displayText: t('mo-ren-zi-ti'), value: '' }
         ]
     },
     fontUrl: {
-        title: '字体文件地址',
+        title: t('zi-ti-wen-jian-di-zhi'),
         options: [
-            { displayText: '默认字体', value: '' }
+            { displayText: t('mo-ren-zi-ti'), value: '' }
         ]
     },
     apiMode: {
-        title: 'API模式',
+        title: t('api-mo-shi'),
         options: [
             { displayText: t('da-kai'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
@@ -602,54 +603,54 @@ const selectionTypeMap = {
         ]
     },
     autoStart: {
-        title: '开机自启动',
+        title: t('kai-ji-zi-qi-dong'),
         options: [
             { displayText: t('da-kai'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
         ]
     },
     startMinimized: {
-        title: '启动时最小化',
+        title: t('qi-dong-shi-zui-xiao-hua'),
         options: [
             { displayText: t('da-kai'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
         ]
     },
     preventAppSuspension: {
-        title: '阻止系统休眠',
+        title: t('zu-zhi-xi-tong-xiu-mian'),
         options: [
             { displayText: t('da-kai'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
         ]
     },
     networkMode: {
-        title: '网络节点',
+        title: t('wang-luo-jie-dian'),
         options: [
-            { displayText: '主网', value: 'mainnet' },
-            { displayText: '测试网', value: 'testnet' },
-            { displayText: '开发网', value: 'devnet' }
+            { displayText: t('zhu-wang'), value: 'mainnet' },
+            { displayText: t('ce-wang'), value: 'testnet' },
+            { displayText: t('kai-fa-wang'), value: 'devnet' }
         ]
     },
     proxy: {
-        title: '网络代理',
+        title: t('wang-luo-dai-li'),
         options: [
-            { displayText: '启用', value: 'on' },
-            { displayText: '禁用', value: 'off' }
+            { displayText: t('qi-yong'), value: 'on' },
+            { displayText: t('jin-yong'), value: 'off' }
         ]
     },
     proxyUrl: {
-        title: '代理地址',
+        title: t('dai-li-di-zhi'),
         options: []
     },
     dataSource: {
-        title: '数据源',
+        title: t('shu-ju-yuan'),
         options: [
-            { displayText: '概念版', value: 'concept' },
-            { displayText: '正式版', value: 'official' }
+            { displayText: t('gai-nian-ban-xuan-xiang'), value: 'concept' },
+            { displayText: t('zheng-shi-ban'), value: 'official' }
         ]
     },
     loudnessNormalization: {
-        title: '平衡音频响度',
+        title: t('ping-heng-yin-pin-xiang-du'),
         options: [
             { displayText: t('da-kai'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
@@ -715,11 +716,11 @@ const selectOption = (option) => {
         return;
     }
     if(selectionType.value == 'touchBar' && window.electron.platform != 'darwin'){
-        window.$modal.alert('非Mac设备不支持TouchBar');
+        window.$modal.alert(t('fei-mac-bu-zhi-chi-touchbar'));
         return;
     }
     if(selectionType.value == 'statusBarLyrics' && window.electron.platform != 'darwin'){
-        window.$modal.alert('状态栏歌词仅支持Mac系统');
+        window.$modal.alert(t('zhuang-tai-lan-ge-ci-jin-zhi-chi-mac'));
         return;
     }
     selectedSettings.value[selectionType.value] = option;
@@ -729,6 +730,8 @@ const selectOption = (option) => {
         'language': () => {
             proxy.$i18n.locale = option.value;
             document.documentElement.lang = option.value;
+            // Reload page to update all translated strings
+            setTimeout(() => window.location.reload(), 100);
         },
         'quality': () => {
             if (!MoeAuth.isAuthenticated) {
@@ -769,7 +772,7 @@ const selectOption = (option) => {
 const updateFontSetting = (key) => {
     const prevType = selectionType.value;
     const value = key === 'font' ? (fontFamilyInput.value || '') : (fontUrlInput.value || '');
-    const displayText = key === 'font' ? (value || '默认字体') : (value || '默认字体');
+    const displayText = key === 'font' ? (value || t('mo-ren-zi-ti')) : (value || t('mo-ren-zi-ti'));
     selectionType.value = key;
     selectOption({ displayText, value });
     selectionType.value = prevType;
@@ -815,13 +818,15 @@ onMounted(() => {
                 if (key === 'font') {
                     const value = savedSettings[key];
                     selectedSettings.value[key] = {
-                        displayText: value || '默认字体',
+                        displayText: value || t('mo-ren-zi-ti'),
                         value: value
                     };
                 } else {
-                    const displayText = selectionTypeMap[key].options.find(
-                        (option) => option.value === savedSettings[key]
-                    )?.displayText || '🌏 ' + t('zi-dong');
+                    // Always get displayText from current translation, not from localStorage
+                    const option = selectionTypeMap[key].options.find(
+                        (opt) => opt.value === savedSettings[key]
+                    );
+                    const displayText = option?.displayText || '🌏 ' + t('zi-dong');
                     selectedSettings.value[key] = { displayText, value: savedSettings[key] };
                 }
             }
@@ -849,7 +854,7 @@ const proxyForm = reactive({url: '', testing: false, testResult: '', testStatus:
 const testProxyConnection = async () => {
     const proxyUrl = proxyForm.url.trim();
     if (!proxyUrl) {
-        proxyForm.testResult = '请输入代理服务器地址';
+        proxyForm.testResult = t('qing-shu-ru-dai-li-di-zhi');
         proxyForm.testStatus = 'error';
         return;
     }
@@ -857,18 +862,18 @@ const testProxyConnection = async () => {
     try {
         const url = new URL(proxyUrl);
         if (!['http:', 'https:'].includes(url.protocol)) {
-            proxyForm.testResult = '仅支持HTTP或HTTPS代理';
+            proxyForm.testResult = t('zhi-chi-http-https-dai-li');
             proxyForm.testStatus = 'error';
             return;
         }
     } catch (e) {
-        proxyForm.testResult = '请输入有效的URL地址';
+        proxyForm.testResult = t('qing-shu-ru-you-xiao-de-url');
         proxyForm.testStatus = 'error';
         return;
     }
 
     proxyForm.testing = true;
-    proxyForm.testResult = '正在测试连接...';
+    proxyForm.testResult = t('zheng-zai-ce-shi');
     proxyForm.testStatus = 'testing';
 
     try {
@@ -897,17 +902,17 @@ const testProxyConnection = async () => {
 
         if (response.ok) {
             const data = await response.json();
-            proxyForm.testResult = `代理连接成功，IP: ${data.ip}`;
+            proxyForm.testResult = t('dai-li-lian-jie-cheng-gong') + data.ip;
             proxyForm.testStatus = 'success';
         } else {
-            proxyForm.testResult = `代理连接失败: ${response.statusText}`;
+            proxyForm.testResult = t('dai-li-lian-jie-shi-bai') + response.statusText;
             proxyForm.testStatus = 'error';
         }
     } catch (error) {
         if (error.name === 'AbortError') {
-            proxyForm.testResult = '连接超时';
+            proxyForm.testResult = t('lian-jie-chao-shi');
         } else {
-            proxyForm.testResult = `连接错误: ${error.message}`;
+            proxyForm.testResult = t('lian-jie-cuo-wu') + error.message;
         }
         proxyForm.testStatus = 'error';
     } finally {
@@ -917,23 +922,23 @@ const testProxyConnection = async () => {
 
 const saveProxy = () => {
     const proxyUrl = proxyForm.url.trim();
-    
+
     try {
         if (proxyUrl) {
             const url = new URL(proxyUrl);
             if (!['http:', 'https:'].includes(url.protocol)) {
-                window.$modal.alert('暂仅支持HTTP或HTTPS代理');
+                window.$modal.alert(t('zhi-chi-http-https-dai-li'));
                 return;
             }
         }
     } catch (e) {
-        window.$modal.alert('请输入有效的URL地址');
+        window.$modal.alert(t('qing-shu-ru-you-xiao-de-url'));
         return;
     }
 
     // 更新代理状态
     selectedSettings.value.proxy = {
-        displayText: proxyUrl ? '启用' : '禁用',
+        displayText: proxyUrl ? t('qi-yong') : t('jin-yong'),
         value: proxyUrl ? 'on' : 'off'
     };
     
@@ -989,7 +994,7 @@ const shortcutConfigs = ref({
         defaultValue: 'Alt+Ctrl+P'
     },
     toggleDesktopLyrics: {
-        label: '显示/隐藏桌面歌词',
+        label: t('xian-shi-yin-cang-zhuo-mian-ge-ci'),
         defaultValue: 'Alt+Ctrl+D'
     }
 });
@@ -1132,11 +1137,11 @@ const qualityCompatibilityMode = ref(false);
 const dpiScale = ref(1.0);
 
 const openResetConfirmation = async () => {
-    const result = await window.$modal.confirm('你确定要恢复出厂设置吗？此操作不可逆！');
+    const result = await window.$modal.confirm(t('ni-que-ren-hui-fu-chu-chang'));
     if(result){
         localStorage.clear();
         isElectron() && window.electron.ipcRenderer.send('clear-settings');
-        window.$modal.alert('恢复出厂设置成功，重启生效');
+        window.$modal.alert(t('hui-fu-chu-chang-she-zhi-cheng-gong'));
     }
 };
 
@@ -1150,7 +1155,7 @@ if(!isElectron()){
 
 const installPWA = async () => {
     if(isElectron()){
-        window.$modal.alert('请在Web环境下安装');
+        window.$modal.alert(t('qing-zai-web-huan-jing-xia-an-zhuang'));
         return;
     }
     deferredPrompt.prompt();

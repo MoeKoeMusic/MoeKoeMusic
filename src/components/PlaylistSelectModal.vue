@@ -11,7 +11,7 @@
                     </li>
                 </ul>
                 <div v-else>{{ t('mei-you-ge-dan') }}</div>
-                <button class="close-btn-modal" @click="isOpen = false">{{ t('guan-bi') }}</button>
+                <button class="close-btn-modal" @click="isOpen = false">{{ t('guan-bi-an-niu') }}</button>
             </div>
         </div>
     </transition>

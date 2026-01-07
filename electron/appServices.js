@@ -10,6 +10,7 @@ import { exec } from 'child_process';
 import { checkForUpdates } from './updater.js';
 import { Notification } from 'electron';
 import extensionManager from './extensionManager.js';
+import { t } from './i18n.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const store = new Store();
 const { TouchBarLabel, TouchBarButton, TouchBarGroup, TouchBarSpacer } = TouchBar;
@@ -249,21 +250,21 @@ export function createTray(mainWindow, title = '') {
 
     const contextMenu = Menu.buildFromTemplate([
         {
-            label: '项目主页',
+            label: t('project-home'),
             icon: getIconPath('home.png', 'menu'),
             click: () => {
                 shell.openExternal('https://Music.MoeKoe.cn');
             }
         },
         {
-            label: '反馈bug',
+            label: t('report-bug'),
             icon: getIconPath('bug.png', 'menu'),
             click: () => {
                 shell.openExternal('https://github.com/iAJue/MoeKoeMusic/issues');
             }
         },
         {
-            label: '上一首',
+            label: t('prev-track'),
             icon: getIconPath('prev.png', 'menu'),
             accelerator: 'Alt+CommandOrControl+Left',
             click: () => {
@@ -271,7 +272,7 @@ export function createTray(mainWindow, title = '') {
             }
         },
         {
-            label: '暂停',
+            label: t('pause'),
             accelerator: 'Alt+CommandOrControl+Space',
             icon: getIconPath('play.png', 'menu'),
             click: () => {
@@ -279,7 +280,7 @@ export function createTray(mainWindow, title = '') {
             }
         },
         {
-            label: '下一首',
+            label: t('next-track'),
             accelerator: 'Alt+CommandOrControl+Right',
             icon: getIconPath('next.png', 'menu'),
             click: () => {
@@ -287,14 +288,14 @@ export function createTray(mainWindow, title = '') {
             }
         },
         {
-            label: '检查更新',
+            label: t('check-updates'),
             icon: getIconPath('update.png', 'menu'),
             click: () => {
                 checkForUpdates(false);
             }
         },
         {
-            label: '重启应用',
+            label: t('restart-app'),
             icon: getIconPath('restart.png', 'menu'),
             click: () => {
                 app.relaunch();
@@ -303,7 +304,7 @@ export function createTray(mainWindow, title = '') {
             }
         },
         {
-            label: '显示/隐藏',
+            label: t('show-hide'),
             accelerator: 'CmdOrCtrl+Shift+S',
             icon: getIconPath('show.png', 'menu'),
             click: () => {
@@ -317,7 +318,7 @@ export function createTray(mainWindow, title = '') {
             }
         },
         {
-            label: '退出程序',
+            label: t('quit'),
             accelerator: 'CmdOrCtrl+Q',
             icon: getIconPath('quit.png', 'menu'),
             click: () => {
@@ -398,7 +399,7 @@ export function createTouchBar(mainWindow) {
 
     // 歌词
     const lyricsLabel = new TouchBarLabel({
-        label: "暂无歌词",
+        label: t('no-lyrics'),
         textColor: "#FFFFFF",
     });
 
@@ -615,8 +616,8 @@ export function registerShortcut() {
                 mainWindow.lyricsWindow.close();
                 mainWindow.lyricsWindow = null;
                 new Notification({
-                    title: '桌面歌词已关闭',
-                    body: '仅本次生效',
+                    title: t('desktop-lyrics-closed'),
+                    body: t('this-time-only'),
                     icon: getIconPath('logo.png')
                 }).show();
             } else {
@@ -631,9 +632,9 @@ export function registerShortcut() {
     } catch {
         dialog.showMessageBox({
             type: 'error',
-            title: '提示',
-            message: '快捷键注册失败，请重新尝试',
-            buttons: ['确定']
+            title: t('hint'),
+            message: t('shortcut-failed'),
+            buttons: [t('ok')]
         });
     }
 }
@@ -679,7 +680,7 @@ export function playStartupSound() {
 export function setThumbarButtons(mainWindow, isPlaying = false) {
     const buttons = [
         {
-            tooltip: '上一首',
+            tooltip: t('prev-track'),
             icon: getIconPath('prev.png'),
             click: () => {
                 mainWindow.webContents.send('play-previous-track');
@@ -687,7 +688,7 @@ export function setThumbarButtons(mainWindow, isPlaying = false) {
             }
         },
         {
-            tooltip: '暂停',
+            tooltip: t('pause'),
             icon: getIconPath('pause.png'),
             click: () => {
                 mainWindow.webContents.send('toggle-play-pause');
@@ -695,7 +696,7 @@ export function setThumbarButtons(mainWindow, isPlaying = false) {
             }
         },
         {
-            tooltip: '下一首',
+            tooltip: t('next-track'),
             icon: getIconPath('next.png'),
             click: () => {
                 mainWindow.webContents.send('play-next-track');
@@ -706,7 +707,7 @@ export function setThumbarButtons(mainWindow, isPlaying = false) {
 
     if (!isPlaying) {
         buttons[1] = {
-            tooltip: '播放',
+            tooltip: t('play'),
             icon: getIconPath('play.png'),
             click: () => {
                 mainWindow.webContents.send('toggle-play-pause');

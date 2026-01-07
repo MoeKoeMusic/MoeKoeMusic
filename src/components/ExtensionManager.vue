@@ -3,15 +3,15 @@
         <div class="extensions-actions">
             <button @click="refreshExtensions" class="extension-btn primary" :disabled="extensionsLoading">
                 <i class="fas fa-sync-alt"></i>
-                {{ extensionsLoading ? '加载中...' : '刷新插件' }}
+                {{ extensionsLoading ? t('jia-zai-zhong') : t('shua-xin-cha-jian') }}
             </button>
             <button @click="openExtensionsDir" class="extension-btn secondary">
                 <i class="fas fa-folder-open"></i>
-                打开插件目录
+                {{ t('da-kai-cha-jian-mu-lu') }}
             </button>
             <button @click="installPlugin" class="extension-btn success" :disabled="extensionsLoading">
                 <i class="fas fa-upload"></i>
-                安装插件
+                {{ t('an-zhuang-cha-jian') }}
             </button>
             <input
                 type="file"
@@ -34,20 +34,20 @@
                     </div>
                     <div class="extension-details">
                         <h4>{{ extension.name }}</h4>
-                        <p class="extension-version">版本: {{ extension.version }}</p>
+                        <p class="extension-version">{{ t('ban-ben') }}: {{ extension.version }}</p>
                         <p class="extension-id">ID: {{ extension.id }}</p>
                         <p v-if="extension.description" class="extension-description">{{ extension.description }}</p>
                     </div>
                 </div>
                 <div class="extension-actions">
-                    <span class="extension-status enabled">已启用</span>
+                    <span class="extension-status enabled">{{ t('yi-qi-yong') }}</span>
                     <button @click="openExtensionPopup(extension.id, extension.name)" class="extension-btn secondary small"
                         :disabled="extensionsLoading">
-                        打开弹窗
+                        {{ t('da-kai-tan-chuang') }}
                     </button>
                     <button @click="uninstallExtension(extension.id, extension.name)" class="extension-btn danger small"
                         :disabled="extensionsLoading">
-                        卸载
+                        {{ t('xie-zai') }}
                     </button>
                 </div>
             </div>
@@ -57,32 +57,34 @@
             <div class="empty-icon">
                 <i class="fas fa-puzzle-piece"></i>
             </div>
-            <h4>暂无插件</h4>
-            <p>将插件文件夹放入插件目录中，然后点击刷新按钮</p>
+            <h4>{{ t('zan-wu-cha-jian') }}</h4>
+            <p>{{ t('jiang-cha-jian-wen-jian-jia-fang-ru-cha-jian-mu-lu') }}</p>
         </div>
 
-        <!-- 加载状态 -->
+        <!-- Loading state -->
         <div v-if="extensionsLoading" class="extensions-loading">
             <i class="fas fa-spinner fa-spin"></i>
-            <p>正在加载插件...</p>
+            <p>{{ t('zheng-zai-jia-zai-cha-jian') }}</p>
         </div>
     </div>
     <div v-else class="extensions-empty">
         <div class="empty-icon">
             <i class="fas fa-puzzle-piece"></i>
         </div>
-        <h4>Web端请直接在浏览器插件中心`chrome://extensions/`进行管理</h4>
+        <h4>{{ t('web-cha-jian-ti-shi') }}</h4>
     </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const extensions = ref([])
 const extensionsLoading = ref(false)
 const fileInput = ref(null)
 
-// 刷新插件
+// Refresh plugins
 const refreshExtensions = async () => {
     extensionsLoading.value = true
     try {
@@ -90,58 +92,58 @@ const refreshExtensions = async () => {
         if (result?.success) {
             extensions.value = result.extensions || []
         } else {
-            console.error('获取插件列表失败:', result?.error)
+            console.error('Failed to get plugins:', result?.error)
         }
     } catch (error) {
-        console.error('刷新插件时出错:', error)
+        console.error('Error refreshing plugins:', error)
     } finally {
         extensionsLoading.value = false
     }
 }
 
-// 打开插件目录
+// Open plugins directory
 const openExtensionsDir = async () => {
     try {
         const result = await window.electronAPI?.openExtensionsDir()
         if (result?.success) {
         } else {
-            console.error('打开插件目录失败:', result?.error)
+            console.error('Failed to open plugins directory:', result?.error)
         }
     } catch (error) {
-        console.error('打开插件目录时出错:', error)
+        console.error('Error opening plugins directory:', error)
     }
 }
 
-// 打开插件弹窗
+// Open plugin popup
 const openExtensionPopup = async (extensionId, extensionName) => {
     try {
         const result = await window.electronAPI.openExtensionPopup(extensionId, extensionName)
         if (result?.success) {
         } else {
-            alert('打开插件弹窗失败: ' + (result?.message || '未知错误'))
+            alert(t('da-kai-tan-chuang-shi-bai') + ': ' + (result?.message || t('wei-zhi-cuo-wu')))
         }
     } catch (error) {
-        alert('打开插件弹窗失败: ' + error.message)
+        alert(t('da-kai-tan-chuang-shi-bai') + ': ' + error.message)
     }
 }
 
-// 卸载插件
+// Uninstall plugin
 const uninstallExtension = async (extensionId, extensionName) => {
     try {
-        if (confirm(`确定要卸载插件 "${extensionName}" 吗？`)) {
+        if (confirm(t('que-ren-xie-zai-cha-jian').replace('{name}', extensionName))) {
             const result = await window.electronAPI?.uninstallExtension(extensionId)
             if (result?.success) {
                 await refreshExtensions()
             } else {
-                alert('卸载插件失败: ' + (result?.error || '未知错误'))
+                alert(t('xie-zai-cha-jian-shi-bai') + ': ' + (result?.error || t('wei-zhi-cuo-wu')))
             }
         }
     } catch (error) {
-        alert('卸载插件时出错: ' + error.message)
+        alert(t('xie-zai-cha-jian-shi-bai') + ': ' + error.message)
     }
 }
 
-// 处理图标加载错误
+// Handle icon loading error
 const handleIconError = (event) => {
     event.target.style.display = 'none'
     const iconContainer = event.target.parentElement
@@ -155,13 +157,13 @@ const handleIconError = (event) => {
     }
 }
 
-// 触发文件选择
+// Trigger file selection for plugin installation
 const installPlugin = async () => {
     try {
         const result = await window.electronAPI?.showOpenDialog({
             properties: ['openFile'],
             filters: [
-                { name: '插件包', extensions: ['zip'] }
+                { name: t('cha-jian-bao'), extensions: ['zip'] }
             ]
         });
 
@@ -169,23 +171,23 @@ const installPlugin = async () => {
             await handlePluginInstall(result.filePath);
         }
     } catch (error) {
-        alert('选择文件失败: ' + error.message);
+        alert(t('xuan-ze-wen-jian-shi-bai') + ': ' + error.message);
     }
 };
 
-// 处理插件安装
+// Handle plugin installation
 const handlePluginInstall = async (filePath) => {
     try {
         extensionsLoading.value = true;
         const result = await window.electronAPI?.installPluginFromZip(filePath);
         if (result?.success) {
-            alert('插件安装成功！');
+            alert(t('cha-jian-an-zhuang-cheng-gong'));
             await refreshExtensions();
         } else {
-            alert('安装插件失败: ' + (result?.message || '未知错误'));
+            alert(t('an-zhuang-cha-jian-shi-bai') + ': ' + (result?.message || t('wei-zhi-cuo-wu')));
         }
     } catch (error) {
-        alert('安装插件时出错: ' + error.message);
+        alert(t('an-zhuang-cha-jian-chu-cuo') + ': ' + error.message);
     } finally {
         extensionsLoading.value = false;
     }

@@ -1,3 +1,4 @@
+> **Note**: Этот документ на русском языке может не быть актуальным вовремя. Для актуального материала, пожалуйста, обратитесь к [версии на упрощенном китайском](https://github.com/iAJue/MoeKoeMusic/README.md).
 <br />
 <p align="center">
     <img src="https://github.com/iAJue/MoeKoeMusic/raw/main/images/logo.png" alt="Logo" width="156" height="156">

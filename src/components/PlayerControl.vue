@@ -49,7 +49,7 @@
                         class="fas fa-heart"></i></button>
                 <button class="extra-btn" title="收藏至" @click="playlistSelect.fetchPlaylists()"><i
                         class="fas fa-add"></i></button>
-                <button class="extra-btn" title="分享歌曲" @click="share('share?hash=' + currentSong.hash)"><i
+                <button class="extra-btn" title="分享歌曲" @click="share(currentSong.name, currentSong.hash)"><i
                         class="fas fa-share"></i></button>
                 <button class="extra-btn" @click="togglePlaybackMode">
                     <i v-if="currentPlaybackModeIndex != '2'" :class="currentPlaybackMode.icon"

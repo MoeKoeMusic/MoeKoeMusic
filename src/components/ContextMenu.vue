@@ -70,7 +70,7 @@ const fetchPlaylists = async () => {
 // 分享歌曲功能
 const shareSong = (song) => {
     if (!song) return;
-    share('share?hash='+song.FileHash);
+    share(song.OriSongName, song.FileHash);
     hideContextMenu();
 };
 

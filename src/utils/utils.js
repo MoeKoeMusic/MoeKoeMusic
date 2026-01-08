@@ -146,8 +146,32 @@ export const openRegisterUrl = (registerUrl) => {
 };
 
 // 分享
-export const share = (linkUrl) => {
-    let encodeString = (window.electron?'moekoe://':window.location.host+'/#/')+linkUrl;
-    navigator.clipboard.writeText(encodeString);
-    $message.success(i18n.global.t('kou-ling-yi-fu-zhi,kuai-ba-ge-qu-fen-xiang-gei-peng-you-ba'));
-}
+import { MoeAuthStore } from '../stores/store';
+export const share = (songName, id, type = 0, songDesc = '') => {
+    let text = '';
+    const MoeAuth = MoeAuthStore();
+    let userName = '萌音';
+    if(MoeAuth.isAuthenticated) {
+        userName = MoeAuth.UserInfo?.nickname || '萌音';
+    };
+    // 客户端分享
+    let shareUrl = '';
+    if (window.electron) {
+        if(type == 0){
+            // 歌曲
+            shareUrl = `https://music.moekoe.cn/share/?hash=${id}`;
+        }else{
+            // 歌单
+            shareUrl = `moekoe://share?listid=${id}`;
+        }
+    } else {
+        //  Web / H5 逻辑
+        shareUrl = (window.location.host + '/#/') + (type == 0 ? `share/?hash=${id}` : `share?listid=${id}`);
+    }
+    text = `你的好友@${userName}分享了${songDesc}《${songName}》给你,快去听听吧! ${shareUrl}`;
+
+    navigator.clipboard.writeText(text);
+    $message.success(
+        i18n.global.t('kou-ling-yi-fu-zhi,kuai-ba-ge-qu-fen-xiang-gei-peng-you-ba')
+    );
+};

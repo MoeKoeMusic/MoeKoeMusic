@@ -19,7 +19,14 @@ export const MoeAuthStore = defineStore('MoeData', {
             return configItem ? configItem.value : null;
         },
         setData(data) {
-            if (data.UserInfo) this.UserInfo = data.UserInfo;
+            if (data.UserInfo) {
+                // Preserve existing dfid when updating UserInfo
+                const existingDfid = this.UserInfo?.dfid;
+                this.UserInfo = data.UserInfo;
+                if (existingDfid && !this.UserInfo.dfid) {
+                    this.UserInfo.dfid = existingDfid;
+                }
+            }
             if (data.Config) this.Config = data.Config;
         },
         clearData() {

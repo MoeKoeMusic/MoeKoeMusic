@@ -1,10 +1,18 @@
-// 获取音乐详情
+// Register device to get dfid
 module.exports = (params, useAxios) => {
+  const { cryptoMd5 } = require('../util/crypto');
+
+  // Generate mid and uuid from dfid (or default '-')
+  const dfid = params?.cookie?.dfid || '-';
+  const mid = params?.mid || cryptoMd5(dfid);
+  const uuid = params?.uuid || cryptoMd5(`${dfid}${mid}`);
+  const userid = params?.cookie?.userid || params?.userid || '0';
+
   const dataMap = {
-    mid: params?.mid || '',
-    uuid: params?.uuid || '',
+    mid,
+    uuid,
     appid: '1014',
-    userid: params?.userid || '0',
+    userid: String(userid),
   };
 
   return useAxios({

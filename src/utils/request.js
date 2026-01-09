@@ -18,12 +18,17 @@ httpClient.interceptors.request.use(
         const MoeAuth = MoeAuthStore();
         const token = MoeAuth.UserInfo?.token;
         const userid = MoeAuth.UserInfo?.userid;
+        const dfid = MoeAuth.UserInfo?.dfid;
 
-        if (token && userid) {
-            const authStr = `token=${encodeURIComponent(token)};userid=${encodeURIComponent(userid)}`;
+        const authParts = [];
+        if (token) authParts.push(`token=${encodeURIComponent(token)}`);
+        if (userid) authParts.push(`userid=${encodeURIComponent(userid)}`);
+        if (dfid) authParts.push(`dfid=${encodeURIComponent(dfid)}`);
+
+        if (authParts.length > 0) {
             config.headers = {
                 ...config.headers,
-                Authorization: authStr
+                Authorization: authParts.join(';')
             };
         }
         return config;

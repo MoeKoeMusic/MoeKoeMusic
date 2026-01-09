@@ -730,8 +730,6 @@ const selectOption = (option) => {
         'language': () => {
             proxy.$i18n.locale = option.value;
             document.documentElement.lang = option.value;
-            // Reload page to update all translated strings
-            setTimeout(() => window.location.reload(), 100);
         },
         'quality': () => {
             if (!MoeAuth.isAuthenticated) {

@@ -23,9 +23,6 @@ const getBrowserLocale = () => {
     }
     return 'zh-CN';
   }
-  if (browserLang.startsWith('ru')) {
-    return 'ru';
-  }
   const lang = browserLang.split('-')[0];
   return Object.keys(messages).includes(lang) ? lang : 'ja';
 };

@@ -305,6 +305,11 @@ export default function useAudioController({ onSongEnd, updateCurrentTime }) {
 
     // 销毁时清理
     const destroy = () => {
+        // 避免路由到视频播放器时丢失播放状态控制
+        // https://github.com/MoeKoeMusic/MoeKoeMusic/issues/784
+        // https://github.com/MoeKoeMusic/MoeKoeMusic/issues/788
+        audio.pause();
+
         console.log('[AudioController] 销毁音频控制器');
         audio.removeEventListener('play', handleAudioEvent);
         audio.removeEventListener('ended', onSongEnd);

@@ -219,6 +219,31 @@ export function createLyricsWindow() {
     lyricsWindow.setBackgroundColor('#00000000');
 }
 
+export function createMvWindow() {
+    const { screenWidth, screenHeight } = screen.getPrimaryDisplay().workAreaSize;
+    return new BrowserWindow({
+        width: Math.min(screenWidth * 0.8, 1280),
+        height: Math.min(screenHeight * 0.8, 720),
+        frame: false,
+        transparent: true,
+        show: false,
+        titleBarStyle: 'hiddenInset',
+        autoHideMenuBar: true,
+        backgroundColor: '#00000000',
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.cjs'),
+            contextIsolation: true,
+            nodeIntegration: false,
+            sandbox: false,
+            webSecurity: false, // 禁用 CORS、同源策略
+            allowRunningInsecureContent: true, // 允许混合内容
+            zoomFactor: 1.0,
+            devTools: isDev
+        },
+        icon: getIconPath('icon.ico')
+    });
+}
+
 const getIconPath = (iconName, subPath = '') => path.join(
     isDev ? __dirname + '/../build/icons' : process.resourcesPath + '/icons',
     subPath,

@@ -30,4 +30,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ensureExtensionsDirectory: () => ipcRenderer.invoke('ensure-extensions-directory'),
     installPluginFromZip: (zipPath) => ipcRenderer.invoke('install-plugin-from-zip', zipPath),
     showOpenDialog: (options) => ipcRenderer.invoke('show-open-dialog', options),
+    openMvWindow: (url) => ipcRenderer.invoke('open-mv-window', url),
 });

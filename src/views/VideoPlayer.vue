@@ -2,8 +2,9 @@
     <div class="video-player-page">
         <div class="video-container">
             <div class="video-header">
-                <button class="back-btn" @click="goBack">
-                    <i class="fas fa-arrow-left"></i> 返回
+                <button class="back-btn" @click="() => isElectron? closeWindow(): goBack()">
+                    <i class="fas" :class="{ 'fa-xmark': isElectron, 'fa-arrow-left': !isElectron }"></i>
+                    {{ isElectron? '关闭': '返回' }}
                 </button>
                 <h2 class="video-title">{{ videoTitle }}</h2>
             </div>
@@ -51,6 +52,8 @@ const videoUrl = ref('');
 const videoTitle = ref('视频播放');
 const loading = ref(true);
 const error = ref('');
+
+const isElectron = !!window.electron;
 
 const mvhash = ref(route.query.hash || '');
 
@@ -112,6 +115,10 @@ const handleVideoError = (e) => {
 
 const goBack = () => {
     router.back();
+};
+
+const closeWindow = () => {
+    window.close();
 };
 
 onMounted(() => {

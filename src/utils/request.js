@@ -19,11 +19,14 @@ httpClient.interceptors.request.use(
         const token = MoeAuth.UserInfo?.token;
         const userid = MoeAuth.UserInfo?.userid;
         const dfid = MoeAuth.UserInfo?.dfid;
+        const vip_type = MoeAuth.UserInfo?.vip_type;
 
         const authParts = [];
         if (token) authParts.push(`token=${encodeURIComponent(token)}`);
         if (userid) authParts.push(`userid=${encodeURIComponent(userid)}`);
         if (dfid) authParts.push(`dfid=${encodeURIComponent(dfid)}`);
+        // vip_type=0 is valid for non-VIP users, so check for undefined explicitly
+        if (vip_type !== undefined) authParts.push(`vip_type=${encodeURIComponent(vip_type)}`);
 
         if (authParts.length > 0) {
             config.headers = {

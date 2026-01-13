@@ -32,6 +32,7 @@ module.exports = (params, useAxios) => {
     cdnBackup: 1,
     kcard: 0,
     module: '',
+    vipType: params?.cookie?.vip_type || params?.vip_type || 0,
   };
 
   return useAxios({

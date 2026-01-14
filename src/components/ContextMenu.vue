@@ -119,13 +119,15 @@ const playMV = async (mvhash) => {
         hideContextMenu();
         props.playerControl?.pause?.();
         const title = contextSong.value?.OriSongName || '视频播放';
-        if(window.electronAPI) electronAPI.openMvWindow(location.origin + router.resolve({
-            path: '/video',
-            query: {
-                hash: mvhash,
-                title: encodeURIComponent(title)
-            }
-        }).href);
+        if(window.electronAPI)
+            electronAPI.openMvWindow(((hash, title) => {
+                const url = new URL(location.href);
+                url.hash = router.resolve({
+                    path: '/video',
+                    query: { hash, title }
+                }).href;
+                return url.toString();
+            })(mvhash, encodeURIComponent(title)));
         else router.push({
             path: '/video',
             query: {

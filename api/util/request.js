@@ -31,7 +31,7 @@ const createRequest = (options) => {
   return new Promise(async (resolve, reject) => {
     const isLite = process.env.platform === 'lite';
     const dfid = options?.cookie?.dfid || '-'; // 自定义
-    const mid = cryptoMd5(dfid); // 可以自定义
+    const mid = `${cryptoMd5(dfid)}${cryptoMd5(dfid).slice(0, 7)}`; // 可以自定义
     const uuid = cryptoMd5(`${dfid}${mid}`); // 可以自定义
     const token = options?.cookie?.token || '';
     const userid = options?.cookie?.userid || 0;

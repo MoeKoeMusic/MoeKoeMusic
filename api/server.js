@@ -132,7 +132,8 @@ async function consturctServer(moduleDefs) {
         }
       });
 
-      const query = Object.assign({}, { cookie: req.cookies }, req.query, { body: req.body });
+      const { cookie, ...params } = req.query;
+      const query = Object.assign({}, { cookie: Object.assign(req.cookies, cookie) }, params, { body: req.body });
       const authHeader = req.headers['authorization'];
       if (authHeader) {
         query.cookie = {

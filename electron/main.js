@@ -1,4 +1,4 @@
-import { app, ipcMain, globalShortcut, dialog, Notification, shell, session, powerSaveBlocker } from 'electron';
+import { app, ipcMain, globalShortcut, dialog, Notification, shell, session, powerSaveBlocker, nativeImage } from 'electron';
 import {
     createWindow, createTray, createTouchBar, startApiServer,
     stopApiServer, registerShortcut,
@@ -16,7 +16,9 @@ import { t } from './i18n.js';
 let mainWindow = null;
 let blockerId = null;
 let lastStatusBarLyric = ''; // 缓存上一次的状态栏歌词
+let clearLyricsTimeout = null; // 用于歌词清空的防抖定时器
 const store = new Store();
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const gotTheLock = app.requestSingleInstanceLock();
@@ -31,8 +33,8 @@ if (!gotTheLock) {
         }
         if (mainWindow) {
             if (mainWindow.isMinimized()) mainWindow.restore();
-            mainWindow.show(); 
-            mainWindow.focus(); 
+            mainWindow.show();
+            mainWindow.focus();
         }
         protocolHandler.handleProtocolArgv(commandLine);
     });
@@ -205,25 +207,82 @@ ipcMain.on('lyrics-data', (event, lyricsData) => {
     if (process.platform === 'darwin') {
         const settings = store.get('settings');
         if (settings?.statusBarLyrics === 'on') {
-            const tray = getTray();
-            if (tray) {
-                const currentLyric = lyricsData?.currentLyric || '';
-                // 只在歌词文本发生变化时才更新状态栏，减少不必要的调用
+            const currentLyric = lyricsData?.currentLyric || '';
+
+            if (currentLyric) {
+                // 有歌词时：立即清除之前的清空定时器，并立即更新
+                if (clearLyricsTimeout) {
+                    clearTimeout(clearLyricsTimeout);
+                    clearLyricsTimeout = null;
+                }
+
                 if (currentLyric !== lastStatusBarLyric) {
-                    tray.setTitle(currentLyric);
+                    mainWindow.webContents.send('generate-statusbar-image', currentLyric);
                     lastStatusBarLyric = currentLyric;
+                }
+            } else {
+                // 无歌词时：不要立即清空，而是设置防抖定时器
+                // 只有当 2000ms 内都没有新歌词来，才真正清空
+                if (!clearLyricsTimeout && lastStatusBarLyric !== '') {
+                    clearLyricsTimeout = setTimeout(() => {
+                        // 再次检查设置，确保在这段时间内没关闭功能
+                        const currentSettings = store.get('settings');
+                        if (currentSettings?.statusBarLyrics === 'on') {
+                            mainWindow.webContents.send('generate-statusbar-image', ''); // 发送空字符串触发占位符
+                            lastStatusBarLyric = '';
+                        }
+                        clearLyricsTimeout = null;
+                    }, 2000); // 2秒防抖
                 }
             }
         } else if (lastStatusBarLyric !== '') {
-            // 如果关闭了状态栏歌词功能，清空状态栏文本和缓存
+            // 功能关闭时：立即清理
+            if (clearLyricsTimeout) {
+                clearTimeout(clearLyricsTimeout);
+                clearLyricsTimeout = null;
+            }
             const tray = getTray();
             if (tray) {
                 tray.setTitle('');
+                tray.setImage(nativeImage.createEmpty());
+                createTray(mainWindow);
                 lastStatusBarLyric = '';
             }
         }
     }
 });
+
+// 监听渲染进程生成的图片并更新 Tray
+ipcMain.on('update-statusbar-image', (event, dataUrl) => {
+    const tray = getTray();
+    if (tray && dataUrl) {
+        try {
+            // 解析 Base64 数据
+            const base64Data = dataUrl.replace(/^data:image\/png;base64,/, "");
+            const buffer = Buffer.from(base64Data, 'base64');
+
+            // 创建空的 nativeImage
+            const image = nativeImage.createEmpty();
+
+            // 添加 @2x 资源 (scaleFactor: 2.0)
+            // 逻辑尺寸 200x22, 实际 Buffer 是 400x44 (由前端 Canvas 生成)
+            image.addRepresentation({
+                scaleFactor: 2.0,
+                width: 200,
+                height: 22,
+                buffer: buffer
+            });
+
+            image.setTemplateImage(true);
+
+            tray.setImage(image);
+            tray.setTitle('');
+        } catch (e) {
+            console.error('Failed to set tray image:', e);
+        }
+    }
+});
+
 ipcMain.on('server-lyrics', (event, lyricsData) => {
     apiService.updateLyrics(lyricsData);
 });
@@ -286,7 +345,16 @@ ipcMain.on('open-url', (event, url) => {
 })
 
 ipcMain.on('set-tray-title', (event, title) => {
-    createTray(mainWindow, t('now-playing') + title);
+    const tray = getTray();
+    if (tray) {
+        const settings = store.get('settings');
+        // 如果状态栏歌词功能开启，不设置标题，使用歌词图片
+        if (settings?.statusBarLyrics === 'on') {
+            return;
+        }
+        // 否则设置标题
+        tray.setTitle(t('now-playing') + title);
+    }
     mainWindow.setTitle(title);
 })
 

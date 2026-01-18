@@ -83,14 +83,6 @@
                     </div>
                 </div>
 
-                <div v-if="selectionType === 'quality'" class="compatibility-option">
-                    <label>
-                        <input type="checkbox" v-model="qualityCompatibilityMode" />
-                        {{ $t('jian-rong-mo-shi-mp3') }}
-                        <div class="compatibility-hint">{{ $t('gao-yin-zhi-shi-bai-ti-shi') }}</div>
-                    </label>
-                </div>
-
                 <div v-if="selectionType === 'highDpi'" class="scale-slider-container">
                     <div class="scale-slider-label">{{ $t('suo-fang-yin-zi') }}: {{ dpiScale }} <span class="scale-slider-hint">{{ $t('tiao-zheng-hou-xu-zhong-qi') }}</span></div>
                     <div class="scale-slider-wrapper">
@@ -214,7 +206,6 @@ const selectedSettings = ref({
     gpuAcceleration: { displayText: t('guan-bi'), value: 'off' },
     minimizeToTray: { displayText: t('da-kai'), value: 'on' },
     highDpi: { displayText: t('guan-bi'), value: 'off' },
-    qualityCompatibility: { displayText: t('guan-bi'), value: 'off' },
     dpiScale: { displayText: '1.0', value: '1.0' },
     apiMode: { displayText: t('guan-bi'), value: 'off' },
     touchBar: { displayText: t('guan-bi'), value: 'off' },
@@ -281,12 +272,14 @@ const settingSections = computed(() => [
             {
                 key: 'pauseOnAudioOutputChange',
                 label: '输出设备变化自动暂停',
-                icon: '🎧 '
+                icon: '🎧 ',
+                helpLink:'https://music.moekoe.cn/guide/auto-pause-on-output-device-change.html'
             },
             {
                 key: 'audioOutputDevice',
                 label: '音频输出设备',
-                icon: '🔊 '
+                icon: '🔊 ',
+                helpLink:'https://music.moekoe.cn/guide/audio-output-device.html'
             },
             {
                 key: 'greetings',
@@ -586,13 +579,6 @@ const selectionTypeMap = {
             { displayText: t('ju-zhong'), value: 'center' },
         ]
     },
-    qualityCompatibility: {
-        title: t('jian-rong-mo-shi'),
-        options: [
-            { displayText: t('kai-qi'), value: 'on' },
-            { displayText: t('guan-bi'), value: 'off' }
-        ]
-    },
     dpiScale: {
         title: t('suo-fang-yin-zi'),
         options: [
@@ -772,10 +758,6 @@ const openSelection = (type, helpLink) => {
     selectionType.value = type;
     currentHelpLink.value = helpLink || selectionTypeMap[type]?.helpLink || '';
 
-    if (type === 'quality') {
-        qualityCompatibilityMode.value = selectedSettings.value.qualityCompatibility?.value === 'on';
-    }
-
     if (type === 'highDpi') {
         dpiScale.value = parseFloat(selectedSettings.value.dpiScale?.value || '1.0');
     }
@@ -831,10 +813,6 @@ const selectOption = async (option) => {
                 window.$modal.alert(t('gao-pin-zhi-yin-le-xu-yao-deng-lu-hou-cai-neng-bo-fango'));
                 return;
             }
-            selectedSettings.value.qualityCompatibility = {
-                value: qualityCompatibilityMode.value ? 'on' : 'off',
-                displayText: qualityCompatibilityMode.value ? t('kai-qi') : t('guan-bi')
-            };
         },
         'highDpi': () => {
             selectedSettings.value.dpiScale = {
@@ -1265,7 +1243,6 @@ const clearShortcut = (key) => {
     shortcuts.value[key] = '';
 };
 
-const qualityCompatibilityMode = ref(false);
 const dpiScale = ref(1.0);
 
 const openResetConfirmation = async () => {
@@ -1643,28 +1620,6 @@ const installPWA = async () => {
 
 .reset-settings-button:hover {
     background-color: #e53935;
-}
-
-.compatibility-option {
-    margin-top: 15px;
-    text-align: left;
-    padding: 10px;
-    background-color: var(--background-color);
-    border-radius: 8px;
-}
-
-.compatibility-option label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-}
-
-.compatibility-hint {
-    margin-top: 5px;
-    font-size: 12px;
-    color: #666;
-    line-height: 21px;
 }
 
 .scale-slider-container {

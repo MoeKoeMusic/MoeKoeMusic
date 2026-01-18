@@ -37,6 +37,10 @@
                         <p class="extension-version">{{ t('ban-ben') }}: {{ extension.version }}</p>
                         <p class="extension-id">ID: {{ extension.id }}</p>
                         <p v-if="extension.description" class="extension-description">{{ extension.description }}</p>
+                        <p v-if="!extension.moeKoeAdapted" class="extension-compatibility-warning">
+                            <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                            <span>该插件未对萌音适配，可能存在兼容性问题</span>
+                        </p>
                     </div>
                 </div>
                 <div class="extension-actions">
@@ -333,6 +337,15 @@ onMounted(() => {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.extension-compatibility-warning {
+    margin-top: 6px!important;
+    color: #b45309!important;
+    font-size: 12px!important;
+    display: flex!important;
+    align-items: center!important;
+    gap: 6px!important;
 }
 
 .extension-actions {

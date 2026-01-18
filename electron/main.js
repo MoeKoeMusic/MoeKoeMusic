@@ -436,8 +436,18 @@ ipcMain.on('set-tray-title', (event, title) => {
 
 
 ipcMain.handle('open-mv-window', (e, url) => {
-    const mvWindow = createMvWindow();
-    mvWindow.loadURL(url).then(() => {
-        mvWindow.show();
-    });
+    return (async () => {
+        const mvWindow = createMvWindow();
+        try {
+            await mvWindow.loadURL(url);
+            mvWindow.show();
+            return true;
+        } catch (error) {
+            console.error('[open-mv-window] loadURL failed:', url, error);
+            try {
+                mvWindow.close();
+            } catch {}
+            throw error;
+        }
+    })();
 });

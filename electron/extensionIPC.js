@@ -57,7 +57,8 @@ export function registerExtensionIPC() {
                     enabled: true,
                     description: ext.manifest?.description || '',
                     permissions: ext.manifest?.permissions || [],
-                    iconData: iconData
+                    iconData: iconData,
+                    moeKoeAdapted: ext.manifest?.moekoe === true || scannedExt?.manifest?.moekoe === true
                 };
             });
             

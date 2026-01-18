@@ -109,7 +109,7 @@ html.dark .player-container .song-title {
     color: #e1e1e1 !important;
 }
 
-html.dark .player-container .song-artist {
+html.dark .player-container .song-artist, html.dark .extension-item h4 {
     color: #999 !important;
 }
 
@@ -599,7 +599,7 @@ html.dark .qr-code {
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
-html.dark .empty-container {
+html.dark .empty-container, html.dark .extension-item {
     background-color: #2a2a2a;
     border-color: #444;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);

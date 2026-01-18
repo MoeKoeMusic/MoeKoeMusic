@@ -46,8 +46,8 @@ httpClient.interceptors.response.use(
             console.error(`http error status:${error.response.status}`,error.response.data);
             if (error.response?.data?.data) {
                 console.error(error.response.data.data);
-            } else {
-                $message.error('服务器错误,请稍后再试!');
+            // } else {
+            //     $message.error('服务器错误,请稍后再试!');
             }
         } else if (error.request) {
             console.error('No response received:', error.request);

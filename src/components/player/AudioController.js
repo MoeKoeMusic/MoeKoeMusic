@@ -309,7 +309,6 @@ export default function useAudioController({ onSongEnd, updateCurrentTime }) {
         audio.pause();
         audio.src = '';
         audio.load();
-        audio = null;
         audio.removeEventListener('play', handleAudioEvent);
         audio.removeEventListener('ended', onSongEnd);
         audio.removeEventListener('pause', handleAudioEvent);

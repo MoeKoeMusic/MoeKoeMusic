@@ -1,14 +1,14 @@
-const { signKey, appid, cryptoMd5 } = require('../util');
+const { randomString, appid, cryptoMd5 } = require('../util');
 module.exports = (params, useAxios) => {
-  const quality = ['piano', 'acappella', 'subwoofer', 'ancient', 'dj', 'surnay'].includes(params.quality)
-    ? `magic_${params?.quality}`
-    : params.quality;
+  // const quality = ['piano', 'acappella', 'subwoofer', 'ancient', 'dj', 'surnay'].includes(params.quality)
+  //   ? `magic_${params?.quality}`
+  //   : params.quality;
 
   const vip_token = params?.vip_token || params?.cookie?.vip_token || '';
   const token = params?.token || params?.cookie?.token || '';
   const clienttime_ms = Date.now();
   const userid = Number(params?.userid || params?.cookie?.userid || '0');
-  const dfid = params?.dfid || params?.cookie?.dfid || '-'; // 自定义
+  const dfid = params?.dfid || params?.cookie?.dfid || randomString(24); // 自定义
   const vip_type = params?.cookie?.vip_type || params?.vipType || 0;
 
   const dataMap = {
@@ -31,7 +31,7 @@ module.exports = (params, useAxios) => {
       auth: '',
       is_free_part: params?.free_part ? 1 : 0,
       // key: signKey(params.hash, cryptoMd5(dfid), userid, appid),
-      key: cryptoMd5(`${params.hash}185672dd44712f60bb1736df5a377e82${appid}${cryptoMd5(dfid)}${userid}`),
+      key: cryptoMd5(`${params.hash}185672dd44712f60bb1736df5a377e82${appid}${cryptoMd5(dfid)}${cryptoMd5(dfid).slice(0, 7)}${userid}`),
       module_id: 0,
       need_climax: 1,
       need_xcdn: 1,
@@ -51,6 +51,6 @@ module.exports = (params, useAxios) => {
     method: 'POST',
     data: dataMap,
     encryptType: 'android',
-    cookie: params?.cookie || {},
+    cookie: Object.assign({}, { dfid }, params?.cookie),
   });
 };

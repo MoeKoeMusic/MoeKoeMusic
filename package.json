@@ -19,7 +19,10 @@
     "electron:build:win": "run-s build:api:win \"electron:build -- --win --publish never\"",
     "electron:build:linux": "run-s build:api:linux \"electron:build -- --linux --publish never\"",
     "electron:build:linux-aarch64": "run-s build:api:linux-aarch64 \"electron:build -- --linux --publish never\"",
-    "electron:build:macos": "run-s build:api:macos \"electron:build -- --mac --universal --publish never\"",
+    "electron:build:macos": "run-s build:api:macos \"electron:build -- --mac --x64 --arm64 --publish never\"",
+    "electron:build:macos:universal": "run-s build:api:macos \"electron:build -- --mac --universal --publish never\"",
+    "electron:build:macos:x64": "run-s build:api:macos \"electron:build -- --mac --x64 --publish never\"",
+    "electron:build:macos:arm64": "run-s build:api:macos \"electron:build -- --mac --arm64 --publish never\"",
     "electron:build": "cross-env NODE_ENV=production electron-builder"
   },
   "engines": {
@@ -106,11 +109,10 @@
       "x64ArchFiles": "*",
       "icon": "build/icons/icon.icns",
       "target": [
-        "dmg",
-        "zip"
+        "dmg"
       ],
       "identity": null,
-      "artifactName": "${productName}.${ext}",
+      "artifactName": "${productName}-${arch}.${ext}",
       "protocols": [
         {
           "name": "MoeKoe Music Protocol",

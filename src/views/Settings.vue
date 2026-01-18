@@ -921,6 +921,15 @@ const closeSelection = () => {
 
 onMounted(() => {
     const savedSettings = JSON.parse(localStorage.getItem('settings'));
+    
+    // 根据平台设置状态栏歌词的默认值：macOS 默认开启，Windows 默认关闭
+    if (isElectron() && !savedSettings?.statusBarLyrics) {
+        const isMac = window.electron.platform === 'darwin';
+        selectedSettings.value.statusBarLyrics = isMac 
+            ? { displayText: t('da-kai'), value: 'on' }
+            : { displayText: t('guan-bi'), value: 'off' };
+    }
+    
     if (savedSettings) {
         for (const key in savedSettings) {
             if (key === 'shortcuts') continue;

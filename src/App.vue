@@ -14,10 +14,9 @@ import { useRoute } from 'vue-router';
 import Disclaimer from '@/components/Disclaimer.vue';
 import TitleBar from '@/components/TitleBar.vue';
 import { MoeAuthStore } from '@/stores/store';
+import logoImageSrc from '/tray-icon@2x.png?url';  // 使用 Vite 静态资源导入
 
-const logoImageUrl = import.meta.env.DEV 
-    ? '/tray-icon@2x.png' 
-    : 'dist/tray-icon@2x.png';
+const logoImageUrl = logoImageSrc;  // 开发和生产环境都使用导入的 URL
 
 const route = useRoute();
 const isLyricsRoute = computed(() => route.path === '/lyrics');
@@ -32,11 +31,12 @@ const scrollState = {
     scrollOffset: 0,         // 当前滚动偏移量
     isScrolling: false,      // 是否正在滚动
     renderFailCount: 0,      // 渲染失败计数（用于降级保护）
+    hasPlayedLyrics: false,  // 是否已播放过歌词（用于区分启动时和间奏时）
 };
 
 // 配置常量
 const CONFIG = {
-    SCROLL_SPEED: 4,         // 滚动速度 4px/frame (约120px/s)，适合快歌和长歌词
+    SCROLL_SPEED: 8,         // 滚动速度 8px/frame (约240px/s)，适合快歌和长歌词
     FRAME_INTERVAL: 33,      // 帧间隔 (ms)，30 FPS
     SEPARATOR: '',           // 不需要分隔符了，因为不再循环
     LOGO_WIDTH: 50,          // Logo 区域宽度
@@ -112,8 +112,18 @@ const renderFrameWithOffset = (text, offsetX = 0, isMarquee = false) => {
     let isPlaceholder = false;
 
     if (!text || text.trim().length === 0) {
-        textToDraw = '♩ ♩ ♩'; 
+        // 区分启动时和间奏时
+        if (scrollState.hasPlayedLyrics) {
+            // 已经播放过歌词，这是间奏
+            textToDraw = '♩ ♩ ♩';
+        } else {
+            // 还没播放过歌词，这是启动时
+            textToDraw = '♪ MoeKoeMusic - 萌音';
+        }
         isPlaceholder = true;
+    } else {
+        // 有歌词内容，标记为已播放过
+        scrollState.hasPlayedLyrics = true;
     }
 
     // 设置裁剪区域
@@ -286,6 +296,14 @@ onMounted(async () => {
     img.src = logoImageUrl;
     img.onload = () => {
         logoImage.value = img;
+        
+        // ✅ 修复：如果状态栏歌词功能已开启，主动渲染一次占位符
+        if (window.electron && window.electron.ipcRenderer && settings.statusBarLyrics === 'on') {
+            // 延迟 500ms 确保 Tray 已创建
+            setTimeout(() => {
+                drawStatusBarImage('');  // 渲染占位符 ♩ ♩ ♩
+            }, 500);
+        }
     };
 
     // 监听 IPC 消息

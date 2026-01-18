@@ -48,6 +48,24 @@ app.on('ready', () => {
         try {
             mainWindow = createWindow();
             createTray(mainWindow);
+            
+            // ✅ 修复：如果状态栏歌词功能已开启，主动触发渲染
+            // 注意：首次安装时 settings 可能为空，默认视为开启状态
+            const settings = store.get('settings') || {};
+            const statusBarLyricsEnabled = settings.statusBarLyrics === undefined || settings.statusBarLyrics === 'on';
+            
+            if (process.platform === 'darwin' && statusBarLyricsEnabled) {
+                // 等待窗口准备好后触发渲染
+                mainWindow.webContents.once('did-finish-load', () => {
+                    setTimeout(() => {
+                        if (mainWindow?.webContents) {
+                            console.log('[Main] 启动时主动触发状态栏歌词渲染');
+                            mainWindow.webContents.send('generate-statusbar-image', '');
+                        }
+                    }, 1000);  // 延迟 1000ms 确保前端已完全加载
+                });
+            }
+            
             if (process.platform === "darwin" && store.get('settings')?.touchBar == 'on') createTouchBar(mainWindow);
             playStartupSound();
             registerShortcut();
@@ -227,8 +245,11 @@ ipcMain.on('lyrics-data', (event, lyricsData) => {
 
     // 状态栏歌词功能（仅支持Mac系统）
     if (process.platform === 'darwin') {
-        const settings = store.get('settings');
-        if (settings?.statusBarLyrics === 'on') {
+        const settings = store.get('settings') || {};
+        // 首次安装时 statusBarLyrics 是 undefined，默认视为开启
+        const statusBarLyricsEnabled = settings.statusBarLyrics === undefined || settings.statusBarLyrics === 'on';
+        
+        if (statusBarLyricsEnabled) {
             const currentLyric = lyricsData?.currentLyric || '';
 
             if (currentLyric) {
@@ -250,8 +271,9 @@ ipcMain.on('lyrics-data', (event, lyricsData) => {
                 if (!clearLyricsTimeout && lastStatusBarLyric !== '') {
                     clearLyricsTimeout = setTimeout(() => {
                         // 再次检查设置，确保在这段时间内没关闭功能
-                        const currentSettings = store.get('settings');
-                        if (currentSettings?.statusBarLyrics === 'on') {
+                        const currentSettings = store.get('settings') || {};
+                        const stillEnabled = currentSettings.statusBarLyrics === undefined || currentSettings.statusBarLyrics === 'on';
+                        if (stillEnabled) {
                             if (mainWindow?.webContents) {
                                 mainWindow.webContents.send('generate-statusbar-image', ''); // 发送空字符串触发占位符
                             }
@@ -400,9 +422,10 @@ ipcMain.on('open-url', (event, url) => {
 ipcMain.on('set-tray-title', (event, title) => {
     const tray = getTray();
     if (tray) {
-        const settings = store.get('settings');
-        // 如果状态栏歌词功能开启，不设置标题，使用歌词图片
-        if (settings?.statusBarLyrics === 'on') {
+        const settings = store.get('settings') || {};
+        // 如果状态栏歌词功能开启（或首次安装时默认开启），不设置标题，使用歌词图片
+        const statusBarLyricsEnabled = settings.statusBarLyrics === undefined || settings.statusBarLyrics === 'on';
+        if (process.platform === 'darwin' && statusBarLyricsEnabled) {
             return;
         }
         // 否则设置标题

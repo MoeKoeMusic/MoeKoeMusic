@@ -256,6 +256,12 @@ const updateCurrentTime = throttle(() => {
 
     const savedConfig = JSON.parse(localStorage.getItem('settings') || '{}');
     const hasLyricsData = Array.isArray(lyricsData.value) && lyricsData.value.length > 0;
+    
+    // 首次安装时 statusBarLyrics 是 undefined，根据平台决定默认值：macOS 默认开启，其他平台默认关闭
+    const isMac = isElectron() && window.electron.platform === 'darwin';
+    const statusBarLyricsEnabled = savedConfig?.statusBarLyrics === 'on' || 
+        (savedConfig?.statusBarLyrics === undefined && isMac);
+    const desktopLyricsEnabled = savedConfig?.desktopLyrics === 'on';
 
     if (audio) {
         if (savedConfig?.lyricsAlign != lyricsAlign.value) lyricsAlign.value = savedConfig.lyricsAlign;
@@ -264,8 +270,8 @@ const updateCurrentTime = throttle(() => {
             highlightCurrentChar(audio.currentTime, !lyricsFlag.value);
         }
 
-        // 只在有歌曲且正在播放时才发送 IPC
-        if (isElectron() && audio.src && playing.value && (savedConfig?.desktopLyrics === 'on' || savedConfig?.statusBarLyrics === 'on')) {
+        // 只在有歌曲且正在播放时才发送 IPC（修复：首次安装时 statusBarLyrics 默认开启）
+        if (isElectron() && audio.src && playing.value && (desktopLyricsEnabled || statusBarLyricsEnabled)) {
             const currentLine = hasLyricsData ? getCurrentLineText(audio.currentTime) : '';
             
             // 只有歌词真正变化时才发送（防抖）
@@ -316,7 +322,7 @@ const updateCurrentTime = throttle(() => {
         }
     }
 
-    if (!hasLyricsData && isElectron() && (savedConfig?.desktopLyrics === 'on' || savedConfig?.statusBarLyrics === 'on' || savedConfig?.apiMode === 'on')) {
+    if (!hasLyricsData && isElectron() && (desktopLyricsEnabled || statusBarLyricsEnabled || savedConfig?.apiMode === 'on')) {
         if (isLyrics === false) return;
         getCurrentLyrics();
     }

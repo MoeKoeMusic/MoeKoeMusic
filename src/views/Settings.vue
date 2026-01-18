@@ -1,4 +1,4 @@
-﻿<template>
+<template>
     <div class="settings-page">
         <div class="settings-sidebar">
             <div v-for="(section, sectionIndex) in settingSections" :key="sectionIndex" 
@@ -204,7 +204,7 @@ const selectedSettings = ref({
     quality: { displayText: t('pu-tong-yin-zhi'), value: 'normal' },
     lyricsBackground: { displayText: t('da-kai'), value: 'on' },
     desktopLyrics: { displayText: t('guan-bi'), value: 'off' },
-    statusBarLyrics: { displayText: t('guan-bi'), value: 'off' },
+    statusBarLyrics: { displayText: t('da-kai'), value: 'on' },
     lyricsFontSize: { displayText: t('zhong'), value: '24px' },
     lyricsTranslation: { displayText: t('da-kai'), value: 'on' },
     lyricsAlign: { displayText: t('ju-zhong'), value: 'center' },

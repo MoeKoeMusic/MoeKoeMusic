@@ -8,6 +8,7 @@ import {
 import { initializeExtensions, cleanupExtensions } from './extensions.js';
 import { setupAutoUpdater } from './updater.js';
 import apiService from './apiService.js';
+import statusBarLyricsService from './services/statusBarLyricsService.js';
 import Store from 'electron-store';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -15,13 +16,7 @@ import { t } from './i18n.js';
 
 let mainWindow = null;
 let blockerId = null;
-let lastStatusBarLyric = ''; // 缓存上一次的状态栏歌词
-let clearLyricsTimeout = null; // 用于歌词清空的防抖定时器
-let lastTrayUpdateTime = 0; // 用于 tray 更新节流
-let lastTrayImageHash = ''; // 缓存上一次的图片哈希，避免重复设置相同图片
-const TRAY_UPDATE_THROTTLE = 50; // 最小更新间隔 50ms（允许 20FPS 以内的更新）
 const store = new Store();
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const gotTheLock = app.requestSingleInstanceLock();
@@ -48,24 +43,10 @@ app.on('ready', () => {
         try {
             mainWindow = createWindow();
             createTray(mainWindow);
-            
-            // ✅ 修复：如果状态栏歌词功能已开启，主动触发渲染
-            // 注意：首次安装时 settings 可能为空，默认视为开启状态
-            const settings = store.get('settings') || {};
-            const statusBarLyricsEnabled = settings.statusBarLyrics === undefined || settings.statusBarLyrics === 'on';
-            
-            if (process.platform === 'darwin' && statusBarLyricsEnabled) {
-                // 等待窗口准备好后触发渲染
-                mainWindow.webContents.once('did-finish-load', () => {
-                    setTimeout(() => {
-                        if (mainWindow?.webContents) {
-                            console.log('[Main] 启动时主动触发状态栏歌词渲染');
-                            mainWindow.webContents.send('generate-statusbar-image', '');
-                        }
-                    }, 1000);  // 延迟 1000ms 确保前端已完全加载
-                });
-            }
-            
+
+            // 初始化状态栏歌词服务
+            statusBarLyricsService.init(mainWindow, store, getTray, createTray);
+
             if (process.platform === "darwin" && store.get('settings')?.touchBar == 'on') createTouchBar(mainWindow);
             playStartupSound();
             registerShortcut();
@@ -136,25 +117,10 @@ app.on('before-quit', () => {
     if (blockerId !== null) {
         powerSaveBlocker.stop(blockerId);
     }
-    
-    // 清理 tray（重要：防止退出后闪烁）
-    const tray = getTray();
-    if (tray) {
-        try {
-            tray.setImage(nativeImage.createEmpty());
-            tray.setTitle('');
-            tray.destroy();
-        } catch (e) {
-            console.error('[Main] Error cleaning up tray:', e);
-        }
-    }
-    
-    // 清理定时器
-    if (clearLyricsTimeout) {
-        clearTimeout(clearLyricsTimeout);
-        clearLyricsTimeout = null;
-    }
-    
+
+    // 清理状态栏歌词服务
+    statusBarLyricsService.cleanup();
+
     stopApiServer();
     apiService.stop();
     cleanupExtensions();
@@ -243,118 +209,9 @@ ipcMain.on('lyrics-data', (event, lyricsData) => {
         lyricsWindow.webContents.send('lyrics-data', lyricsData);
     }
 
-    // 状态栏歌词功能（仅支持Mac系统）
+    // 状态栏歌词功能服务处理（仅支持Mac系统）
     if (process.platform === 'darwin') {
-        const settings = store.get('settings') || {};
-        // 首次安装时 statusBarLyrics 是 undefined，默认视为开启
-        const statusBarLyricsEnabled = settings.statusBarLyrics === undefined || settings.statusBarLyrics === 'on';
-        
-        if (statusBarLyricsEnabled) {
-            const currentLyric = lyricsData?.currentLyric || '';
-
-            if (currentLyric) {
-                // 有歌词时：立即清除之前的清空定时器，并立即更新
-                if (clearLyricsTimeout) {
-                    clearTimeout(clearLyricsTimeout);
-                    clearLyricsTimeout = null;
-                }
-
-                if (currentLyric !== lastStatusBarLyric) {
-                    if (mainWindow?.webContents) {
-                        mainWindow.webContents.send('generate-statusbar-image', currentLyric);
-                    }
-                    lastStatusBarLyric = currentLyric;
-                }
-            } else {
-                // 无歌词时：不要立即清空，而是设置防抖定时器
-                // 只有当 5000ms 内都没有新歌词来，才真正显示占位符（说明是真正的间奏）
-                if (!clearLyricsTimeout && lastStatusBarLyric !== '') {
-                    clearLyricsTimeout = setTimeout(() => {
-                        // 再次检查设置，确保在这段时间内没关闭功能
-                        const currentSettings = store.get('settings') || {};
-                        const stillEnabled = currentSettings.statusBarLyrics === undefined || currentSettings.statusBarLyrics === 'on';
-                        if (stillEnabled) {
-                            if (mainWindow?.webContents) {
-                                mainWindow.webContents.send('generate-statusbar-image', ''); // 发送空字符串触发占位符
-                            }
-                            lastStatusBarLyric = '';
-                        }
-                        clearLyricsTimeout = null;
-                    }, 5000); // 5秒防抖，只有真正的间奏才显示音符
-                }
-            }
-        } else if (lastStatusBarLyric !== '') {
-            // 功能关闭时：立即清理
-            if (clearLyricsTimeout) {
-                clearTimeout(clearLyricsTimeout);
-                clearLyricsTimeout = null;
-            }
-            const tray = getTray();
-            if (tray && !tray.isDestroyed()) {
-                tray.setTitle('');
-                tray.setImage(nativeImage.createEmpty());
-                createTray(mainWindow);
-                lastStatusBarLyric = '';
-            }
-        }
-    }
-});
-
-// 监听渲染进程生成的图片并更新 Tray（添加节流防止闪烁和闪退）
-ipcMain.on('update-statusbar-image', (event, dataUrl) => {
-    // 节流：防止过于频繁的更新
-    const now = Date.now();
-    if (now - lastTrayUpdateTime < TRAY_UPDATE_THROTTLE) {
-        return; // 跳过这次更新
-    }
-    
-    const tray = getTray();
-    if (!tray || tray.isDestroyed()) {
-        return; // tray 不存在或已销毁
-    }
-    
-    if (!dataUrl) {
-        return;
-    }
-    
-    // 计算简单哈希避免重复设置相同图片（减少抖动）
-    const imageHash = dataUrl.slice(-100); // 用最后100个字符作为简单哈希
-    if (imageHash === lastTrayImageHash) {
-        return; // 图片相同，跳过更新
-    }
-    
-    lastTrayUpdateTime = now;
-    lastTrayImageHash = imageHash;
-    
-    try {
-        // 解析 Base64 数据
-        const base64Data = dataUrl.replace(/^data:image\/png;base64,/, "");
-        const buffer = Buffer.from(base64Data, 'base64');
-
-        // 创建空的 nativeImage
-        const image = nativeImage.createEmpty();
-
-        // 添加 @2x 资源 (scaleFactor: 2.0)
-        // 逻辑尺寸 200x22, 实际 Buffer 是 400x44 (由前端 Canvas 生成)
-        image.addRepresentation({
-            scaleFactor: 2.0,
-            width: 200,
-            height: 22,
-            buffer: buffer
-        });
-
-        image.setTemplateImage(true);
-
-        // 再次检查 tray 是否有效
-        if (tray && !tray.isDestroyed()) {
-            tray.setImage(image);
-            // 仅当 Title 不为空时才清空，避免高频调用导致布局抖动
-            if (tray.getTitle() !== '') {
-                tray.setTitle('');
-            }
-        }
-    } catch (e) {
-        console.error('[StatusBar] Failed to set tray image:', e);
+        statusBarLyricsService.handleLyricsData(lyricsData);
     }
 });
 
@@ -420,17 +277,7 @@ ipcMain.on('open-url', (event, url) => {
 })
 
 ipcMain.on('set-tray-title', (event, title) => {
-    const tray = getTray();
-    if (tray) {
-        const settings = store.get('settings') || {};
-        // 如果状态栏歌词功能开启（或首次安装时默认开启），不设置标题，使用歌词图片
-        const statusBarLyricsEnabled = settings.statusBarLyrics === undefined || settings.statusBarLyrics === 'on';
-        if (process.platform === 'darwin' && statusBarLyricsEnabled) {
-            return;
-        }
-        // 否则设置标题
-        tray.setTitle(t('now-playing') + title);
-    }
+    createTray(mainWindow, t('now-playing') + title);
     mainWindow.setTitle(title);
 })
 

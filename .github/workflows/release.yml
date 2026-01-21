@@ -135,8 +135,8 @@ jobs:
 
       - name: Rename macOS artifacts
         run: |
-          mv "./dist_electron/MoeKoe Music.dmg" "./MoeKoe_Music_${{ needs.increment-version.outputs.version }}-arm64.dmg"
-          mv "./dist_electron/MoeKoe Music.zip" "./MoeKoe_Music_${{ needs.increment-version.outputs.version }}-arm64-mac.zip"
+          mv "./dist_electron/MoeKoe Music-arm64.dmg" "./MoeKoe_Music_${{ needs.increment-version.outputs.version }}-arm64.dmg"
+          mv "./dist_electron/MoeKoe Music-x64.dmg" "./MoeKoe_Music_${{ needs.increment-version.outputs.version }}-x64.dmg"
       
       - name: List files after renaming
         run: ls -al ./dist_electron
@@ -149,7 +149,7 @@ jobs:
           name: "Release ${{ needs.increment-version.outputs.version }}"
           files: |
             ./MoeKoe_Music_${{ needs.increment-version.outputs.version }}-arm64.dmg
-            ./MoeKoe_Music_${{ needs.increment-version.outputs.version }}-arm64-mac.zip
+            ./MoeKoe_Music_${{ needs.increment-version.outputs.version }}-x64.dmg
 
   # Linux 端打包并上传到 GitHub Release
   build-linux:
@@ -189,4 +189,3 @@ jobs:
           files: |
             ./MoeKoe_Music_${{ needs.increment-version.outputs.version }}.AppImage
             ./MoeKoe_Music_${{ needs.increment-version.outputs.version }}_amd64.deb
-        

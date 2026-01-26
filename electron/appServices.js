@@ -11,6 +11,7 @@ import { checkForUpdates } from './updater.js';
 import { Notification } from 'electron';
 import extensionManager from './extensionManager.js';
 import { t } from './i18n.js';
+import statusBarLyricsService from './services/statusBarLyricsService.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const store = new Store();
 const { TouchBarLabel, TouchBarButton, TouchBarGroup, TouchBarSpacer } = TouchBar;
@@ -260,12 +261,12 @@ export function createTray(mainWindow, title = '') {
         // macOS 特殊处理：如果状态栏歌词开启，不设置标题（避免覆盖歌词图片）
         if (process.platform === 'darwin') {
             try {
-                const statusBarLyricsService = require('./services/statusBarLyricsService.js').default;
-                if (!statusBarLyricsService.isStatusBarLyricsEnabled()) {
+                if (statusBarLyricsService && !statusBarLyricsService.isStatusBarLyricsEnabled()) {
                     tray.setTitle(title);
                 }
             } catch (e) {
-                // 如果服务未初始化，继续正常设置
+                // 如果服务未初始化或出错，继续正常设置
+                console.error('[AppServices] Error checking status bar lyrics:', e);
                 tray.setTitle(title);
             }
         }

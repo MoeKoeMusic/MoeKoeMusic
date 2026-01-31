@@ -19,12 +19,10 @@ httpClient.interceptors.request.use(
         const MoeAuth = MoeAuthStore();
         const token = MoeAuth.UserInfo?.token;
         const userid = MoeAuth.UserInfo?.userid;
-        const dfid = MoeAuth.Device?.dfid;
 
         const authParts = [];
         if (token) authParts.push(`token=${encodeURIComponent(token)}`);
         if (userid) authParts.push(`userid=${encodeURIComponent(userid)}`);
-        if (dfid) authParts.push(`dfid=${encodeURIComponent(dfid)}`);
 
         if (authParts.length > 0) {
             config.headers = {

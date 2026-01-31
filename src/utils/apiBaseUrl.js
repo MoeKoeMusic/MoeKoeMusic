@@ -42,7 +42,7 @@ export function joinApiUrl(baseUrl, path = '/') {
 }
 
 export async function testApiBaseUrl(baseUrl, options = {}) {
-    const { path = '/register/dev', timeoutMs = 8000 } = options;
+    const { path = '/', timeoutMs = 8000 } = options;
     const target = joinApiUrl(baseUrl, path);
 
     const controller = new AbortController();
@@ -61,12 +61,7 @@ export async function testApiBaseUrl(baseUrl, options = {}) {
 
         const data = await response.json().catch(() => null);
 
-        const dfid = data?.data?.dfid;
-        if (typeof dfid !== 'string' || !dfid) {
-            return { ok: false, error: 'no_dfid', data };
-        }
-
-        return { ok: true, data, dfid };
+        return { ok: true, data };
     } catch (error) {
         if (error?.name === 'AbortError') return { ok: false, error: 'timeout' };
         return { ok: false, error: error?.message || String(error) };

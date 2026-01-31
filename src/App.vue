@@ -31,10 +31,6 @@ onMounted(async () => {
     const settings = JSON.parse(localStorage.getItem('settings')) || {};
     showTitleBar.value = settings.nativeTitleBar !== 'on'; // 如果值为 'on'，则不显示 TitleBar
 
-    // Initialize device dfid for API authentication
-    const MoeAuth = MoeAuthStore();
-    await MoeAuth.initDfid();
-
     // 初始化状态栏歌词
     cleanupStatusBarIPC = initStatusBar(logoImageSrc, settings);
 });

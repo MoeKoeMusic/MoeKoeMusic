@@ -1,20 +1,10 @@
 import { defineStore } from 'pinia';
-import axios from 'axios';
-import { getApiBaseUrl } from '../utils/apiBaseUrl';
-
-// 用于设备注册的独立 axios 实例（不带拦截器，避免循环依赖）
-const registerDeviceApi = axios.create({
-    baseURL: getApiBaseUrl(),
-    timeout: 10000,
-});
 
 export const MoeAuthStore = defineStore('MoeData', {
     state: () => ({
         UserInfo: null, // 用户信息
         Config: null, // 配置信息
-        Device: {
-            dfid: null,
-        }, // 设备信息
+        Device: {}, // 设备信息
     }),
     actions: {
         fetchConfig(key) {
@@ -29,20 +19,6 @@ export const MoeAuthStore = defineStore('MoeData', {
         clearData() {
             this.UserInfo = null; // 清除用户信息
         },
-        async initDfid() {
-            if (this.Device?.dfid) return this.Device.dfid;
-            try {
-                const response = await registerDeviceApi.get('/register/dev');
-                const dfid = response?.data?.data?.dfid;
-                if (dfid) {
-                    this.Device.dfid = dfid;
-                    return dfid;
-                }
-            } catch (error) {
-                console.error('Failed to register device:', error);
-            }
-            return null;
-        }
     },
     getters: {
         isAuthenticated: (state) => !!state.UserInfo && !!state.UserInfo, // 是否已登录

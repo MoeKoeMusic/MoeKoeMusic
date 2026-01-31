@@ -1048,7 +1048,7 @@ const testApiBaseUrl = async () => {
     apiBaseUrlForm.testResult = t('zheng-zai-ce-shi');
     apiBaseUrlForm.testStatus = 'testing';
 
-    const result = await testApiBaseUrlRequest(candidate, { path: '/register/dev' });
+    const result = await testApiBaseUrlRequest(candidate, { path: '/' });
     apiBaseUrlForm.testing = false;
 
     if (result.ok) {
@@ -1056,9 +1056,6 @@ const testApiBaseUrl = async () => {
         apiBaseUrlForm.testStatus = 'success';
     } else if (result.error === 'timeout') {
         apiBaseUrlForm.testResult = t('lian-jie-chao-shi');
-        apiBaseUrlForm.testStatus = 'error';
-    } else if (result.error === 'no_dfid') {
-        apiBaseUrlForm.testResult = 'RPC端点协议不符合';
         apiBaseUrlForm.testStatus = 'error';
     } else if (typeof result.status === 'number') {
         apiBaseUrlForm.testResult = `连接失败：${result.status} ${result.statusText || ''}`.trim();

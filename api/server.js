@@ -35,6 +35,7 @@ if (fs.existsSync(envPath)) {
 const DEFAULT_AUDIO_PROXY_ALLOW_HOSTS = ['kugou.com'];
 const AUDIO_PROXY_FORWARD_REQUEST_HEADERS = ['range', 'if-range'];
 const AUDIO_PROXY_FORWARD_RESPONSE_HEADERS = ['content-type', 'content-length', 'content-range', 'accept-ranges', 'cache-control', 'etag', 'last-modified', 'expires'];
+const AUDIO_PROXY_ALLOWED_METHODS = ['GET', 'HEAD'];
 
 /**
  * @param {string | undefined} rawHosts
@@ -76,6 +77,21 @@ function pickAudioProxyRequestHeaders(headers) {
 }
 
 /**
+ * @param {import('express').Request} req
+ * @returns {boolean}
+ */
+function isLoggedInRequest(req) {
+  const authHeader = req.headers['authorization'];
+  if (typeof authHeader === 'string' && authHeader.trim()) return true;
+
+  const token = typeof req.cookies?.token === 'string' ? req.cookies.token.trim() : '';
+  if (token) return true;
+
+  const userid = Number(req.cookies?.userid || 0);
+  return Number.isFinite(userid) && userid > 0;
+}
+
+/**
  *  描述：动态获取模块定义
  * @param {string}  modulesPath  模块路径(TS)
  * @param {Record<string, string>} specificRoute  特定模块定义
@@ -107,23 +123,55 @@ async function getModulesDefinitions(modulesPath, specificRoute, doRequire = tru
  */
 async function consturctServer(moduleDefs) {
   const app = express();
-  const { CORS_ALLOW_ORIGIN } = process.env;
+  const corsAllowOrigin = typeof process.env.CORS_ALLOW_ORIGIN === 'string' ? process.env.CORS_ALLOW_ORIGIN.trim() : '';
   app.set('trust proxy', true);
 
   /**
    * CORS & Preflight request
    */
   app.use((req, res, next) => {
-    if (req.path !== '/' && !req.path.includes('.')) {
-      res.set({
-        'Access-Control-Allow-Credentials': true,
-        'Access-Control-Allow-Origin': CORS_ALLOW_ORIGIN || req.headers.origin || '*',
-        'Access-Control-Allow-Headers': 'Authorization,X-Requested-With,Content-Type,Cache-Control',
-        'Access-Control-Allow-Methods': 'PUT,POST,GET,DELETE,OPTIONS',
-        'Content-Type': 'application/json; charset=utf-8',
-      });
+    const isApiPath = req.path !== '/' && !req.path.includes('.');
+    const requestOrigin = typeof req.headers.origin === 'string' ? req.headers.origin.trim() : '';
+    const requestHost = req.get('host');
+    const currentOrigin = requestHost ? `${req.protocol}://${requestHost}` : '';
+    const isCrossOrigin = !!requestOrigin && requestOrigin !== currentOrigin;
+    const shouldHandleCors = isApiPath && isCrossOrigin && !!corsAllowOrigin;
+
+    if (!shouldHandleCors) {
+      next();
+      return;
     }
-    req.method === 'OPTIONS' ? res.status(204).end() : next();
+
+    const isWildcard = corsAllowOrigin === '*';
+    const allowOrigin = isWildcard ? requestOrigin : corsAllowOrigin;
+    const isOriginAllowed = isWildcard || requestOrigin === corsAllowOrigin;
+
+    if (!isOriginAllowed) {
+      if (req.method === 'OPTIONS') {
+        res.status(403).end();
+        return;
+      }
+      next();
+      return;
+    }
+
+    res.set({
+      'Access-Control-Allow-Credentials': true,
+      'Access-Control-Allow-Origin': allowOrigin,
+      'Access-Control-Allow-Headers': 'Authorization,Range,If-Range,X-Requested-With,Content-Type,Cache-Control',
+      'Access-Control-Allow-Methods': 'GET,HEAD,OPTIONS',
+    });
+
+    if (isWildcard) {
+      res.set('Vary', 'Origin');
+    }
+
+    if (req.method === 'OPTIONS') {
+      res.status(204).end();
+      return;
+    }
+
+    next();
   });
 
   // Cookie Parser
@@ -178,7 +226,16 @@ async function consturctServer(moduleDefs) {
 
   app.use('/docs', express.static(path.join(__dirname, 'docs')));
 
-  app.get('/audio/proxy', async (req, res) => {
+  app.all('/audio/proxy', (req, res, next) => {
+    if (AUDIO_PROXY_ALLOWED_METHODS.includes(req.method)) {
+      next();
+      return;
+    }
+    res.set('Allow', AUDIO_PROXY_ALLOWED_METHODS.join(', '));
+    res.status(405).send({ code: 405, data: null, msg: 'Method Not Allowed' });
+  });
+
+  const handleAudioProxy = async (req, res) => {
     const rawUrl = typeof req.query.url === 'string' ? req.query.url.trim() : '';
     if (!rawUrl) {
       res.status(400).send({ code: 400, data: null, msg: 'Missing url query parameter' });
@@ -204,10 +261,11 @@ async function consturctServer(moduleDefs) {
     }
 
     try {
+      const requestMethod = req.method === 'HEAD' ? 'HEAD' : 'GET';
       const upstreamResponse = await axios({
         url: targetUrl.toString(),
-        method: 'GET',
-        responseType: 'stream',
+        method: requestMethod,
+        responseType: requestMethod === 'HEAD' ? 'arraybuffer' : 'stream',
         timeout: Number(process.env.AUDIO_PROXY_TIMEOUT || '20000'),
         maxRedirects: 5,
         headers: pickAudioProxyRequestHeaders(req.headers),
@@ -220,7 +278,15 @@ async function consturctServer(moduleDefs) {
         res.setHeader(header, value);
       }
 
+      if (isLoggedInRequest(req)) {
+        res.setHeader('Cache-Control', 'no-store');
+      }
+
       res.status(upstreamResponse.status);
+      if (requestMethod === 'HEAD') {
+        res.end();
+        return;
+      }
       pipeline(upstreamResponse.data, res, (streamErr) => {
         if (streamErr && !res.headersSent) {
           res.status(502).send({ code: 502, data: null, msg: 'Audio stream interrupted' });
@@ -230,7 +296,10 @@ async function consturctServer(moduleDefs) {
       console.warn('[audio/proxy]', targetUrl.toString(), error?.message || error);
       res.status(502).send({ code: 502, data: null, msg: 'Audio proxy request failed' });
     }
-  });
+  };
+
+  app.get('/audio/proxy', handleAudioProxy);
+  app.head('/audio/proxy', handleAudioProxy);
 
   // Cache
   app.use(cache('2 minutes', (_, res) => res.statusCode === 200));

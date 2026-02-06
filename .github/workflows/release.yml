@@ -94,7 +94,6 @@ jobs:
       - name: Build
         env:
           os: ${{ runner.os == 'Windows' && 'win' || runner.os == 'macOS' && 'macos' || 'linux' }}
-          version: ${{ needs.increment-version.outputs.version }}
         run: |
           npm run install-all
           npm run build

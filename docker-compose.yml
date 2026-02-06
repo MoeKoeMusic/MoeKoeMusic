@@ -10,7 +10,6 @@ services:
     environment:
       - PORT=6521
       - platform=lite
-      - KUGOU_API_PROXY=''
     ports: # 端口映射
       - "8080:8080"  # 前端服务
       - "6521:6521"  # 接口服务

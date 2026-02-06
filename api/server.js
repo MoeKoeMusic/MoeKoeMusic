@@ -1,6 +1,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
+const { pipeline } = require('node:stream');
 const express = require('express');
+const axios = require('axios');
 const decode = require('safe-decode-uri-component');
 const { cookieToJson, randomString, getGuid, calculateMid } = require('./util/util');
 const { cryptoMd5 } = require('./util/crypto');
@@ -28,6 +30,49 @@ const serverDev = randomString(10).toUpperCase();
 const envPath = path.join(process.cwd(), '.env');
 if (fs.existsSync(envPath)) {
   dotenv.config({ path: envPath, quiet: true });
+}
+
+const DEFAULT_AUDIO_PROXY_ALLOW_HOSTS = ['kugou.com'];
+const AUDIO_PROXY_FORWARD_REQUEST_HEADERS = ['range', 'if-range'];
+const AUDIO_PROXY_FORWARD_RESPONSE_HEADERS = ['content-type', 'content-length', 'content-range', 'accept-ranges', 'cache-control', 'etag', 'last-modified', 'expires'];
+
+/**
+ * @param {string | undefined} rawHosts
+ * @returns {string[]}
+ */
+function parseAudioProxyAllowHosts(rawHosts) {
+  if (!rawHosts) return DEFAULT_AUDIO_PROXY_ALLOW_HOSTS;
+  const items = rawHosts
+    .split(',')
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean);
+  return items.length > 0 ? items : DEFAULT_AUDIO_PROXY_ALLOW_HOSTS;
+}
+
+const audioProxyAllowHosts = parseAudioProxyAllowHosts(process.env.AUDIO_PROXY_ALLOW_HOSTS);
+
+/**
+ * @param {string} hostname
+ * @returns {boolean}
+ */
+function isAudioProxyHostAllowed(hostname) {
+  const host = `${hostname || ''}`.trim().toLowerCase();
+  if (!host) return false;
+  return audioProxyAllowHosts.some((rule) => host === rule || host.endsWith(`.${rule}`));
+}
+
+/**
+ * @param {Record<string, string | string[] | undefined>} headers
+ * @returns {Record<string, string>}
+ */
+function pickAudioProxyRequestHeaders(headers) {
+  const picked = {};
+  for (const header of AUDIO_PROXY_FORWARD_REQUEST_HEADERS) {
+    const value = headers[header];
+    if (!value) continue;
+    picked[header] = Array.isArray(value) ? value.join(', ') : String(value);
+  }
+  return picked;
 }
 
 /**
@@ -132,6 +177,60 @@ async function consturctServer(moduleDefs) {
    */
 
   app.use('/docs', express.static(path.join(__dirname, 'docs')));
+
+  app.get('/audio/proxy', async (req, res) => {
+    const rawUrl = typeof req.query.url === 'string' ? req.query.url.trim() : '';
+    if (!rawUrl) {
+      res.status(400).send({ code: 400, data: null, msg: 'Missing url query parameter' });
+      return;
+    }
+
+    let targetUrl;
+    try {
+      targetUrl = new URL(rawUrl);
+    } catch (_) {
+      res.status(400).send({ code: 400, data: null, msg: 'Invalid audio url' });
+      return;
+    }
+
+    if (!['http:', 'https:'].includes(targetUrl.protocol)) {
+      res.status(400).send({ code: 400, data: null, msg: 'Unsupported url protocol' });
+      return;
+    }
+
+    if (!isAudioProxyHostAllowed(targetUrl.hostname)) {
+      res.status(403).send({ code: 403, data: null, msg: 'Audio host is not allowed' });
+      return;
+    }
+
+    try {
+      const upstreamResponse = await axios({
+        url: targetUrl.toString(),
+        method: 'GET',
+        responseType: 'stream',
+        timeout: Number(process.env.AUDIO_PROXY_TIMEOUT || '20000'),
+        maxRedirects: 5,
+        headers: pickAudioProxyRequestHeaders(req.headers),
+        validateStatus: (status) => status >= 200 && status < 400,
+      });
+
+      for (const header of AUDIO_PROXY_FORWARD_RESPONSE_HEADERS) {
+        const value = upstreamResponse.headers?.[header];
+        if (!value) continue;
+        res.setHeader(header, value);
+      }
+
+      res.status(upstreamResponse.status);
+      pipeline(upstreamResponse.data, res, (streamErr) => {
+        if (streamErr && !res.headersSent) {
+          res.status(502).send({ code: 502, data: null, msg: 'Audio stream interrupted' });
+        }
+      });
+    } catch (error) {
+      console.warn('[audio/proxy]', targetUrl.toString(), error?.message || error);
+      res.status(502).send({ code: 502, data: null, msg: 'Audio proxy request failed' });
+    }
+  });
 
   // Cache
   app.use(cache('2 minutes', (_, res) => res.statusCode === 200));

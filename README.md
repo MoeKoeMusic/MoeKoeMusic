@@ -77,6 +77,7 @@
     ```
     git clone https://github.com/iAJue/MoeKoeMusic.git
     cd MoeKoeMusic
+    git submodule update --init --recursive
     docker compose up -d &
     ```
 

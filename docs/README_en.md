@@ -64,9 +64,59 @@ I said on my personal introduction page that I particularly enjoy listening to m
 
 Please check the  for the update log [Commits](https://github.com/iAJue/MoeKoeMusic/commits/main/)
 
-##  📦 Installation
+## 📦️ Installation
 
-Accessing for this project [Release](https://github.com/iAJue/MoeKoeMusic/releases)Download the installation package from the page.
+### 1. Client Installation
+
+Visit the [Releases](https://github.com/iAJue/MoeKoeMusic/releases) page of this project to download the installation package.
+
+### 2. Web Installation (Docker)
+
+* Note: Please open the corresponding port on the server after deployment, or use a reverse proxy for domain access.
+
+  1. Method 1: Quick Start (Recommended)
+
+  ```
+  git clone https://github.com/iAJue/MoeKoeMusic.git
+  cd MoeKoeMusic
+  git submodule update --init --recursive
+  docker compose up -d &
+  ```
+
+  2. ~~Method 2: One-click installation using docker-compose (image not yet uploaded officially)~~
+  
+  ```
+  docker run -d --name MoeKoeMusic -p 8080:8080 iajue/moekoe-music:latest
+  ```
+
+  3. Method 3: Baota Container Orchestration
+
+  * Remote image, version may be behind the official
+  
+  ```
+  version: '3.3'
+  
+  services:
+    moekoe-music:
+    # Image address
+    image: registry.cn-wulanchabu.aliyuncs.com/youngxj/moekoe-music:latest
+    container_name: moekoe-music # Container name
+    restart: unless-stopped # Auto restart
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports: # Port mapping
+      - "8080:8080"  # Frontend service
+      - "6521:6521"  # API service
+  
+  ```
+  
+  Copy the content above and paste it into the container orchestration in the Baota panel, name the orchestration as MoeKoeMusic, and click deploy.
+
+### 3. 一键部署
+[![使用 EdgeOne Pages 部署](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://edgeone.ai/pages/new?template=https://github.com/iAJue/moekoemusic&install-command=npm%20install&output-directory=dist&root-directory=.%2F&build-command=npm%20run%20build&env=VITE_APP_API_URL)
+
+需在环境变量(VITE_APP_API_URL)中填写自己的API地址
 
 ##  ⚙️  development
 

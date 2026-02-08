@@ -69,130 +69,64 @@ jobs:
           prerelease: false
           draft: false
 
-  # Windows 端打包并上传到 GitHub Release
-  build-windows:
-    name: Build for Windows
-    runs-on: windows-latest
+
+  build-and-upload:
+    name: Build and Upload
     needs: increment-version
+    strategy:
+      matrix:
+        node: [lts/*]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v6
         with:
-          submodules: recursive
+          submodules: true
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: ${{ matrix.node }}
+          cache: 'npm' # use cache
 
-      - name: Install dependencies
-        run: npm run install-all
+      - name: Build
+        env:
+          os: ${{ runner.os == 'Windows' && 'win' || runner.os == 'macOS' && 'macos' || 'linux' }}
+        run: |
+          npm run install-all
+          npm run build
+          npm run electron:build:${{ env.os }}
 
-      - name: Run common build
-        run: npm run build
-
-      - name: Run Windows build
-        run: npm run electron:build:win
-
-      - name: Rename Windows artifact
+      - name: Rename files - win
+        if: runner.os == 'Windows'
         run: |
           mv "./dist_electron/MoeKoe_Music_Setup_${{ needs.increment-version.outputs.version }}.exe" "./MoeKoe_Music_Setup_${{ needs.increment-version.outputs.version }}.exe"
           mv "./dist_electron/MoeKoe_Music_Setup_${{ needs.increment-version.outputs.version }}.exe.blockmap" "./MoeKoe_Music_Setup_${{ needs.increment-version.outputs.version }}.exe.blockmap"
           mv "./dist_electron/latest.yml" "./latest.yml"
+      - name: Rename files - mac
+        if: runner.os == 'macOS'
+        run: |
+          mv "./dist_electron/MoeKoe Music-arm64.dmg" "./MoeKoe_Music_${{ needs.increment-version.outputs.version }}-arm64.dmg"
+          mv "./dist_electron/MoeKoe Music-x64.dmg" "./MoeKoe_Music_${{ needs.increment-version.outputs.version }}-x64.dmg"
+      - name: Rename files - linux
+        if: runner.os == 'Linux'
+        run: |
+          mv "./dist_electron/MoeKoe Music.AppImage" "./MoeKoe_Music_${{ needs.increment-version.outputs.version }}.AppImage"
+          mv "./dist_electron/MoeKoe Music.deb" "./MoeKoe_Music_${{ needs.increment-version.outputs.version }}_amd64.deb"
 
-      - name: Upload Windows artifact to GitHub Release
+      - name: Upload to Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.increment-version.outputs.version }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          name: "Release ${{ needs.increment-version.outputs.version }}"
           files: |
             ./MoeKoe_Music_Setup_${{ needs.increment-version.outputs.version }}.exe
             ./MoeKoe_Music_Setup_${{ needs.increment-version.outputs.version }}.exe.blockmap
             ./latest.yml
 
-  # macOS 端打包并上传到 GitHub Release
-  build-macos:
-    name: Build for macOS
-    runs-on: macos-latest
-    needs: increment-version
-    timeout-minutes: 30
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: npm run install-all
-
-      - name: Run common build
-        run: npm run build
-
-      - name: Run macOS build
-        run: npm run electron:build:macos
-
-      - name: Rename macOS artifacts
-        run: |
-          mv "./dist_electron/MoeKoe Music-arm64.dmg" "./MoeKoe_Music_${{ needs.increment-version.outputs.version }}-arm64.dmg"
-          mv "./dist_electron/MoeKoe Music-x64.dmg" "./MoeKoe_Music_${{ needs.increment-version.outputs.version }}-x64.dmg"
-      
-      - name: List files after renaming
-        run: ls -al ./dist_electron
-
-      - name: Upload macOS artifacts to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ needs.increment-version.outputs.version }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          name: "Release ${{ needs.increment-version.outputs.version }}"
-          files: |
             ./MoeKoe_Music_${{ needs.increment-version.outputs.version }}-arm64.dmg
             ./MoeKoe_Music_${{ needs.increment-version.outputs.version }}-x64.dmg
 
-  # Linux 端打包并上传到 GitHub Release
-  build-linux:
-    name: Build for Linux
-    runs-on: ubuntu-latest
-    needs: increment-version
-    timeout-minutes: 30
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: npm run install-all
-
-      - name: Run common build
-        run: npm run build
-
-      - name: Run Linux build
-        run: npm run electron:build:linux
-
-      - name: Rename Linux artifacts
-        run: |
-          mv "./dist_electron/MoeKoe Music.AppImage" "./MoeKoe_Music_${{ needs.increment-version.outputs.version }}.AppImage"
-          mv "./dist_electron/MoeKoe Music.deb" "./MoeKoe_Music_${{ needs.increment-version.outputs.version }}_amd64.deb"
-
-      - name: Upload Linux artifacts to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ needs.increment-version.outputs.version }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          name: "Release ${{ needs.increment-version.outputs.version }}"
-          files: |
             ./MoeKoe_Music_${{ needs.increment-version.outputs.version }}.AppImage
             ./MoeKoe_Music_${{ needs.increment-version.outputs.version }}_amd64.deb

@@ -182,6 +182,7 @@ import PlaylistSelectModal from './PlaylistSelectModal.vue';
 import QueueList from './QueueList.vue';
 import { useRouter } from 'vue-router';
 import { getCover, getAudioOutputDeviceSignature, share } from '../utils/utils';
+import { toPlayableAudioUrl } from '../utils/apiBaseUrl';
 
 // 从统一入口导入所有模块
 import {
@@ -464,7 +465,9 @@ const playSong = async (song) => {
             applyLoudnessNormalization(null);
         }
 
-        audio.src = song.url;
+        const playbackUrl = toPlayableAudioUrl(song.url);
+        currentSong.value.url = playbackUrl;
+        audio.src = playbackUrl;
 
         // 确保 AudioContext 处于运行状态（如果已启用）
         await ensureAudioContextRunning();
@@ -534,7 +537,7 @@ const togglePlayPause = async () => {
         console.log('[PlayerControl] 音频源为空，尝试重新设置');
         if (currentSong.value.url) {
             console.log('[PlayerControl] 从当前歌曲获取URL:', currentSong.value.url);
-            audio.src = currentSong.value.url;
+            audio.src = toPlayableAudioUrl(currentSong.value.url);
         } else {
             console.log('[PlayerControl] 重新从队列获取歌曲');
             const songIndex = musicQueueStore.queue.findIndex(song => song.hash === currentSong.value.hash);
@@ -542,8 +545,8 @@ const togglePlayPause = async () => {
                 const song = musicQueueStore.queue[songIndex];
                 if (song.url) {
                     console.log('[PlayerControl] 从队列中的歌曲获取URL:', song.url);
-                    currentSong.value.url = song.url;
-                    audio.src = song.url;
+                    currentSong.value.url = toPlayableAudioUrl(song.url);
+                    audio.src = currentSong.value.url;
                 } else if (song.isCloud) {
                     console.log('[PlayerControl] 云音乐没有URL，重新获取');
                     addCloudMusicToQueue(song.hash, song.name, song.author, song.timeLength, song.img);
@@ -1102,7 +1105,8 @@ onMounted(() => {
             if (savedSong.url) {
                 if(savedSong.isLocal) return;
                 console.log('[PlayerControl] 从缓存恢复音频源:', savedSong.url);
-                audio.src = savedSong.url;
+                currentSong.value.url = toPlayableAudioUrl(savedSong.url);
+                audio.src = currentSong.value.url;
             } else {
                 console.log('[PlayerControl] 缓存的歌曲没有URL');
             }

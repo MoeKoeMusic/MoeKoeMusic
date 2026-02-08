@@ -1,6 +1,7 @@
 import { ref } from 'vue';
 import { get } from '../../utils/request';
 import { MoeAuthStore } from '../../stores/store';
+import { toPlayableAudioUrl } from '../../utils/apiBaseUrl';
 
 
 export default function useSongQueue(t, musicQueueStore, queueList = null) {
@@ -71,7 +72,7 @@ export default function useSongQueue(t, musicQueueStore, queueList = null) {
 
             // 设置URL
             if (response.url && response.url[0]) {
-                currentSong.value.url = response.url[0];
+                currentSong.value.url = toPlayableAudioUrl(response.url[0]);
                 console.log('[SongQueue] 获取到音乐URL:', currentSong.value.url);
             } else {
                 console.error('[SongQueue] 未获取到音乐URL');
@@ -87,7 +88,7 @@ export default function useSongQueue(t, musicQueueStore, queueList = null) {
                 img: img,
                 author: author,
                 timeLength: response.timeLength,
-                url: response.url[0],
+                url: toPlayableAudioUrl(response.url[0]),
                 // 响度规格化参数
                 loudnessNormalization: {
                     volume: response.volume || 0,
@@ -165,7 +166,7 @@ export default function useSongQueue(t, musicQueueStore, queueList = null) {
 
             // 设置URL
             if (response.data && response.data.url) {
-                currentSong.value.url = response.data.url;
+                currentSong.value.url = toPlayableAudioUrl(response.data.url);
                 console.log('[SongQueue] 获取到云盘音乐URL:', currentSong.value.url);
             } else {
                 console.error('[SongQueue] 未获取到云盘音乐URL');
@@ -181,7 +182,7 @@ export default function useSongQueue(t, musicQueueStore, queueList = null) {
                 author: author,
                 img: cover,
                 timeLength: timeLength || 0,
-                url: response.data.url,
+                url: toPlayableAudioUrl(response.data.url),
                 isCloud: true
             };
 
@@ -313,7 +314,7 @@ export default function useSongQueue(t, musicQueueStore, queueList = null) {
                 name: song.name,
                 author: song.author,
                 timeLength: song.timelen || 0,
-                url: song.url,
+                url: toPlayableAudioUrl(song.url),
                 isCloud: true
             };
         });

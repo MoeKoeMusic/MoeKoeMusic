@@ -78,13 +78,14 @@
     ```
     git clone https://github.com/iAJue/MoeKoeMusic.git
     cd MoeKoeMusic
+    git submodule update --init --recursive
     docker compose up -d &
     ```
 
     2. ~~Способ 2: docker-compose (образ пока не загружен официально)~~
 
     ```
-    docker run -d --name MoeKoeMusic -p 8080:8080 iajue/moekoe-music:latest
+    docker run -d --name MoeKoeMusic -p 8080:8080 -p 6521:6521 -e PORT=6521 -e platform=lite iajue/moekoe-music:latest
     ```
 
     3. Способ 3: Через панель управления
@@ -102,13 +103,15 @@
         build:
           context: .
           dockerfile: Dockerfile
+        environment:
+          - PORT=6521
+          - platform=lite
         ports:
           - "8080:8080"  # Фронтенд
           - "6521:6521"  # API
 
     ```
-
-### 3. Развёртывание в один клик
+### 3. Развертывание в один клик
 [![Развернуть на EdgeOne Pages](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://edgeone.ai/pages/new?template=https://github.com/iAJue/moekoemusic&install-command=npm%20install&output-directory=dist&root-directory=.%2F&build-command=npm%20run%20build&env=VITE_APP_API_URL)
 
 Укажите свой API-адрес в переменной окружения (VITE_APP_API_URL)

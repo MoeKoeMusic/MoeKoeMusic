@@ -1,5 +1,23 @@
-export const DEFAULT_API_BASE_URL =
-    import.meta.env.VITE_APP_API_URL || 'http://127.0.0.1:6521';
+const DEV_API_BASE_URL = 'http://127.0.0.1:6521';
+const SAME_ORIGIN_API_BASE_URL = '/api';
+const ABSOLUTE_HTTP_URL_PATTERN = /^https?:\/\//i;
+const NON_PROXY_AUDIO_URL_PATTERN = /^(blob:|data:|mediastream:|file:)/i;
+
+function resolveDefaultApiBaseUrl() {
+    if (import.meta.env.VITE_APP_API_URL) return import.meta.env.VITE_APP_API_URL;
+    if (import.meta.env.DEV) return DEV_API_BASE_URL;
+
+    if (typeof window !== 'undefined') {
+        const protocol = window.location?.protocol;
+        if (protocol === 'file:' || typeof window.electron !== 'undefined') {
+            return DEV_API_BASE_URL;
+        }
+    }
+
+    return SAME_ORIGIN_API_BASE_URL;
+}
+
+export const DEFAULT_API_BASE_URL = resolveDefaultApiBaseUrl();
 
 export function normalizeApiBaseUrl(input) {
     const result = validateApiBaseUrl(input);
@@ -9,6 +27,10 @@ export function normalizeApiBaseUrl(input) {
 export function validateApiBaseUrl(input) {
     const raw = (input ?? '').toString().trim();
     if (!raw) return { ok: true, value: '' };
+
+    if (raw.startsWith('/')) {
+        return { ok: true, value: raw.replace(/\/+$/, '') };
+    }
 
     let url;
     try {
@@ -39,6 +61,23 @@ export function joinApiUrl(baseUrl, path = '/') {
     const base = (baseUrl || '').replace(/\/+$/, '');
     const rel = (path || '').replace(/^\/+/, '');
     return rel ? `${base}/${rel}` : `${base}/`;
+}
+
+export function shouldProxyAudioUrl(input) {
+    const raw = (input ?? '').toString().trim();
+    if (!raw) return false;
+    if (NON_PROXY_AUDIO_URL_PATTERN.test(raw)) return false;
+    return ABSOLUTE_HTTP_URL_PATTERN.test(raw);
+}
+
+export function toPlayableAudioUrl(input, baseUrl = getApiBaseUrl()) {
+    const raw = (input ?? '').toString().trim();
+    if (!raw) return '';
+    if (!shouldProxyAudioUrl(raw)) return raw;
+
+    const endpoint = joinApiUrl(baseUrl, '/audio/proxy');
+    const separator = endpoint.includes('?') ? '&' : '?';
+    return `${endpoint}${separator}url=${encodeURIComponent(raw)}`;
 }
 
 export async function testApiBaseUrl(baseUrl, options = {}) {

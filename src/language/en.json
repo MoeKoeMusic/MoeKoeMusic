@@ -301,7 +301,7 @@
   "zheng-zai-jia-zai-cha-jian": "Loading plugins...",
   "web-cha-jian-ti-shi": "In web version, manage extensions via chrome://extensions/",
   "da-kai-tan-chuang-shi-bai": "Failed to open plugin window",
-  "que-ren-xie-zai-cha-jian": "Uninstall plugin \"{name}\"?",
+  "que-ren-xie-zai-cha-jian": "Uninstall plugin name?",
   "xie-zai-cha-jian-shi-bai": "Failed to uninstall plugin",
   "xuan-ze-wen-jian-shi-bai": "Failed to select file",
   "an-zhuang-cha-jian-shi-bai": "Failed to install plugin",

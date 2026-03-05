@@ -107,11 +107,37 @@ export async function installExtension(extensionPath) {
  * 卸载单个插件
  * @param {string} extensionId 插件ID
  */
-export function uninstallExtension(extensionId) {
+export function uninstallExtension(extensionId, extensionDir = '') {
     try {
-        session.defaultSession.removeExtension(extensionId);
-        log.info(`卸载插件: ${extensionId}`);
-        return { success: true };
+        let removedFromSession = false;
+        let removedFiles = false;
+        let targetDirPath = '';
+
+        targetDirPath = path.join(EXTENSIONS_DIR, path.basename(extensionDir.trim()));
+        try {
+            session.defaultSession.removeExtension(extensionId);
+            removedFromSession = true;
+            log.info(`卸载插件会话: ${extensionId}`);
+        } catch (error) {
+            log.warn(`卸载插件会话失败 ${extensionId}:`, error);
+        }
+
+        if (targetDirPath && fs.existsSync(targetDirPath)) {
+            fs.rmSync(targetDirPath, { recursive: true, force: true });
+            removedFiles = true;
+            log.info(`删除插件目录: ${targetDirPath}`);
+        }
+
+        if (!removedFromSession && !removedFiles) {
+            return { success: false, message: '未找到可卸载的插件会话或目录' };
+        }
+
+        return {
+            success: true,
+            removedFromSession,
+            removedFiles,
+            path: targetDirPath || ''
+        };
     } catch (error) {
         log.error('卸载插件失败:', error);
         return { success: false, message: error.message };

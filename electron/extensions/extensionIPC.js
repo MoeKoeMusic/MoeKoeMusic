@@ -45,6 +45,13 @@ export function registerExtensionIPC() {
             const extensions = loadedExtensions.map(ext => {
                 const scannedExt = scannedExtensions.find(scanned => scanned.name === ext.name);
                 let iconData = null;
+                const manifestAuthor = ext.manifest?.author ?? scannedExt?.manifest?.author;
+                const authorName = typeof manifestAuthor === 'string'
+                    ? manifestAuthor
+                    : (manifestAuthor?.name || '');
+                const authorUrl = typeof manifestAuthor === 'object'
+                    ? (manifestAuthor?.url || '')
+                    : '';
                 
                 if (scannedExt?.path) {
                     iconData = getExtensionIconData(ext, scannedExt.path);
@@ -53,9 +60,12 @@ export function registerExtensionIPC() {
                 return {
                     id: ext.id,
                     name: ext.name,
+                    directory: scannedExt?.directory || '',
                     version: ext.version,
                     enabled: true,
                     description: ext.manifest?.description || '',
+                    author: authorName,
+                    authorUrl: authorUrl,
                     permissions: ext.manifest?.permissions || [],
                     iconData: iconData,
                     moeKoeAdapted: ext.manifest?.moekoe === true || scannedExt?.manifest?.moekoe === true
@@ -166,9 +176,9 @@ export function registerExtensionIPC() {
     });
 
     // 卸载插件
-    ipcMain.handle('uninstall-extension', (event, extensionId) => {
+    ipcMain.handle('uninstall-extension', (event, extensionId, extensionDir) => {
         try {
-            const result = extensionManager.uninstallExtension(extensionId);
+            const result = extensionManager.uninstallExtension(extensionId, extensionDir);
             return result;
         } catch (error) {
             log.error('卸载插件失败:', error);

@@ -301,7 +301,7 @@
   "zheng-zai-jia-zai-cha-jian": "正在加载插件...",
   "web-cha-jian-ti-shi": "Web端请直接在浏览器插件中心 chrome://extensions/ 进行管理",
   "da-kai-tan-chuang-shi-bai": "打开插件弹窗失败",
-  "que-ren-xie-zai-cha-jian": "确定要卸载插件 \"{name}\" 吗？",
+  "que-ren-xie-zai-cha-jian": "确定要卸载插件name吗？",
   "xie-zai-cha-jian-shi-bai": "卸载插件失败",
   "xuan-ze-wen-jian-shi-bai": "选择文件失败",
   "an-zhuang-cha-jian-shi-bai": "安装插件失败",

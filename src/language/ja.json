@@ -281,7 +281,7 @@
   "zheng-zai-jia-zai-cha-jian": "プラグインを読み込み中...",
   "web-cha-jian-ti-shi": "Web版では chrome://extensions/ で拡張機能を管理してください",
   "da-kai-tan-chuang-shi-bai": "ポップアップを開けませんでした",
-  "que-ren-xie-zai-cha-jian": "プラグイン \"{name}\" をアンインストールしますか？",
+  "que-ren-xie-zai-cha-jian": "プラグイン name をアンインストールしますか？",
   "xie-zai-cha-jian-shi-bai": "プラグインのアンインストールに失敗しました",
   "xuan-ze-wen-jian-shi-bai": "ファイル選択に失敗しました",
   "an-zhuang-cha-jian-shi-bai": "プラグインのインストールに失敗しました",

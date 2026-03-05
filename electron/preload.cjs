@@ -24,7 +24,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     openExtensionsDir: () => ipcRenderer.invoke('open-extensions-dir'),
     openExtensionPopup: (extensionId, extensionName) => ipcRenderer.invoke('open-extension-popup', extensionId, extensionName),
     installExtension: (extensionPath) => ipcRenderer.invoke('install-extension', extensionPath),
-    uninstallExtension: (extensionId) => ipcRenderer.invoke('uninstall-extension', extensionId),
+    uninstallExtension: (extensionId, extensionDir) => ipcRenderer.invoke('uninstall-extension', extensionId, extensionDir),
     validateExtension: (extensionPath) => ipcRenderer.invoke('validate-extension', extensionPath),
     getExtensionsDirectory: () => ipcRenderer.invoke('get-extensions-directory'),
     ensureExtensionsDirectory: () => ipcRenderer.invoke('ensure-extensions-directory'),

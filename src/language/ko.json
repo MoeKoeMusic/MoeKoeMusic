@@ -281,7 +281,7 @@
   "zheng-zai-jia-zai-cha-jian": "플러그인 로딩 중...",
   "web-cha-jian-ti-shi": "웹 버전에서는 chrome://extensions/에서 확장 프로그램을 관리하세요",
   "da-kai-tan-chuang-shi-bai": "팝업을 열 수 없습니다",
-  "que-ren-xie-zai-cha-jian": "플러그인 \"{name}\"을(를) 제거하시겠습니까?",
+  "que-ren-xie-zai-cha-jian": "플러그인 name 을(를) 제거하시겠습니까?",
   "xie-zai-cha-jian-shi-bai": "플러그인 제거 실패",
   "xuan-ze-wen-jian-shi-bai": "파일 선택 실패",
   "an-zhuang-cha-jian-shi-bai": "플러그인 설치 실패",

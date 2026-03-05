@@ -1,7 +1,7 @@
 <template>
     <div class="extensions-content" v-if="isElectron()">
         <div class="extensions-actions">
-            <button @click="refreshExtensions" class="extension-btn primary" :disabled="extensionsLoading">
+            <button @click="refreshExtensions(true)" class="extension-btn primary" :disabled="extensionsLoading">
                 <i class="fas fa-sync-alt"></i>
                 {{ extensionsLoading ? t('jia-zai-zhong') : t('shua-xin-cha-jian') }}
             </button>
@@ -34,7 +34,13 @@
                     </div>
                     <div class="extension-details">
                         <h4>{{ extension.name }}</h4>
-                        <p class="extension-version">{{ t('ban-ben') }}: {{ extension.version }}</p>
+                        <p class="extension-version">
+                            <span class="version-text">{{ t('ban-ben') }}: {{ extension.version }}</span>
+                            <span class="author-text">
+                                作者:
+                                <a :href="extension.authorUrl||'javascript:void(0)'" :target="extension.authorUrl ? '_blank' : '_self'" rel="noopener noreferrer">{{ extension.author }}</a>
+                            </span>
+                        </p>
                         <p class="extension-id">ID: {{ extension.id }}</p>
                         <p v-if="extension.description" class="extension-description">{{ extension.description }}</p>
                         <p v-if="!extension.moeKoeAdapted" class="extension-compatibility-warning">
@@ -49,7 +55,7 @@
                         :disabled="extensionsLoading">
                         {{ t('da-kai-tan-chuang') }}
                     </button>
-                    <button @click="uninstallExtension(extension.id, extension.name)" class="extension-btn danger small"
+                    <button @click="uninstallExtension(extension.id, extension.name, extension.directory)" class="extension-btn danger small"
                         :disabled="extensionsLoading">
                         {{ t('xie-zai') }}
                     </button>
@@ -89,9 +95,16 @@ const extensionsLoading = ref(false)
 const fileInput = ref(null)
 
 // 刷新插件 Refresh plugins
-const refreshExtensions = async () => {
+const refreshExtensions = async (reload = false) => {
     extensionsLoading.value = true
     try {
+        if (reload) {
+            const reloadResult = await window.electronAPI?.reloadExtensions()
+            if (!reloadResult?.success) {
+                console.error('Failed to reload plugins:', reloadResult?.message)
+            }
+        }
+        await new Promise(resolve => setTimeout(resolve, 500))
         const result = await window.electronAPI?.getExtensions()
         if (result?.success) {
             extensions.value = result.extensions || []
@@ -132,10 +145,10 @@ const openExtensionPopup = async (extensionId, extensionName) => {
 }
 
 // 卸载插件 Uninstall plugin
-const uninstallExtension = async (extensionId, extensionName) => {
+const uninstallExtension = async (extensionId, extensionName, extensionDir) => {
     try {
-        if (confirm(t('que-ren-xie-zai-cha-jian').replace('{name}', extensionName))) {
-            const result = await window.electronAPI?.uninstallExtension(extensionId)
+        if (confirm(t('que-ren-xie-zai-cha-jian').replace('name', extensionName))) {
+            const result = await window.electronAPI?.uninstallExtension(extensionId, extensionDir)
             if (result?.success) {
                 await refreshExtensions()
             } else {
@@ -337,6 +350,33 @@ onMounted(() => {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.extension-version {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.extension-version .version-text {
+    flex: 0 0 auto;
+}
+
+.extension-version .author-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.extension-version a {
+    color: #2563eb;
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
 }
 
 .extension-compatibility-warning {

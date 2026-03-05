@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import log from 'electron-log';
 import extensionManager from './extensionManager.js';
+import { bindExternalLinkHandler } from '../services/externalLinkHandler.js';
 
 // 获取插件图标数据
 function getExtensionIconData(extension, extensionPath) {
@@ -146,6 +147,11 @@ export function registerExtensionIPC() {
             // 完全移除菜单栏
             popupWindow.setMenuBarVisibility(false);
             popupWindow.removeMenu();
+
+            bindExternalLinkHandler(
+                popupWindow,
+                (url) => /^(https?:|mailto:|tel:)/i.test(url)
+            );
 
             // 构建插件弹窗URL
             const popupUrl = `chrome-extension://${extensionId}/popup.html`;

@@ -149,7 +149,7 @@
                 {{ $t('login-tips') }}<b>{{ $t('tui-jian') }}</b>{{ $t('shi-yong-yan-zheng-ma-deng-lu') }}
             </p>
             <p class="register-link">
-                <a @click="openRegisterUrl('https://activity.kugou.com/getvips/v-4163b2d0/index.html')" href="#">{{ $t('zhu-ce') }}</a>
+                <a @click.prevent="openRegisterUrl('https://activity.kugou.com/getvips/v-4163b2d0/index.html')" href="#">{{ $t('zhu-ce') }}</a>
             </p>
         </div>
     </div>

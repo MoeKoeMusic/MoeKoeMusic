@@ -11,6 +11,7 @@ import { checkForUpdates } from './services/updater.js';
 import { Notification } from 'electron';
 import extensionManager from './extensions/extensionManager.js';
 import { t } from './language/i18n.js';
+import { bindExternalLinkHandler } from './services/externalLinkHandler.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const store = new Store();
 const { TouchBarLabel, TouchBarButton, TouchBarGroup, TouchBarSpacer } = TouchBar;
@@ -67,6 +68,7 @@ export function createWindow() {
         },
         icon: getIconPath('icon.ico')
     });
+    bindExternalLinkHandler(mainWindow);
 
     if (store.get('maximize')) {
         mainWindow.maximize();

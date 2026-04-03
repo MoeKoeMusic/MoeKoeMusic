@@ -365,7 +365,7 @@ const normalizeMarketPlugin = (item, index) => {
         tags: Array.isArray(item.tags) ? item.tags.map(tag => String(tag).trim()).filter(Boolean) : [],
         repositoryUrl: normalizeUrl(repositoryValue),
         downloadUrl,
-        branch: String(snapshot.branch ).trim(),
+        branch: String(snapshot.branch).trim(),
         commitSha: String(snapshot.commitSha).trim(),
         minversion: item.minversion
     }
@@ -708,7 +708,21 @@ onMounted(async () => {
 })
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+$primary: #2563eb;
+$primary-hover: #1d4ed8;
+$success: #16a34a;
+$success-hover: #15803d;
+$secondary: #6b7280;
+$secondary-hover: #4b5563;
+$danger: #dc2626;
+$danger-hover: #b91c1c;
+$text-muted: #666;
+$border-light: #e5e7eb;
+$border-dark: #232527;
+$gradient-pink-blue: linear-gradient(135deg, #fb7185, #2563eb);
+$gradient-orange: linear-gradient(135deg, #f59e0b, #f97316);
+
 .extensions-toolbar {
     display: flex;
     justify-content: space-between;
@@ -724,24 +738,24 @@ onMounted(async () => {
     padding: 6px;
     border-radius: 10px;
     background: rgba(127, 127, 127, 0.12);
-}
 
-.tab-btn {
-    border: none;
-    background: transparent;
-    color: var(--text-color, #333);
-    padding: 10px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    transition: all 0.2s ease;
-}
+    .tab-btn {
+        border: none;
+        background: transparent;
+        color: var(--text-color, #333);
+        padding: 10px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.2s ease;
 
-.tab-btn.active {
-    background: var(--color-primary, #ff69b4);
-    color: #fff;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        &.active {
+            background: var(--color-primary, #ff69b4);
+            color: #fff;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+    }
 }
 
 .extensions-actions,
@@ -760,19 +774,29 @@ onMounted(async () => {
     border-radius: 10px;
     border: 1px solid var(--border-color, #d9d9d9);
     background: var(--background-color, #fff);
-}
 
-.market-search i {
-    color: #888;
-}
+    i {
+        color: #888;
+    }
 
-.market-search input {
-    flex: 1;
-    border: none;
-    outline: none;
-    background: transparent;
-    color: var(--text-color, #333);
-    font-size: 14px;
+    input {
+        flex: 1;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: var(--text-color, #333);
+        font-size: 14px;
+    }
+
+    &:is(.dark .market-search) {
+        background-color: #222;
+        border-color: $border-dark;
+
+        i,
+        input {
+            color: #f3f4f6;
+        }
+    }
 }
 
 .extension-btn {
@@ -786,52 +810,52 @@ onMounted(async () => {
     justify-content: center;
     gap: 8px;
     transition: all 0.2s ease;
-}
 
-.extension-btn:disabled {
-    opacity: 0.65;
-    cursor: not-allowed;
-}
+    &:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
 
-.extension-btn.primary {
-    background: #2563eb;
-    color: white;
-}
+    &.primary {
+        background: $primary;
+        color: white;
 
-.extension-btn.primary:hover:not(:disabled) {
-    background: #1d4ed8;
-}
+        &:hover:not(:disabled) {
+            background: $primary-hover;
+        }
+    }
 
-.extension-btn.success {
-    background: #16a34a;
-    color: white;
-}
+    &.success {
+        background: $success;
+        color: white;
 
-.extension-btn.success:hover:not(:disabled) {
-    background: #15803d;
-}
+        &:hover:not(:disabled) {
+            background: $success-hover;
+        }
+    }
 
-.extension-btn.secondary {
-    background: #6b7280;
-    color: white;
-}
+    &.secondary {
+        background: $secondary;
+        color: white;
 
-.extension-btn.secondary:hover:not(:disabled) {
-    background: #4b5563;
-}
+        &:hover:not(:disabled) {
+            background: $secondary-hover;
+        }
+    }
 
-.extension-btn.danger {
-    background: #dc2626;
-    color: white;
-}
+    &.danger {
+        background: $danger;
+        color: white;
 
-.extension-btn.danger:hover:not(:disabled) {
-    background: #b91c1c;
-}
+        &:hover:not(:disabled) {
+            background: $danger-hover;
+        }
+    }
 
-.extension-btn.small {
-    padding: 6px 10px;
-    font-size: 12px;
+    &.small {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
 }
 
 .extensions-list,
@@ -847,10 +871,16 @@ onMounted(async () => {
     justify-content: space-between;
     gap: 16px;
     padding: 18px;
-    border: 1px solid var(--border-color, #e5e7eb);
+    border: 1px solid var(--border-color, $border-light);
     border-radius: 14px;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(247, 247, 247, 0.98));
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+
+    &:is(.dark .extension-item, .dark .market-item) {
+        border-color: $border-dark;
+        background: linear-gradient(135deg, rgba(23, 23, 23, 0.92), rgba(32, 32, 32, 0.98));
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+    }
 }
 
 .extension-info,
@@ -871,31 +901,43 @@ onMounted(async () => {
     color: white;
     border-radius: 12px;
     font-size: 22px;
-    background: linear-gradient(135deg, #fb7185, #2563eb);
+    background: $gradient-pink-blue;
     overflow: hidden;
     flex-shrink: 0;
-}
 
-.market-icon {
-    background: linear-gradient(135deg, #f59e0b, #f97316);
-}
+    &.market-icon {
+        background: $gradient-orange;
+    }
 
-.extension-icon-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
 }
 
 .extension-details,
 .market-title-text {
     min-width: 0;
-}
 
-.extension-details h4,
-.market-title-text h4 {
-    margin: 0 0 6px 0;
-    font-size: 16px;
-    color: var(--text-color, #222);
+    h4 {
+        margin: 0 0 6px 0;
+        font-size: 16px;
+        color: var(--text-color, #222);
+
+    }
+
+    p {
+        margin: 0;
+        font-size: 13px;
+        color: $text-muted;
+    }
+
+    &:is(.dark .extension-details, .dark .market-title-text) {
+        h4 {
+            color: rgba(255, 255, 255, 0.8);
+        }
+    }
 }
 
 .market-min-version-inline {
@@ -915,14 +957,6 @@ onMounted(async () => {
     top: -3px;
 }
 
-.extension-details p,
-.market-title-text p,
-.market-meta {
-    margin: 0;
-    font-size: 13px;
-    color: #666;
-}
-
 .extension-description {
     max-width: 480px;
     overflow: hidden;
@@ -935,12 +969,11 @@ onMounted(async () => {
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
-}
 
-.extension-version a,
-.market-meta a {
-    color: #2563eb;
-    text-decoration: none;
+    a {
+        color: $primary;
+        text-decoration: none;
+    }
 }
 
 .extension-compatibility-warning {
@@ -971,27 +1004,51 @@ onMounted(async () => {
     font-size: 12px;
     font-weight: 700;
     white-space: nowrap;
-}
 
-.extension-status.enabled,
-.market-badge.installed {
-    background: #dcfce7;
-    color: #166534;
-}
+    &.enabled,
+    &.installed {
+        background: #dcfce7;
+        color: #166534;
+    }
 
-.market-badge.available {
-    background: #e0f2fe;
-    color: #075985;
-}
+    &.available {
+        background: #e0f2fe;
+        color: #075985;
+    }
 
-.market-badge.update {
-    background: #fef3c7;
-    color: #92400e;
-}
+    &.update {
+        background: #fef3c7;
+        color: #92400e;
+    }
 
-.market-badge.unknown {
-    background: #f3f4f6;
-    color: #4b5563;
+    &.unknown {
+        background: #f3f4f6;
+        color: #4b5563;
+    }
+
+    &:is(.dark .extension-status, .dark .market-badge) {
+
+        &.enabled,
+        &.installed {
+            background: #166534;
+            color: #dcfce7;
+        }
+
+        &.available {
+            background: #075985;
+            color: #e0f2fe;
+        }
+
+        &.update {
+            background: #92400e;
+            color: #fef3c7;
+        }
+
+        &.unknown {
+            background: #4b5563;
+            color: #f3f4f6;
+        }
+    }
 }
 
 .market-panel {
@@ -1000,38 +1057,48 @@ onMounted(async () => {
 
 .market-item {
     flex-direction: column;
-}
 
-.market-item-header {
-    display: flex;
-    justify-content: space-between;
-    gap: 16px;
-    align-items: flex-start;
+    &-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: flex-start;
+    }
 }
 
 .market-meta {
+    margin: 0;
+    font-size: 13px;
+    color: $text-muted;
     display: flex;
     gap: 16px;
     flex-wrap: wrap;
-}
 
-.market-meta span {
-    min-width: 0;
-}
+    span {
+        min-width: 0;
+    }
 
-.market-meta .author-meta {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    min-width: 0;
-    max-width: 220px;
-    white-space: nowrap;
-}
+    .author-meta {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        min-width: 0;
+        max-width: 220px;
+        white-space: nowrap;
 
-.market-meta .author-meta a {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+        a {
+            color: $primary;
+            text-decoration: none;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
+
+    a {
+        color: $primary;
+        text-decoration: none;
+    }
 }
 
 .market-tags {
@@ -1061,7 +1128,16 @@ onMounted(async () => {
 .market-feedback {
     text-align: center;
     padding: 48px 20px;
-    color: #666;
+    color: $text-muted;
+
+    h4 {
+        margin: 0 0 8px 0;
+        color: var(--text-color, #333);
+    }
+
+    p {
+        margin: 0 0 20px 0;
+    }
 }
 
 .market-feedback.error {
@@ -1076,23 +1152,13 @@ onMounted(async () => {
     margin-bottom: 16px;
 }
 
-.extensions-empty h4,
-.market-feedback h4 {
-    margin: 0 0 8px 0;
-    color: var(--text-color, #333);
-}
-
-.extensions-empty p,
-.market-feedback p {
-    margin: 0 0 20px 0;
-}
-
 .extensions-loading i {
     font-size: 24px;
     margin-bottom: 12px;
 }
 
 @media (max-width: 768px) {
+
     .extensions-toolbar,
     .market-item-header {
         flex-direction: column;

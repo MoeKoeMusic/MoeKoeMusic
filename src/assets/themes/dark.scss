@@ -1,0 +1,706 @@
+$bg-dark: #121212;
+$bg-darker: #1a1a1a;
+$bg-card: #1d1d1d;
+$bg-input: #2a2a2a;
+$bg-hover: #363636;
+$border-color: #333;
+$text-primary: #e1e1e1;
+$text-secondary: #999;
+$text-muted: #777;
+
+html.dark {
+	background-color: $bg-dark;
+	color: $text-primary;
+	filter: brightness(0.8);
+	mix-blend-mode: multiply;
+
+	body {
+		background-color: $bg-dark;
+	}
+
+	.settings-page {
+		background-color: $bg-dark;
+	}
+
+	.settings-sidebar {
+		background-color: $bg-darker;
+		border-right-color: $border-color;
+	}
+
+	.sidebar-item {
+		color: $text-primary;
+
+		&:hover:not(.active) {
+			background-color: $bg-input;
+		}
+
+		&.active {
+			background-color: rgba(255, 105, 180, 0.15);
+			color: var(--primary-color);
+		}
+	}
+
+	.setting-section {
+		h3 {
+			color: $text-primary;
+			border-bottom-color: $border-color;
+		}
+	}
+
+	.setting-card {
+		background-color: $bg-card;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+		&:hover {
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+		}
+
+		&-header {
+			color: $text-primary;
+		}
+
+		&-value {
+			background-color: $bg-input;
+			color: $text-primary;
+			border: 1px solid $border-color;
+		}
+	}
+
+	.refresh-hint {
+		color: #ff6b6b;
+	}
+
+	.modal-content {
+		background-color: $bg-card;
+		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+		color: $text-primary;
+
+		h3 {
+			color: $text-primary;
+		}
+
+		li {
+			background-color: $bg-input;
+			color: $text-primary;
+
+			&:hover {
+				background-color: $bg-hover;
+			}
+		}
+
+		button {
+			background-color: $bg-input;
+			color: $text-primary;
+
+			&:hover {
+				background-color: $bg-hover;
+			}
+		}
+	}
+
+	.player-container {
+		background-color: rgba(24, 24, 24) !important;
+		border-top: 1px solid $border-color !important;
+
+		.control-button {
+			color: $text-primary !important;
+
+			&:hover {
+				color: var(--primary-color) !important;
+			}
+		}
+
+		.song-info {
+			color: $text-primary !important;
+		}
+
+		.song-title {
+			color: $text-primary !important;
+		}
+
+		.song-artist {
+			color: $text-secondary !important;
+		}
+
+		.progress-bar {
+			background-color: #4a4a4a !important;
+
+			.loaded {
+				background-color: #666 !important;
+			}
+		}
+	}
+
+	.playlist-item,
+	.song-item {
+		background-color: $bg-card;
+		border-color: $border-color;
+	}
+
+	input {
+		color: $text-primary;
+		border-color: $border-color;
+		background: black;
+	}
+
+	::-webkit-scrollbar-track {
+		background-color: $bg-input;
+	}
+
+	::-webkit-scrollbar-thumb {
+		background-color: #4a4a4a;
+	}
+
+	header {
+		background-color: rgba(24, 24, 24) !important;
+		border-bottom: 1px solid $border-color;
+
+		.logo {
+			color: $text-primary;
+		}
+
+		.nav-item {
+			color: $text-primary;
+
+			&:hover,
+			&.active {
+				color: var(--primary-color);
+			}
+		}
+
+		.window-controls {
+			color: $text-primary;
+
+			span:hover {
+				background-color: $bg-hover;
+			}
+		}
+
+		.search-box {
+			background-color: $bg-input;
+			border-color: $border-color;
+
+			input {
+				color: $text-primary;
+
+				&::placeholder {
+					color: $text-secondary;
+				}
+			}
+		}
+
+		button {
+			background-color: transparent !important;
+			border: none !important;
+			color: $text-secondary !important;
+		}
+
+		.nav-arrow:disabled i {
+			color: #353535 !important;
+		}
+
+		.user-avatar {
+			border-color: $border-color;
+		}
+	}
+
+	.primary-btn,
+	.more-btn-container .more-btn {
+		border: none !important;
+	}
+
+	button {
+		background-color: $bg-input !important;
+		color: $text-primary !important;
+		border: 1px solid #373434 !important;
+
+		&:hover {
+			background-color: $bg-hover !important;
+		}
+	}
+
+	a {
+		color: $text-primary;
+	}
+
+	main {
+		background-color: $bg-dark;
+	}
+
+	.music-card {
+		background-color: $bg-card;
+		border-color: $border-color;
+		border-radius: 5px;
+
+		.title {
+			color: $text-primary;
+		}
+
+		.artist {
+			color: $text-secondary;
+		}
+
+		&:hover {
+			background-color: $bg-input;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+		}
+
+		.play-count {
+			color: $text-secondary;
+		}
+
+		.description {
+			color: $text-secondary;
+		}
+	}
+
+	.detail-page .header .description {
+		color: $text-muted;
+	}
+
+	.playlist-info .description {
+		color: $text-secondary;
+	}
+
+	.track-list .li {
+		border-bottom: none;
+		color: $text-secondary;
+
+		&:hover {
+			background-color: $bg-input;
+		}
+	}
+
+	.playlist-info .meta {
+		color: $text-secondary;
+	}
+
+	.song-list {
+		background-color: $bg-dark;
+	}
+
+	.song-item {
+		&:hover {
+			background-color: $bg-input;
+		}
+
+		.song-name {
+			color: $text-primary;
+		}
+
+		.song-album,
+		.album-name,
+		.song-duration,
+		.song-actions {
+			color: $text-secondary;
+		}
+
+		.song-actions button {
+			color: $text-primary;
+
+			&:hover {
+				color: var(--primary-color);
+				background-color: $bg-hover;
+			}
+		}
+
+		h4 {
+			color: $text-secondary !important;
+		}
+	}
+
+	.more-btn-container {
+		.dropdown-menu {
+			background-color: $bg-card;
+			border: none;
+			color: $text-primary;
+
+			li:hover {
+				background-color: $bg-input;
+			}
+		}
+	}
+
+	.sq-icon {
+		color: #2f74a5;
+	}
+
+	.vip-icon {
+		color: #b86222;
+	}
+
+	.context-menu {
+		background-color: $bg-card;
+		border: none;
+		border-radius: 5px;
+		color: $text-secondary;
+
+		&:hover {
+			background-color: $bg-input !important;
+		}
+
+		ul {
+			background-color: $bg-card;
+			border: none;
+			border-radius: 5px;
+			color: $text-secondary;
+		}
+
+		li:hover {
+			background-color: $bg-input !important;
+		}
+	}
+
+	.controls .control-btn,
+	.player-controls .control-btn,
+	.extra-controls .extra-btn {
+		background-color: transparent !important;
+		color: $text-secondary !important;
+		border: none !important;
+	}
+
+	.search-bar input,
+	.search-input {
+		background-color: $bg-input !important;
+		color: $text-primary !important;
+		border: 1px solid #373434 !important;
+	}
+
+	.profile-menu {
+		background-color: #333333;
+		border: none;
+		border-radius: 5px;
+
+		li a {
+			color: #bcbcbc;
+
+			&:hover {
+				background-color: #484848 !important;
+			}
+		}
+	}
+
+	.queue-popup {
+		background-color: $bg-card;
+		color: $text-primary;
+
+		h3 {
+			color: $text-primary;
+		}
+
+		li {
+			border: none;
+		}
+
+		.queue-play-btn {
+			background-color: transparent !important;
+			border: none !important;
+		}
+	}
+
+	.modal {
+		color: $text-primary;
+	}
+
+	.search-results {
+		background-color: $bg-dark;
+		color: $text-primary;
+
+		li {
+			border: none;
+
+			&:hover {
+				background-color: $bg-input;
+			}
+		}
+	}
+
+	.skeleton-grid .skeleton-card {
+		background-color: $bg-card;
+	}
+
+	.skeleton-grid .skeleton-title,
+	.skeleton-grid .skeleton-text,
+	.skeleton-grid .skeleton-image {
+		background-color: $bg-input;
+	}
+
+	.skeleton-loader .skeleton-item {
+		background-color: $bg-card;
+	}
+
+	.skeleton-loader .skeleton-cover,
+	.skeleton-loader .skeleton-line {
+		background-color: $bg-input;
+	}
+
+	.radio-card .decorative-box {
+		box-shadow: -5px -5px 10px rgb(163 163 163 / 0%), 5px 5px 10px rgba(255, 255, 255, 0.1), inset 2px 2px 5px rgb(0 0 0 / 18%), inset -2px -2px 5px rgba(255, 255, 255, 0.05);
+	}
+
+	.radio-card .radio-content .radio-title,
+	.ranking-title,
+	.ranking-description,
+	.radio-subtitle {
+		color: $text-primary;
+	}
+
+	.radio-disc {
+		box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2), inset 0 0 20px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(255, 255, 255, 0.8);
+		padding: 2px;
+	}
+
+	.ranking-container {
+		.rank-selector {
+			background: $bg-input;
+		}
+
+		.rank-chip {
+			background: $bg-input;
+			border: 1px solid $border-color;
+
+			&:hover {
+				background: $bg-hover;
+			}
+		}
+
+		.ranking-item {
+			background: $bg-input !important;
+		}
+
+		.song-list {
+			scrollbar-color: $bg-input $bg-card;
+			background: linear-gradient(to right, rgba(100, 61, 73, 0.133), transparent) !important;
+			scrollbar-width: thin;
+
+			.song-item {
+				margin-bottom: 2px;
+			}
+		}
+	}
+
+	.queue-play-btn {
+		border: none !important;
+		background-color: rgba(0, 0, 0, 0) !important;
+	}
+
+	.playlist-select-list li {
+		background-color: inherit;
+	}
+
+	.tab-button {
+		background-color: $bg-dark !important;
+		border: none !important;
+	}
+
+	.search-tabs {
+		border-bottom: 1px solid $border-color;
+	}
+
+	.playlist-card,
+	.album-card,
+	.artist-card {
+		background-color: $bg-card;
+	}
+
+	.playlist-card .playlist-info .playlist-name,
+	.album-card .album-info .album-name,
+	.music-card .album-info,
+	.artist-info .artist-name {
+		color: $text-primary;
+	}
+
+	.playlist-card .playlist-info .playlist-description {
+		color: $text-secondary;
+	}
+
+	.playlist-card .playlist-meta .meta-item,
+	.album-card .album-meta .meta-item,
+	.artist-card .artist-counts .count-item {
+		background-color: $bg-card;
+		border: 1px solid $border-color;
+	}
+
+	.artist-card .artist-avatar {
+		background: $bg-card;
+	}
+
+	.grid-skeleton .skeleton-grid .skeleton-grid-card {
+		background: $bg-card;
+	}
+
+	.skeleton-grid-card .skeleton-avatar,
+	.skeleton-grid-card .skeleton-line,
+	.skeleton-grid-card .skeleton-cover {
+		background: $bg-input;
+	}
+
+	.skeleton-container .song-skeleton .skeleton-cover,
+	.skeleton-container .song-skeleton .skeleton-line {
+		background: $bg-card;
+	}
+
+	.result-item {
+		border: none;
+
+		&:hover {
+			background-color: $bg-input;
+		}
+	}
+
+	.modal {
+		background-color: $bg-card;
+	}
+
+	.settings-page .modal {
+		background-color: rgba(0, 0, 0, 0.6);
+	}
+
+	.shortcut-modal {
+		.shortcut-modal-content {
+			background-color: $bg-card;
+			color: $text-primary;
+		}
+
+		.shortcut-input {
+			background-color: $bg-input;
+		}
+
+		.shortcut-item {
+			border-bottom: 1px solid $border-color;
+		}
+	}
+
+	.scale-slider-container,
+	.compatibility-option {
+		background-color: $bg-input;
+	}
+
+	.track-list-header-row {
+		color: $text-secondary;
+	}
+
+	.batch-actions-menu {
+		background-color: $bg-card;
+		border: none;
+		color: $text-secondary;
+
+		li:hover {
+			background-color: $bg-input;
+			border-radius: 5px;
+		}
+	}
+
+	.login-page {
+		background-color: $bg-dark;
+	}
+
+	.login-container {
+		background-color: $bg-card;
+		border: 1px solid $border-color;
+		box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+	}
+
+	h2 {
+		color: $text-primary;
+	}
+
+	.form-input {
+		background-color: $bg-input;
+		border-color: #444;
+		color: $text-primary;
+
+		&:focus {
+			border-color: var(--primary-color);
+			background-color: #333;
+		}
+	}
+
+	.clear-button {
+		color: #777;
+
+		&:hover {
+			color: #aaa;
+			background-color: rgba(255, 255, 255, 0.1);
+		}
+	}
+
+	.segmented-control {
+		border-color: #444;
+		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+	}
+
+	.segmented-button {
+		background: $bg-input;
+		color: #aaa;
+
+		&:not(:last-child)::after {
+			background-color: #444;
+		}
+
+		&:hover:not(.active) {
+			background-color: #333;
+			color: $text-primary;
+		}
+
+		&.active {
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+		}
+	}
+
+	.disclaimer {
+		background-color: $bg-input;
+		border-top-color: #444;
+		color: #aaa;
+	}
+
+	.qr-login p {
+		color: #aaa;
+	}
+
+	.qr-code {
+		border-color: #444;
+		background-color: $bg-input;
+		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+	}
+
+	.empty-container,
+	.extension-item {
+		background-color: $bg-input;
+		border-color: #444;
+		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+	}
+
+	.empty-text {
+		color: #aaa;
+	}
+
+	.register-link {
+		color: #aaa;
+
+		a:hover {
+			background-color: rgba(255, 255, 255, 0.1);
+		}
+	}
+
+	.primary-button,
+	.append-button {
+		box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+
+		&:hover:not(:disabled) {
+			box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+		}
+
+		&:active:not(:disabled) {
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+		}
+	}
+
+	.sort-selector {
+		border: 1px solid #444;
+	}
+
+	.section-content {
+		color: $text-muted;
+	}
+}

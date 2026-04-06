@@ -130,103 +130,101 @@ defineExpose({
 });
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999999;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 9999999;
 }
 
 .modal {
-    background-color: white;
-    padding: 30px;
-    border-radius: 10px;
-    text-align: center;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    width: 400px;
-}
+	background-color: white;
+	padding: 30px;
+	border-radius: 10px;
+	text-align: center;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+	width: 400px;
 
-.modal h3{
-    overflow-wrap: anywhere;
-    color: var(--primary-color);
+	h3 {
+		overflow-wrap: anywhere;
+		color: var(--primary-color);
+	}
 }
 
 .buttons {
-    display: flex;
-    justify-content: space-around;
-    margin-top: 15px;
+	display: flex;
+	justify-content: space-around;
+	margin-top: 15px;
 }
 
 .prompt-input {
-    width: 379px;
-    padding: 10px;
-    margin-top: 15px;
-    border-radius: 5px;
-    border: 1px solid var(--primary-color);
+	width: 379px;
+	padding: 10px;
+	margin-top: 15px;
+	border-radius: 5px;
+	border: 1px solid var(--primary-color);
 }
 
 .btn {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 25px;
-    cursor: pointer;
-    transition: all 0.3s;
-    margin-top: 10px;
-    font-size: 20px;
-    width: auto;
+	background-color: var(--primary-color);
+	color: white;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 25px;
+	cursor: pointer;
+	transition: all 0.3s;
+	margin-top: 10px;
+	font-size: 20px;
+	width: auto;
 }
 
-
 .loading-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    flex-direction: column;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 9999;
+	flex-direction: column;
 }
 
 .loading-spinner {
-    border: 8px solid rgba(255, 255, 255, 0.3);
-    border-top: 8px solid var(--primary-color);
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
+	border: 8px solid rgba(255, 255, 255, 0.3);
+	border-top: 8px solid var(--primary-color);
+	border-radius: 50%;
+	width: 40px;
+	height: 40px;
+	animation: spin 1s linear infinite;
 }
-/* 文字样式 */
+
 .loading-text {
-    margin-top: 11px;
-    font-size: 1.1rem;
-    color: #ff85a2;
-    font-weight: bold;
-    font-family: 'Poppins', sans-serif;
-    text-align: center;
-    letter-spacing: 1px;
-    margin-left: 24px;
+	margin-top: 11px;
+	font-size: 1.1rem;
+	color: #ff85a2;
+	font-weight: bold;
+	font-family: 'Poppins', sans-serif;
+	text-align: center;
+	letter-spacing: 1px;
+	margin-left: 24px;
 }
 
 @keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
 }
 </style>

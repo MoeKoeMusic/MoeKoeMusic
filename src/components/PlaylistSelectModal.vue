@@ -110,61 +110,61 @@ defineExpose({
 });
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 1000;
+
+	.close-btn-modal {
+		width: 100%;
+		padding: 8px;
+		background-color: var(--primary-color);
+		color: white;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		margin-top: 10px;
+
+		&:hover {
+			opacity: 0.9;
+		}
+	}
 }
 
 .modal-content {
-    background-color: var(--background-color);
-    padding: 20px;
-    border-radius: 8px;
-    min-width: 300px;
-    max-width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
+	background-color: var(--background-color);
+	padding: 20px;
+	border-radius: 8px;
+	min-width: 300px;
+	max-width: 90%;
+	max-height: 90vh;
+	overflow-y: auto;
 }
 
 .playlist-select-list {
-    list-style: none;
-    padding: 0;
-    margin: 15px 0;
-    max-height: 300px;
-    overflow-y: auto;
-}
+	list-style: none;
+	padding: 0;
+	margin: 15px 0;
+	max-height: 300px;
+	overflow-y: auto;
 
-.playlist-select-list li {
-    padding: 10px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    border-radius: 8px;
-}
+	li {
+		padding: 10px;
+		cursor: pointer;
+		transition: background-color 0.2s;
+		border-radius: 8px;
 
-.playlist-select-list li:hover {
-    background-color: var(--secondary-color);
-}
-
-.modal .close-btn-modal {
-    width: 100%;
-    padding: 8px;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 10px;
-}
-
-.modal .close-btn-modal:hover {
-    opacity: 0.9;
+		&:hover {
+			background-color: var(--secondary-color);
+		}
+	}
 }
 </style>

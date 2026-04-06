@@ -168,45 +168,45 @@ onBeforeUnmount(() => {
 defineExpose({ openContextMenu }); 
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .context-menu {
-    position: fixed;
-    background-color: white;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
-}
+	position: fixed;
+	background-color: white;
+	border: 1px solid #ddd;
+	border-radius: 10px;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+	z-index: 1000;
 
-.context-menu ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
+	ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
 
-.context-menu li {
-    padding: 8px 14px;
-    cursor: pointer;
-    position: relative;
-    border-radius: 10px;
-}
+	li {
+		padding: 8px 14px;
+		cursor: pointer;
+		position: relative;
+		border-radius: 10px;
 
-.context-menu li:hover {
-    background-color: var(--background-color)
+		&:hover {
+			background-color: var(--background-color);
+		}
+	}
 }
 
 .submenu {
-    position: absolute;
-    left: 100%;
-    top: 0;
-    background-color: white;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-    padding: 5px 0;
-}
+	position: absolute;
+	left: 100%;
+	top: 0;
+	background-color: white;
+	border: 1px solid #ddd;
+	border-radius: 10px;
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+	padding: 5px 0;
 
-.submenu li {
-    width: 150px;
+	li {
+		width: 150px;
+	}
 }
 </style>

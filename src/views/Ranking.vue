@@ -264,427 +264,430 @@ onMounted(async () => {
 });
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .ranking-container {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    padding: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	padding: 20px;
 }
 
 .rank-selector {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    padding: 16px;
-    background: #ffffff;
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	padding: 16px;
+	background: #ffffff;
+	border-radius: 16px;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
 .rank-chip {
-    padding: 8px 16px;
-    border-radius: 20px;
-    background: #f5f5f5;
-    color: #666;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
+	padding: 8px 16px;
+	border-radius: 20px;
+	background: #f5f5f5;
+	color: #666;
+	font-size: 14px;
+	cursor: pointer;
+	transition: all 0.3s ease;
 
-.rank-chip:hover {
-    background: #eeeeee;
-    transform: translateY(-2px);
-}
+	&:hover {
+		background: #eeeeee;
+		transform: translateY(-2px);
+	}
 
-.rank-chip.active {
-    background: var(--primary-color)!important;
-    color: white;
+	&.active {
+		background: var(--primary-color) !important;
+		color: white;
+	}
 }
 
 .ranking-list {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-    padding: 20px;
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 20px;
+	padding: 20px;
 }
 
 .ranking-item {
-    background: #ffffff;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
-    height: 600px;
-    display: flex;
-    flex-direction: column;
-}
+	background: #ffffff;
+	border-radius: 16px;
+	overflow: hidden;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+	transition: all 0.3s ease;
+	height: 600px;
+	display: flex;
+	flex-direction: column;
 
-.ranking-item:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+	&:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+	}
 }
 
 .rank-header {
-    display: flex;
-    align-items: center;
-    padding: 20px;
-    position: relative;
-    background: linear-gradient(to right, rgba(100, 61, 73, 0.133), transparent)
+	display: flex;
+	align-items: center;
+	padding: 20px;
+	position: relative;
+	background: linear-gradient(to right, rgba(100, 61, 73, 0.133), transparent);
 }
 
 .rank-cover {
-    width: 100px;
-    height: 100px;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
+	width: 100px;
+	height: 100px;
+	border-radius: 12px;
+	overflow: hidden;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 
-.rank-cover img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-}
+	img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 0.3s ease;
+	}
 
-.rank-cover:hover img {
-    transform: scale(1.05);
+	&:hover img {
+		transform: scale(1.05);
+	}
 }
 
 .rank-info {
-    flex: 1;
-    margin-left: 20px;
+	flex: 1;
+	margin-left: 20px;
 }
 
 .rank-title {
-    font-size: 24px;
-    font-weight: 600;
-    margin: 0 0 8px 0;
+	font-size: 24px;
+	font-weight: 600;
+	margin: 0 0 8px 0;
 }
 
 .rank-update {
-    font-size: 13px;
-    color: #666;
+	font-size: 13px;
+	color: #666;
 }
 
 .rank-play-btn {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.9);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-}
+	position: absolute;
+	top: 20px;
+	right: 20px;
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.9);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	transition: all 0.3s ease;
 
-.rank-play-btn:hover {
-    transform: scale(1.1);
-    background: var(--primary-color);
-}
+	&:hover {
+		transform: scale(1.1);
+		background: var(--primary-color);
 
-.rank-play-btn:hover i {
-    color: white;
-}
+		i {
+			color: white;
+		}
+	}
 
-.rank-play-btn i {
-    font-size: 20px;
-    color: var(--primary-color);
-    transition: color 0.3s ease;
+	i {
+		font-size: 20px;
+		color: var(--primary-color);
+		transition: color 0.3s ease;
+	}
 }
 
 .song-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0 12px;
+	flex: 1;
+	overflow-y: auto;
+	padding: 0 12px;
+
+	&::-webkit-scrollbar {
+		width: 6px;
+	}
+
+	&::-webkit-scrollbar-thumb {
+		background: #ddd;
+		border-radius: 3px;
+	}
+
+	&::-webkit-scrollbar-track {
+		background: #f5f5f5;
+	}
 }
 
 .song-item {
-    display: flex;
-    align-items: center;
-    padding: 12px 8px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
+	display: flex;
+	align-items: center;
+	padding: 12px 8px;
+	border-radius: 8px;
+	transition: all 0.2s ease;
+	cursor: pointer;
 
-.song-item:hover {
-    background: #f8f9fa;
+	&:hover {
+		background: #f8f9fa;
+
+		.hover-play {
+			opacity: 1;
+		}
+	}
 }
 
 .song-rank {
-    width: 40px;
-    text-align: center;
+	width: 40px;
+	text-align: center;
 }
 
 .song-index {
-    font-size: 16px;
-    font-weight: 500;
-    color: #999;
-}
+	font-size: 16px;
+	font-weight: 500;
+	color: #999;
 
-.song-index.top-three {
-    font-size: 18px;
-    font-weight: 600;
-    background: linear-gradient(45deg, #ff6b6b, #ff8787);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+	&.top-three {
+		font-size: 18px;
+		font-weight: 600;
+		background: linear-gradient(45deg, #ff6b6b, #ff8787);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+	}
 }
 
 .song-cover {
-    position: relative;
-    width: 48px;
-    height: 48px;
-    border-radius: 8px;
-    overflow: hidden;
-    margin: 0 16px;
-}
+	position: relative;
+	width: 48px;
+	height: 48px;
+	border-radius: 8px;
+	overflow: hidden;
+	margin: 0 16px;
 
-.song-cover img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+	img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
 }
 
 .hover-play {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.4);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 0;
+	transition: opacity 0.2s ease;
 
-.song-item:hover .hover-play {
-    opacity: 1;
-}
-
-.hover-play i {
-    color: white;
-    font-size: 24px;
+	i {
+		color: white;
+		font-size: 24px;
+	}
 }
 
 .song-info {
-    flex: 1;
-    min-width: 0;
-    padding-right: 12px;
+	flex: 1;
+	min-width: 0;
+	padding-right: 12px;
 }
 
 .song-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	width: 100%;
 }
 
 .song-main {
-    flex: 2;
-    min-width: 0;
-    margin-right: 16px;
+	flex: 2;
+	min-width: 0;
+	margin-right: 16px;
 }
 
 .song-name {
-    font-size: 14px;
-    font-weight: 500;
-    color: #333;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+	font-size: 14px;
+	font-weight: 500;
+	color: #333;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .song-author {
-    font-size: 13px;
-    color: #666;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+	font-size: 13px;
+	color: #666;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .song-meta {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    min-width: 0;
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	min-width: 0;
 }
 
 .album {
-    flex: 1;
-    font-size: 12px;
-    color: #999;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    margin-right: 16px;
-    text-align: right;
+	flex: 1;
+	font-size: 12px;
+	color: #999;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	margin-right: 16px;
+	text-align: right;
 }
 
 .duration {
-    font-size: 12px;
-    color: #999;
-    flex-shrink: 0;
-    min-width: 45px;
-    text-align: right;
-}
-
-/* 自定义滚动条 */
-.song-list::-webkit-scrollbar {
-    width: 6px;
-}
-
-.song-list::-webkit-scrollbar-thumb {
-    background: #ddd;
-    border-radius: 3px;
-}
-
-.song-list::-webkit-scrollbar-track {
-    background: #f5f5f5;
+	font-size: 12px;
+	color: #999;
+	flex-shrink: 0;
+	min-width: 45px;
+	text-align: right;
 }
 
 .loading-indicator {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    color: #666;
-    font-size: 14px;
-    gap: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	color: #666;
+	font-size: 14px;
+	gap: 8px;
 }
 
 .loading-spinner {
-    width: 16px;
-    height: 16px;
-    border: 2px solid #f3f3f3;
-    border-top: 2px solid var(--primary-color);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
+	width: 16px;
+	height: 16px;
+	border: 2px solid #f3f3f3;
+	border-top: 2px solid var(--primary-color);
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
 }
 
 .no-more-indicator {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    color: #999;
-    font-size: 13px;
-    border-top: 1px solid #f0f0f0;
-    margin-top: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 16px;
+	color: #999;
+	font-size: 13px;
+	border-top: 1px solid #f0f0f0;
+	margin-top: 8px;
 }
 
 @media (max-width: 1200px) {
-    .ranking-list {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
-        padding: 15px;
-    }
-    
-    .ranking-item {
-        height: 500px;
-        min-height: 500px;
-    }
-    
-    .rank-header {
-        padding: 15px;
-    }
-    
-    .rank-cover {
-        width: 80px;
-        height: 80px;
-    }
-    
-    .rank-title {
-        font-size: 20px;
-    }
-    
-    .rank-update {
-        font-size: 12px;
-    }
+	.ranking-list {
+		grid-template-columns: repeat(2, 1fr);
+		gap: 15px;
+		padding: 15px;
+	}
+
+	.ranking-item {
+		height: 500px;
+		min-height: 500px;
+	}
+
+	.rank-header {
+		padding: 15px;
+	}
+
+	.rank-cover {
+		width: 80px;
+		height: 80px;
+	}
+
+	.rank-title {
+		font-size: 20px;
+	}
+
+	.rank-update {
+		font-size: 12px;
+	}
 }
 
 @media (max-width: 768px) {
-    .ranking-container {
-        padding: 10px;
-    }
-    
-    .rank-selector {
-        padding: 12px;
-        gap: 8px;
-    }
-    
-    .rank-chip {
-        padding: 6px 12px;
-        font-size: 12px;
-    }
-    
-    .ranking-list {
-        gap: 10px;
-        padding: 10px;
-        grid-template-columns: 1fr;
-    }
-    
-    .ranking-item {
-        height: 400px;
-    }
-    
-    .rank-cover {
-        width: 60px;
-        height: 60px;
-    }
-    
-    .rank-info {
-        margin-left: 10px;
-    }
-    
-    .rank-title {
-        font-size: 16px;
-        margin: 0 0 4px 0;
-    }
-    
-    .song-cover {
-        width: 40px;
-        height: 40px;
-        margin: 0 10px;
-    }
-    
-    .song-rank {
-        width: 30px;
-    }
-    
-    .song-name {
-        font-size: 13px;
-    }
-    
-    .song-author {
-        font-size: 12px;
-    }
-    
-    .album {
-        display: none;
-    }
+	.ranking-container {
+		padding: 10px;
+	}
+
+	.rank-selector {
+		padding: 12px;
+		gap: 8px;
+	}
+
+	.rank-chip {
+		padding: 6px 12px;
+		font-size: 12px;
+	}
+
+	.ranking-list {
+		gap: 10px;
+		padding: 10px;
+		grid-template-columns: 1fr;
+	}
+
+	.ranking-item {
+		height: 400px;
+	}
+
+	.rank-cover {
+		width: 60px;
+		height: 60px;
+	}
+
+	.rank-info {
+		margin-left: 10px;
+	}
+
+	.rank-title {
+		font-size: 16px;
+		margin: 0 0 4px 0;
+	}
+
+	.song-cover {
+		width: 40px;
+		height: 40px;
+		margin: 0 10px;
+	}
+
+	.song-rank {
+		width: 30px;
+	}
+
+	.song-name {
+		font-size: 13px;
+	}
+
+	.song-author {
+		font-size: 12px;
+	}
+
+	.album {
+		display: none;
+	}
 }
 
 :global(.music-note) {
-    position: fixed;
-    color: #ff6b6b;
-    font-size: 24px;
-    pointer-events: none;
-    z-index: 9999;
-    transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+	position: fixed;
+	color: #ff6b6b;
+	font-size: 24px;
+	pointer-events: none;
+	z-index: 9999;
+	transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 </style>

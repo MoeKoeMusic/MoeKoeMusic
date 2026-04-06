@@ -259,299 +259,298 @@ const handleArtistClick = (artist) => {
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .search-results {
-    padding: 20px;
+	padding: 20px;
 }
 
 .search-tabs {
-    display: flex;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #eee;
+	display: flex;
+	margin-bottom: 20px;
+	border-bottom: 1px solid #eee;
 }
 
 .tab-button {
-    padding: 10px 20px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    color: #666;
-    position: relative;
-    transition: all 0.3s;
-    border-radius: 5px 5px 0 0;
-}
+	padding: 10px 20px;
+	background: none;
+	border: none;
+	cursor: pointer;
+	font-size: 16px;
+	color: #666;
+	position: relative;
+	transition: all 0.3s;
+	border-radius: 5px 5px 0 0;
 
-.tab-button:hover {
-    color: var(--primary-color);
-}
+	&:hover {
+		color: var(--primary-color);
+	}
 
-.tab-button.active {
-    color: var(--primary-color);
-    font-weight: bold;
-}
+	&.active {
+		color: var(--primary-color);
+		font-weight: bold;
 
-.tab-button.active::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background-color: var(--primary-color);
+		&::after {
+			content: '';
+			position: absolute;
+			bottom: -1px;
+			left: 0;
+			width: 100%;
+			height: 2px;
+			background-color: var(--primary-color);
+		}
+	}
 }
 
 .result-item {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid #f0f0f0;
-    transition: background-color 0.3s;
-    cursor: pointer;
-    border-radius: 5px;
-    gap: 10px;
-}
+	display: flex;
+	align-items: center;
+	padding: 10px;
+	border-bottom: 1px solid #f0f0f0;
+	transition: background-color 0.3s;
+	cursor: pointer;
+	border-radius: 5px;
+	gap: 10px;
 
-.result-item:hover {
-    background-color: #f5f5f5;
-}
+	&:hover {
+		background-color: #f5f5f5;
+	}
 
-.result-item img {
-    width: 50px;
-    height: 50px;
-    border-radius: 5px;
-    margin-right: 10px;
+	img {
+		width: 50px;
+		height: 50px;
+		border-radius: 5px;
+		margin-right: 10px;
+	}
 }
 
 .result-info {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-width: 0; /* 防止flex子项溢出 */
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-width: 0;
 }
 
 .result-meta {
-    display: flex;
-    margin-left: auto;
-    min-width: 120px;
-    justify-content: flex-end;
-    padding-right: 20px;
+	display: flex;
+	margin-left: auto;
+	min-width: 120px;
+	justify-content: flex-end;
+	padding-right: 20px;
 }
 
 .meta-column {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 6px;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 6px;
 }
 
 .result-name {
-    font-size: 16px;
-    font-weight: bold;
-    height: 23px;
-    margin: 0;
-    max-width: 900px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+	font-size: 16px;
+	font-weight: bold;
+	height: 23px;
+	margin: 0;
+	max-width: 900px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .result-duration,
 .result-publish-date {
-    font-size: 14px;
-    color: #888;
-    margin: 0;
-    white-space: nowrap;
+	font-size: 14px;
+	color: #888;
+	margin: 0;
+	white-space: nowrap;
 }
 
 .result-duration {
-    color: #666;
+	color: #666;
 }
 
 .result-publish-date {
-    font-size: 12px;
-    color: #999;
+	font-size: 12px;
+	color: #999;
 }
 
 .result-type {
-    font-size: 14px;
-    color: #666;
-    margin: 6px 0 0 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+	font-size: 14px;
+	color: #666;
+	margin: 6px 0 0 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 20px 0;
-    gap: 10px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin: 20px 0;
+	gap: 10px;
 }
 
 .page-numbers {
-    display: flex;
-    gap: 5px;
+	display: flex;
+	gap: 5px;
 }
 
 .page-number {
-    padding: 8px 12px;
-    background-color: #f5f5f5;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    cursor: pointer;
-    color: #333;
-    min-width: 40px;
-    transition: all 0.3s;
-}
+	padding: 8px 12px;
+	background-color: #f5f5f5;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	cursor: pointer;
+	color: #333;
+	min-width: 40px;
+	transition: all 0.3s;
 
-.page-number:hover {
-    background-color: var(--primary-color);
-    color: white;
-}
+	&:hover {
+		background-color: var(--primary-color);
+		color: white;
+	}
 
-.page-number.active {
-    background-color: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
+	&.active {
+		background-color: var(--primary-color);
+		color: white;
+		border-color: var(--primary-color);
+	}
+
+	&.ellipsis {
+		background-color: transparent;
+		border: none;
+		cursor: default;
+		pointer-events: none;
+		padding: 8px 8px;
+		min-width: 30px;
+
+		&:hover {
+			background-color: transparent;
+			color: #333;
+		}
+	}
 }
 
 .pagination button {
-    padding: 8px 15px;
-    background-color: white;
-    color: #333;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s;
-}
+	padding: 8px 15px;
+	background-color: white;
+	color: #333;
+	border: 1px solid #ddd;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: all 0.3s;
 
-.pagination button:hover:not(:disabled) {
-    background-color: var(--primary-color);
-    color: white;
-}
+	&:hover:not(:disabled) {
+		background-color: var(--primary-color);
+		color: white;
+	}
 
-.pagination button:disabled {
-    background-color: white;
-    color: #999;
-    cursor: not-allowed;
-    border-color: #ddd;
+	&:disabled {
+		background-color: white;
+		color: #999;
+		cursor: not-allowed;
+		border-color: #ddd;
+	}
 }
 
 .section-title {
-    font-size: 28px;
-    font-weight: bold;
-    margin-bottom: 30px;
-    color: var(--primary-color);
+	font-size: 28px;
+	font-weight: bold;
+	margin-bottom: 30px;
+	color: var(--primary-color);
 }
-
-.page-number.ellipsis {
-    background-color: transparent;
-    border: none;
-    cursor: default;
-    pointer-events: none;
-    padding: 8px 8px;
-    min-width: 30px;
-}
-
-.page-number.ellipsis:hover {
-    background-color: transparent;
-    color: #333;
-}
-
-
 </style>
 
-<!-- 添加骨架屏样式 -->
-<style scoped>
-/* 骨架屏动画 */
+<style lang="scss" scoped>
 @keyframes shimmer {
-    0% {
-        background-position: -468px 0;
-    }
-    100% {
-        background-position: 468px 0;
-    }
+	0% {
+		background-position: -468px 0;
+	}
+	100% {
+		background-position: 468px 0;
+	}
 }
 
 .skeleton-container {
-    width: 100%;
+	width: 100%;
 }
 
 .skeleton-item {
-    margin-bottom: 15px;
+	margin-bottom: 15px;
 }
 
-.skeleton-cover, .skeleton-avatar {
-    width: 50px;
-    height: 50px;
-    border-radius: 5px;
-    background: linear-gradient(to right, #f0f0f0 8%, #e0e0e0 18%, #f0f0f0 33%);
-    background-size: 800px 104px;
-    animation: shimmer 1.5s linear infinite forwards;
+.skeleton-cover,
+.skeleton-avatar {
+	width: 50px;
+	height: 50px;
+	border-radius: 5px;
+	background: linear-gradient(to right, #f0f0f0 8%, #e0e0e0 18%, #f0f0f0 33%);
+	background-size: 800px 104px;
+	animation: shimmer 1.5s linear infinite forwards;
 }
 
 .skeleton-avatar {
-    border-radius: 50%;
-    width: 100px;
-    height: 100px;
-    margin: 0 auto 10px;
+	border-radius: 50%;
+	width: 100px;
+	height: 100px;
+	margin: 0 auto 10px;
 }
 
 .skeleton-cover.square {
-    width: 150px;
-    height: 150px;
-    margin: 0 auto 10px;
+	width: 150px;
+	height: 150px;
+	margin: 0 auto 10px;
 }
 
 .skeleton-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
 }
 
 .skeleton-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    min-width: 120px;
-    align-items: flex-end;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	min-width: 120px;
+	align-items: flex-end;
 }
 
 .skeleton-line {
-    height: 16px;
-    background: linear-gradient(to right, #f0f0f0 8%, #e0e0e0 18%, #f0f0f0 33%);
-    background-size: 800px 104px;
-    animation: shimmer 1.5s linear infinite forwards;
-    border-radius: 3px;
-    width: 100%;
-    margin-top: 5px;
-}
+	height: 16px;
+	background: linear-gradient(to right, #f0f0f0 8%, #e0e0e0 18%, #f0f0f0 33%);
+	background-size: 800px 104px;
+	animation: shimmer 1.5s linear infinite forwards;
+	border-radius: 3px;
+	width: 100%;
+	margin-top: 5px;
 
-.skeleton-line.short {
-    width: 60%;
-}
+	&.short {
+		width: 60%;
+	}
 
-.skeleton-line.tiny {
-    width: 40%;
-    height: 12px;
+	&.tiny {
+		width: 40%;
+		height: 12px;
+	}
 }
 
 .skeleton-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 20px;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+	gap: 20px;
 }
 
-.skeleton-artist-card, .skeleton-album-card, .skeleton-playlist-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 15px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    transition: transform 0.3s;
+.skeleton-artist-card,
+.skeleton-album-card,
+.skeleton-playlist-card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 15px;
+	background-color: #f9f9f9;
+	border-radius: 8px;
+	transition: transform 0.3s;
 }
 </style>

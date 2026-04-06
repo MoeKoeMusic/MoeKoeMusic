@@ -692,627 +692,646 @@ const getSortIconClass = (field) => {
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .detail-page {
-    padding: 20px;
+	padding: 20px;
 }
 
 .header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 40px;
+	display: flex;
+	align-items: center;
+	margin-bottom: 40px;
 }
 
 .cover-art {
-    width: 200px;
-    height: 200px;
-    border-radius: 10px;
-    margin-right: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    object-fit: cover;
+	width: 200px;
+	height: 200px;
+	border-radius: 10px;
+	margin-right: 20px;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	object-fit: cover;
 }
 
 .info {
-    max-width: 600px;
+	max-width: 600px;
 }
 
 .title {
-    font-size: 36px;
-    font-weight: bold;
-    width: 800px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    margin: 0;
-    color: var(--primary-color);
+	font-size: 36px;
+	font-weight: bold;
+	width: 800px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	margin: 0;
+	color: var(--primary-color);
 }
 
 .subtitle {
-    font-size: 18px;
-    color: #666;
+	font-size: 18px;
+	color: #666;
 }
 
 .folder-info {
-    margin: 10px 0;
+	margin: 10px 0;
 }
 
 .folder-path {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #666;
-    font-size: 14px;
-}
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	color: #666;
+	font-size: 14px;
 
-.folder-path i {
-    color: var(--primary-color);
+	i {
+		color: var(--primary-color);
+	}
 }
 
 .description {
-    white-space: pre-wrap;
-    line-height: 1.6;
-    color: var(--text-color);
-    margin-bottom: 20px;
-    font-size: 16px;
-    max-height: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: break-spaces;
-    overflow-y: auto;
+	white-space: pre-wrap;
+	line-height: 1.6;
+	color: var(--text-color);
+	margin-bottom: 20px;
+	font-size: 16px;
+	max-height: 200px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: break-spaces;
+	overflow-y: auto;
 }
 
 .actions {
-    display: flex;
-    gap: 10px;
+	display: flex;
+	gap: 10px;
 }
 
-.primary-btn, .upload-btn {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
+.primary-btn,
+.upload-btn {
+	background-color: var(--primary-color);
+	color: white;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 5px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
 }
 
 .upload-btn {
-    background-color: var(--primary-color);
+	background-color: var(--primary-color);
 }
 
-.primary-btn i, .upload-btn i {
-    margin-right: 5px;
+.primary-btn,
+.upload-btn {
+	i {
+		margin-right: 5px;
+	}
+
+	&:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
 }
 
-.primary-btn:disabled, .upload-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-/* 歌曲列表样式 */
 .track-list-container {
-    margin-top: 30px;
+	margin-top: 30px;
 }
 
 .track-list-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 10px;
 }
 
 .track-list-title {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 10px;
-    color: var(--primary-color);
+	font-size: 24px;
+	font-weight: bold;
+	margin-bottom: 10px;
+	color: var(--primary-color);
 }
 
 .track-list-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
 }
 
 .batch-action-container {
-    position: relative;
+	position: relative;
 }
 
 .batch-action-btn {
-    background-color: transparent;
-    border: 1px solid var(--secondary-color);
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-color);
-    position: relative;
-}
+	background-color: transparent;
+	border: 1px solid var(--secondary-color);
+	padding: 5px 10px;
+	border-radius: 5px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--text-color);
+	position: relative;
 
-.batch-action-btn.active {
-    background-color: var(--primary-color);
-    color: white;
+	&.active {
+		background-color: var(--primary-color);
+		color: white;
+	}
 }
 
 .selected-count {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background-color: red;
-    color: white;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: bold;
+	position: absolute;
+	top: -8px;
+	right: -8px;
+	background-color: red;
+	color: white;
+	border-radius: 50%;
+	width: 20px;
+	height: 20px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 12px;
+	font-weight: bold;
 }
 
 .batch-actions-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background-color: white;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    z-index: 50;
-    margin-top: 5px;
-    width: 200px;
-}
+	position: absolute;
+	top: 100%;
+	left: 0;
+	background-color: white;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+	z-index: 50;
+	margin-top: 5px;
+	width: 200px;
 
-.batch-actions-menu ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
+	ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
 
-.batch-actions-menu li {
-    padding: 10px 15px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    white-space: nowrap;
-}
+	li {
+		padding: 10px 15px;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		white-space: nowrap;
 
-.batch-actions-menu li i {
-    margin-right: 10px;
-    width: 16px;
-    text-align: center;
-}
+		i {
+			margin-right: 10px;
+			width: 16px;
+			text-align: center;
+		}
 
-.batch-actions-menu li:hover {
-    background-color: #f0f0f0;
+		&:hover {
+			background-color: #f0f0f0;
+		}
+	}
 }
 
 .view-mode-btn {
-    background-color: transparent;
-    border: 1px solid var(--secondary-color);
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-color);
-    width: 36px;
-    height: 31px;
-    transition: all 0.3s ease;
-}
+	background-color: transparent;
+	border: 1px solid var(--secondary-color);
+	padding: 5px 10px;
+	border-radius: 5px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--text-color);
+	width: 36px;
+	height: 31px;
+	transition: all 0.3s ease;
 
-.view-mode-btn:hover {
-    background-color: rgba(var(--primary-color-rgb), 0.1);
-}
+	&:hover {
+		background-color: rgba(var(--primary-color-rgb), 0.1);
+	}
 
-.view-mode-btn i {
-    font-size: 16px;
+	i {
+		font-size: 16px;
+	}
 }
 
 .search-input {
-    width: 250px;
-    padding: 8px;
-    border: 1px solid var(--secondary-color);
-    border-radius: 20px;
-    box-sizing: border-box;
-    padding-left: 15px;
+	width: 250px;
+	padding: 8px;
+	border: 1px solid var(--secondary-color);
+	border-radius: 20px;
+	box-sizing: border-box;
+	padding-left: 15px;
 }
 
 .track-list {
-    height: 800px;
-    scrollbar-width: thin;
-    scrollbar-color: transparent transparent; 
-    overflow: auto;
-}
+	height: 800px;
+	scrollbar-width: thin;
+	scrollbar-color: transparent transparent;
+	overflow: auto;
 
-.track-list::-webkit-scrollbar {
-    width: 8px !important; 
-    display: block !important;
-}
+	&::-webkit-scrollbar {
+		width: 8px !important;
+		display: block !important;
+	}
 
-.track-list:hover {
-    scrollbar-color: var(--primary-color) transparent;
+	&:hover {
+		scrollbar-color: var(--primary-color) transparent;
+	}
 }
 
 .li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid #eee;
-    border-radius: 5px;
-    cursor: pointer;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 10px;
+	border-bottom: 1px solid #eee;
+	border-radius: 5px;
+	cursor: pointer;
+
+	&:hover {
+		background-color: var(--background-color);
+	}
+
+	&.selected {
+		background-color: rgba(var(--primary-color-rgb), 0.1);
+	}
+
+	&.cover-view {
+		height: 60px;
+		padding: 5px 10px;
+		display: flex;
+		align-items: center;
+		border-bottom: 1px solid #eee;
+		border-radius: 5px;
+
+		&:hover {
+			background-color: var(--background-color);
+		}
+
+		.track-title {
+			flex: 2;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.track-artist {
+			flex: 1;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			padding: 0 10px;
+		}
+
+		.track-album {
+			flex: 1;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			padding: 0 10px;
+		}
+
+		.track-size {
+			flex: 0.5;
+			text-align: center;
+		}
+
+		.track-timelen {
+			width: 95px;
+			text-align: right;
+		}
+
+		.track-checkbox,
+		.track-number {
+			margin-right: 10px;
+			width: 30px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+	}
 }
 
-.li:hover {
-    background-color: var(--background-color);
-}
-
-.li.selected {
-    background-color: rgba(var(--primary-color-rgb), 0.1);
-}
-
-/* 歌曲多选 */
 .track-checkbox {
-    margin-right: 10px;
-    width: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+	margin-right: 10px;
+	width: 30px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .track-number {
-    font-weight: bold;
-    margin-right: 10px;
-    width: 30px;
+	font-weight: bold;
+	margin-right: 10px;
+	width: 30px;
 }
 
 .track-title {
-    flex: 2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+	flex: 2;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
-.track-size{
-    flex: 0.5;
-    text-align: center;
+.track-size {
+	flex: 0.5;
+	text-align: center;
 }
 
 .track-artist {
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding: 0 10px;
+	flex: 1;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	padding: 0 10px;
 }
 
 .track-album {
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding: 0 10px;
-}
-
-.track-size{
-    flex: 0.5;
-    text-align: center;
+	flex: 1;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	padding: 0 10px;
 }
 
 .icon {
-    margin-left: 5px;
-    border: 1px solid;
-    border-radius: 5px;
-    font-size: 10px;
-    padding-left: 6px;
-    padding-right: 6px;
+	margin-left: 5px;
+	border: 1px solid;
+	border-radius: 5px;
+	font-size: 10px;
+	padding-left: 6px;
+	padding-right: 6px;
 }
 
 .hq-icon {
-    color: #0094ff;
-    border-color: #0094ff;
+	color: #0094ff;
+	border-color: #0094ff;
 }
 
 .hr-icon {
-    color: #ff6d00;
-    border-color: #ff6d00;
+	color: #ff6d00;
+	border-color: #ff6d00;
 }
 
 .queue-play-btn {
-    background: none;
-    border: none;
-    font-size: 16px;
-    color: var(--primary-color);
-    cursor: pointer;
+	background: none;
+	border: none;
+	font-size: 16px;
+	color: var(--primary-color);
+	cursor: pointer;
 }
 
-/* 导航按钮 */
 .location-arrow {
-    position: fixed;
-    bottom: 168px;
-    right: 14px;
-    z-index: 1;
-    cursor: pointer;
-    font-size: 37px;
-    color: var(--primary-color);
+	position: fixed;
+	bottom: 168px;
+	right: 14px;
+	z-index: 1;
+	cursor: pointer;
+	font-size: 37px;
+	color: var(--primary-color);
 }
 
 .scroll-bottom-img {
-    position: fixed;
-    width: 60px;
-    height: 60px;
-    bottom: 110px;
-    right: 88px;
-    z-index: 1;
-    cursor: pointer;
+	position: fixed;
+	width: 60px;
+	height: 60px;
+	bottom: 110px;
+	right: 88px;
+	z-index: 1;
+	cursor: pointer;
 }
 
-/* 音符动画 */
 .note-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    pointer-events: none;
-    overflow: hidden;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	pointer-events: none;
+	overflow: hidden;
 }
 
 .flying-note {
-    position: absolute;
-    font-size: 36px;
-    color: var(--primary-color);
-    pointer-events: none;
-    transform-origin: center;
+	position: absolute;
+	font-size: 36px;
+	color: var(--primary-color);
+	pointer-events: none;
+	transform-origin: center;
 }
 
 .fly-note-enter-active {
-    animation: fly-note 2s ease-out forwards;
+	animation: fly-note 2s ease-out forwards;
 }
 
 .fly-note-leave-active {
-    animation: fly-note 2s ease-out forwards;
+	animation: fly-note 2s ease-out forwards;
 }
 
 @keyframes fly-note {
-    0% {
-        transform: translate(var(--start-x), calc(var(--start-y) - 50px)) rotate(0deg) scale(1.2);
-        opacity: 0.9;
-    }
-    20% {
-        transform: translate(calc(var(--start-x) + 20px), calc(var(--start-y) - 70px)) rotate(45deg) scale(1.3);
-        opacity: 0.85;
-    }
-    100% {
-        transform: translate(80vw, 100vh) rotate(360deg) scale(0.6);
-        opacity: 0;
-    }
+	0% {
+		transform: translate(var(--start-x), calc(var(--start-y) - 50px)) rotate(0deg) scale(1.2);
+		opacity: 0.9;
+	}
+	20% {
+		transform: translate(calc(var(--start-x) + 20px), calc(var(--start-y) - 70px)) rotate(45deg) scale(1.3);
+		opacity: 0.85;
+	}
+	100% {
+		transform: translate(80vw, 100vh) rotate(360deg) scale(0.6);
+		opacity: 0;
+	}
 }
 
-/* 表头样式 */
 .track-list-header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid var(--primary-color);
-    font-weight: bold;
-    background-color: rgba(var(--primary-color-rgb), 0.1);
-    border-radius: 5px 5px 0 0;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 10px;
+	border-bottom: 1px solid var(--primary-color);
+	font-weight: bold;
+	background-color: rgba(var(--primary-color-rgb), 0.1);
+	border-radius: 5px 5px 0 0;
+
+	&:hover {
+		background-color: rgba(var(--primary-color-rgb), 0.15);
+	}
 }
 
 .track-checkbox-header {
-    margin-right: 10px;
-    width: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+	margin-right: 10px;
+	width: 30px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .track-number-header {
-    font-weight: bold;
-    margin-right: 10px;
-    width: 30px;
+	font-weight: bold;
+	margin-right: 10px;
+	width: 30px;
 }
 
-.track-title-header, .track-artist-header, .track-timelen-header, .track-size-header {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
+.track-title-header,
+.track-artist-header,
+.track-timelen-header,
+.track-size-header {
+	cursor: pointer;
+	display: flex;
+	align-items: center;
 }
 
 .track-title-header {
-    flex: 2;
+	flex: 2;
+
+	i {
+		margin-left: 5px;
+		font-size: 14px;
+	}
 }
 
-.track-size-header{
-    flex: 0.5;
-    padding: 0 10px;
+.track-size-header {
+	flex: 0.5;
+	padding: 0 10px;
+
+	i {
+		margin-left: 5px;
+		font-size: 14px;
+	}
 }
 
 .track-artist-header {
-    flex: 1;
-    padding: 0 10px;
+	flex: 1;
+	padding: 0 10px;
+
+	i {
+		margin-left: 5px;
+		font-size: 14px;
+	}
 }
 
 .track-album-header {
-    flex: 1;
-    padding: 0 10px;
+	flex: 1;
+	padding: 0 10px;
+
+	i {
+		margin-left: 5px;
+		font-size: 14px;
+	}
 }
 
 .track-timelen-header {
-    text-align: right;
-}
+	text-align: right;
 
-.track-title-header i, .track-artist-header i, .track-album-header i, .track-timelen-header i, .track-size-header i {
-    margin-left: 5px;
-    font-size: 14px;
-}
-
-.track-list-header-row:hover {
-    background-color: rgba(var(--primary-color-rgb), 0.15);
-}
-
-/* 网格视图样式 */
-.li.cover-view {
-    height: 60px;
-    padding: 5px 10px;
-    display: flex;
-    align-items: center;
-    border-bottom: 1px solid #eee;
-    border-radius: 5px;
-}
-
-.li.cover-view:hover {
-    background-color: var(--background-color);
+	i {
+		margin-left: 5px;
+		font-size: 14px;
+	}
 }
 
 .track-cover {
-    position: relative;
-    width: 50px;
-    height: 50px;
-    margin-right: 15px;
-    overflow: hidden;
-    border-radius: 4px;
-    flex-shrink: 0;
-}
+	position: relative;
+	width: 50px;
+	height: 50px;
+	margin-right: 15px;
+	overflow: hidden;
+	border-radius: 4px;
+	flex-shrink: 0;
 
-.track-cover img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
+	img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 0.3s ease;
+	}
 }
 
 .li.cover-view:hover .track-cover img {
-    transform: scale(1.05);
+	transform: scale(1.05);
 }
 
 .track-cover-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 20px;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.5);
+	opacity: 0;
+	transition: opacity 0.3s ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: white;
+	font-size: 20px;
 }
 
 .li.cover-view:hover .track-cover-overlay {
-    opacity: 1;
+	opacity: 1;
 }
 
 .track-cover-overlay.playing {
-    opacity: 1;
+	opacity: 1;
 }
 
-.li.cover-view .track-title {
-    flex: 2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.li.cover-view .track-artist {
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding: 0 10px;
-}
-
-.li.cover-view .track-album {
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding: 0 10px;
-}
-
-.li.cover-view .track-size {
-    flex: 0.5;
-    text-align: center;
-}
-
-.li.cover-view .track-timelen {
-    width: 95px;
-    text-align: right;
-}
-
-.li.cover-view .track-checkbox,
-.li.cover-view .track-number {
-    margin-right: 10px;
-    width: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* 空状态和欢迎状态 */
 .empty-state,
 .welcome-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: #666;
+	text-align: center;
+	padding: 60px 20px;
+	color: #666;
+
+	i {
+		font-size: 48px;
+		color: #ddd;
+		margin-bottom: 20px;
+	}
 }
 
-.empty-state i,
-.welcome-state i {
-    font-size: 48px;
-    color: #ddd;
-    margin-bottom: 20px;
-}
+.welcome-state {
+	h3 {
+		margin: 0px 0 10px;
+		color: #333;
+	}
 
-.welcome-state h3 {
-    margin: 0px 0 10px;
-    color: #333;
-}
-
-.welcome-state p {
-    margin-bottom: 30px;
-    color: #666;
+	p {
+		margin-bottom: 30px;
+		color: #666;
+	}
 }
 
 .hint {
-    font-size: 12px;
-    color: #999;
-    margin-top: 10px;
+	font-size: 12px;
+	color: #999;
+	margin-top: 10px;
 }
 
-/* 加载状态 */
 .loading-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: #666;
-}
+	text-align: center;
+	padding: 60px 20px;
+	color: #666;
 
-.loading-state p {
-    margin-top: 20px;
+	p {
+		margin-top: 20px;
+	}
 }
 
 .loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid var(--primary-color);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto;
+	width: 40px;
+	height: 40px;
+	border: 4px solid #f3f3f3;
+	border-top: 4px solid var(--primary-color);
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+	margin: 0 auto;
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
 }
 </style>

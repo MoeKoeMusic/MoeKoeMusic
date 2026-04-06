@@ -584,270 +584,277 @@ watch(fontSize, () => {
 <style>
 body,
 html {
-    background-color: rgba(0, 0, 0, 0);
+	background-color: rgba(0, 0, 0, 0);
 }
 </style>
-<style scoped>
+<style lang="scss" scoped>
+$white: white;
+$text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+$shadow-light: 0 2px 8px rgba(0, 0, 0, 0.2);
+$bg-overlay: rgba(30, 30, 30, 0.75);
+$bg-button: rgba(50, 50, 50, 0.7);
+
 .lyrics-text {
-    display: inline-block;
-    position: relative;
-    transform: translateZ(0);
-    white-space: pre;
-    letter-spacing: 0.5px;
+	display: inline-block;
+	position: relative;
+	transform: translateZ(0);
+	white-space: pre;
+	letter-spacing: 0.5px;
 }
 
 .lyrics-layer {
-    display: block;
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-    font-weight: bold;
-    white-space: pre;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
+	display: block;
+	background-clip: text;
+	-webkit-background-clip: text;
+	color: transparent;
+	font-weight: bold;
+	white-space: pre;
+	text-shadow: $text-shadow;
 
-.lyrics-layer-default {
-    position: relative;
-}
+	&-default {
+		position: relative;
+	}
 
-.lyrics-layer-highlight {
-    position: absolute;
-    left: 0;
-    top: 0;
-    overflow: hidden;
-    width: 0;
-    max-width: 100%;
-    will-change: width;
+	&-highlight {
+		position: absolute;
+		left: 0;
+		top: 0;
+		overflow: hidden;
+		width: 0;
+		max-width: 100%;
+		will-change: width;
+	}
 }
 
 .lyrics-text-static .lyrics-layer {
-    position: relative;
+	position: relative;
 }
 
 .lyrics-container {
-    backdrop-filter: blur(10px);
-    border-radius: 12px;
-    user-select: none;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: center;
-    cursor: inherit;
-    font-weight: bold;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: auto;
-    transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-    transform: translateZ(0); 
-    /* margin: 8px; 移出事件和窗口缩放冲突，暂未解决 */
-    padding: 8px 0;
-    overflow: hidden;
-}
+	backdrop-filter: blur(10px);
+	border-radius: 12px;
+	user-select: none;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	align-items: center;
+	cursor: inherit;
+	font-weight: bold;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: auto;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	transform: translateZ(0);
+	padding: 8px 0;
+	overflow: hidden;
 
-.lyrics-container.hovering {
-    background-color: rgba(0, 0, 0, 0.4);
-    cursor: move;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+	&.hovering {
+		background-color: rgba(0, 0, 0, 0.4);
+		cursor: move;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+	}
+
+	&.locked {
+		.controls-overlay {
+			opacity: 0;
+		}
+
+		.controls-overlay.show-locked-controls {
+			opacity: 1;
+		}
+	}
+
+	&:not(.locked) .lyrics-content.hovering:hover {
+		cursor: move;
+	}
 }
 
 .lyrics-content-wrapper {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .controls-overlay {
-    opacity: 0;
-    transition: opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
-    margin-bottom: 10px;
-    height: 40px;
-    position: relative;
-    z-index: 10;
-    pointer-events: auto; /* 确保控制栏可以接收鼠标事件 */
+	opacity: 0;
+	transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+	margin-bottom: 10px;
+	height: 40px;
+	position: relative;
+	z-index: 10;
+	pointer-events: auto;
 }
 
 .lyrics-container.hovering .controls-overlay {
-    opacity: 1;
-}
-
-.lyrics-container.locked .controls-overlay {
-    opacity: 0;
-}
-
-.lyrics-container.locked .controls-overlay.show-locked-controls {
-    opacity: 1;
+	opacity: 1;
 }
 
 .controls-wrapper {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    background: rgba(30, 30, 30, 0.75);
-    padding: 6px 12px;
-    border-radius: 20px;
-    backdrop-filter: blur(4px);
-    transition: all 0.3s ease;
-    width: auto;
-    min-width: 430px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+	display: flex;
+	gap: 15px;
+	justify-content: center;
+	background: $bg-overlay;
+	padding: 6px 12px;
+	border-radius: 20px;
+	backdrop-filter: blur(4px);
+	transition: all 0.3s ease;
+	width: auto;
+	min-width: 430px;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	box-shadow: $shadow-light;
+
+	&:not(.locked-controls) {
+		cursor: move;
+	}
+
+	&.locked-controls {
+		background: $bg-overlay;
+		padding: 6px;
+		width: auto;
+		min-width: auto;
+		border-radius: 50%;
+	}
+
+	button {
+		background: $bg-button;
+		border: 1px solid rgba(255, 255, 255, 0.15) !important;
+		color: $white;
+		cursor: pointer;
+		width: 28px !important;
+		height: 28px !important;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+		transform: scale(1);
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+
+		&:hover {
+			transform: scale(1.1);
+			background: rgba(80, 80, 80, 0.8);
+			border-color: rgba(255, 255, 255, 0.25) !important;
+		}
+
+		&:active {
+			transform: scale(0.95);
+		}
+	}
+
+	i {
+		font-size: 16px;
+	}
 }
 
 .lock-button {
-    position: relative;
-    z-index: 3;
-}
+	position: relative;
+	z-index: 3;
 
-.lock-button i {
-    font-size: 13px !important;
-}
-
-.controls-wrapper.locked-controls {
-    background: rgba(30, 30, 30, 0.75);
-    padding: 6px;
-    width: auto;
-    min-width: auto;
-    border-radius: 50%;
-}
-
-.controls-wrapper button {
-    background: rgba(50, 50, 50, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
-    color: white;
-    cursor: pointer;
-    width: 28px !important;
-    height: 28px !important;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
-    transform: scale(1);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-}
-
-.controls-wrapper button:hover {
-    transform: scale(1.1);
-    background: rgba(80, 80, 80, 0.8);
-    border-color: rgba(255, 255, 255, 0.25) !important;
-}
-
-.controls-wrapper button:active {
-    transform: scale(0.95);
-}
-
-.controls-wrapper i {
-    font-size: 16px;
+	i {
+		font-size: 13px !important;
+	}
 }
 
 .lyrics-line {
-    overflow: hidden;
-    position: relative;
-    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
-    opacity: 1;
-    transform: translateY(0);
-    will-change: background-position;
+	overflow: hidden;
+	position: relative;
+	filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
+	opacity: 1;
+	transform: translateY(0);
+	will-change: background-position;
 }
 
 .lyrics-content {
-    display: inline-block;
-    white-space: nowrap;
-    transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-    border-radius: 6px;
-    transform: translateX(0);
-    background-color: transparent;
+	display: inline-block;
+	white-space: nowrap;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	border-radius: 6px;
+	transform: translateX(0);
+	background-color: transparent;
 }
 
-.lyrics-container:not(.locked) .lyrics-content.hovering:hover {
-    cursor: move;
-}
-
-.nolyrics{
-    margin-bottom: 30px;
-}
-
-.controls-wrapper:not(.locked-controls) {
-    cursor: move;
+.nolyrics {
+	margin-bottom: 30px;
 }
 
 .font-size-controls {
-    display: none;
+	display: none;
 }
 
 .font-control {
-    opacity: 0.8;
-    padding: 0 6px;
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    width: auto !important;
-    transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
-    transform: scale(1);
-}
+	opacity: 0.8;
+	padding: 0 6px;
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	width: auto !important;
+	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+	transform: scale(1);
 
-.font-control:hover {
-    opacity: 1;
-    transform: scale(1.05);
-}
+	&:hover {
+		opacity: 1;
+		transform: scale(1.05);
+	}
 
-.font-control i {
-    font-size: 12px;
-}
+	i {
+		font-size: 12px;
 
-.font-control i.fa-font {
-    font-size: 14px;
-    margin: 0 1px;
+		&.fa-font {
+			font-size: 14px;
+			margin: 0 1px;
+		}
+	}
 }
 
 .font-icon {
-    display: none;
+	display: none;
 }
 
 .color-controls {
-    display: flex;
-    gap: 4px;
-    align-items: center;
+	display: flex;
+	gap: 4px;
+	align-items: center;
 }
 
 .color-button {
-    padding: 2px !important;
-    width: 24px !important;
-    height: 24px !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
-    transform: scale(1);
-}
+	padding: 2px !important;
+	width: 24px !important;
+	height: 24px !important;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid rgba(255, 255, 255, 0.2) !important;
+	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+	transform: scale(1);
 
-.color-button:hover {
-    transform: scale(1.1);
-    border-color: rgba(255, 255, 255, 0.4) !important;
+	&:hover {
+		transform: scale(1.1);
+		border-color: rgba(255, 255, 255, 0.4) !important;
+	}
 }
 
 .color-preview {
-    width: 16px;
-    height: 16px;
-    border-radius: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+	width: 16px;
+	height: 16px;
+	border-radius: 4px;
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .hidden-color-input {
-    position: absolute;
-    visibility: hidden;
-    width: 0;
-    height: 0;
-    padding: 0;
-    margin: 0;
-    border: none;
+	position: absolute;
+	visibility: hidden;
+	width: 0;
+	height: 0;
+	padding: 0;
+	margin: 0;
+	border: none;
 }
 </style>

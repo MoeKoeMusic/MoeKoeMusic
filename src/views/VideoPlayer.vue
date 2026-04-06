@@ -2,23 +2,16 @@
     <div class="video-player-page">
         <div class="video-container">
             <div class="video-header">
-                <button class="back-btn" @click="() => isElectron? closeWindow(): goBack()">
+                <button class="back-btn" @click="() => isElectron ? closeWindow() : goBack()">
                     <i class="fas" :class="{ 'fa-xmark': isElectron, 'fa-arrow-left': !isElectron }"></i>
-                    {{ isElectron? '关闭': '返回' }}
+                    {{ isElectron ? '关闭' : '返回' }}
                 </button>
                 <h2 class="video-title">{{ videoTitle }}</h2>
             </div>
 
             <div class="video-wrapper" v-if="videoUrl">
-                <video
-                    ref="videoPlayer"
-                    class="video-element"
-                    :src="videoUrl"
-                    controls
-                    autoplay
-                    @error="handleVideoError"
-                    @loadedmetadata="handleVideoLoaded"
-                >
+                <video ref="videoPlayer" class="video-element" :src="videoUrl" controls autoplay
+                    @error="handleVideoError" @loadedmetadata="handleVideoLoaded">
                     您的浏览器不支持视频播放
                 </video>
             </div>
@@ -135,110 +128,110 @@ onBeforeUnmount(() => {
 
 <style lang="scss" scoped>
 .video-player-page {
-	width: 100%;
-	height: 100vh;
-	background-color: #000;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+    width: 100%;
+    height: 100vh;
+    background-color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .video-container {
-	width: 100%;
-	height: 100%;
-	display: flex;
-	flex-direction: column;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .video-header {
-	background-color: rgba(0, 0, 0, 0.8);
-	padding: 15px 20px;
-	display: flex;
-	align-items: center;
-	gap: 20px;
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
 
 .back-btn {
-	background: transparent;
-	border: none;
-	color: white;
-	font-size: 16px;
-	cursor: pointer;
-	padding: 8px 16px;
-	border-radius: 4px;
-	transition: background-color 0.3s;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
 
-	&:hover {
-		background-color: rgba(255, 255, 255, 0.1);
-	}
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
 }
 
 .video-title {
-	color: white;
-	font-size: 18px;
-	margin: 0;
-	flex: 1;
+    color: white;
+    font-size: 18px;
+    margin: 0;
+    flex: 1;
 }
 
 .video-wrapper {
-	flex: 1;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	background-color: #000;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #000;
 }
 
 .video-element {
-	width: 100%;
-	height: 100%;
-	max-height: 100%;
-	object-fit: contain;
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }
 
 .loading-container,
 .error-container {
-	flex: 1;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	color: white;
-	gap: 15px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    gap: 15px;
 
-	i {
-		font-size: 48px;
-	}
+    i {
+        font-size: 48px;
+    }
 
-	p {
-		font-size: 16px;
-		margin: 0;
-	}
+    p {
+        font-size: 16px;
+        margin: 0;
+    }
 }
 
 .loading-container i {
-	color: #42b983;
+    color: #42b983;
 }
 
 .error-container i {
-	color: #ff6b6b;
+    color: #ff6b6b;
 }
 
 .retry-btn {
-	background-color: #42b983;
-	color: white;
-	border: none;
-	padding: 10px 20px;
-	border-radius: 4px;
-	font-size: 14px;
-	cursor: pointer;
-	transition: background-color 0.3s;
+    background-color: #42b983;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s;
 
-	&:hover {
-		background-color: #35a372;
-	}
+    &:hover {
+        background-color: #35a372;
+    }
 
-	i {
-		margin-right: 5px;
-	}
+    i {
+        margin-right: 5px;
+    }
 }
 </style>

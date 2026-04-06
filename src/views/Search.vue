@@ -4,12 +4,8 @@
             <h2 class="section-title">{{ $t('sou-suo-jie-guo') }}</h2>
             <!-- 添加搜索类型标签栏 -->
             <div class="search-tabs">
-                <button 
-                    v-for="tab in searchTabs" 
-                    :key="tab.type" 
-                    :class="['tab-button', { active: searchType === tab.type }]"
-                    @click="changeSearchType(tab.type)"
-                >
+                <button v-for="tab in searchTabs" :key="tab.type"
+                    :class="['tab-button', { active: searchType === tab.type }]" @click="changeSearchType(tab.type)">
                     {{ tab.name }}
                 </button>
             </div>
@@ -29,7 +25,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- 歌手/专辑/歌单共用骨架屏 -->
                 <div v-else class="grid-skeleton">
                     <div class="skeleton-grid">
@@ -45,7 +41,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <template v-else-if="searchResults.length > 0">
                 <!-- 歌曲搜索结果 -->
                 <ul v-if="searchType === 'song'">
@@ -65,15 +61,17 @@
                         </div>
                     </li>
                 </ul>
-                
+
                 <!-- 歌手搜索结果 -->
-                <ArtistGrid v-else-if="searchType === 'author'" :artists="searchResults" @artist-click="handleArtistClick" />
-                
+                <ArtistGrid v-else-if="searchType === 'author'" :artists="searchResults"
+                    @artist-click="handleArtistClick" />
+
                 <!-- 专辑搜索结果 -->
                 <AlbumGrid v-else-if="searchType === 'album'" :albums="searchResults" @album-click="handleAlbumClick" />
-                
+
                 <!-- 歌单搜索结果 -->
-                <PlaylistGrid v-else-if="searchType === 'special'" :playlists="searchResults" @playlist-click="handlePlaylistClick" />
+                <PlaylistGrid v-else-if="searchType === 'special'" :playlists="searchResults"
+                    @playlist-click="handlePlaylistClick" />
 
                 <div class="pagination">
                     <button @click="prevPage" :disabled="currentPage === 1">{{ $t('shang-yi-ye') }}</button>
@@ -103,7 +101,7 @@ import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 const searchQuery = ref(route.query.q || '');
-const searchType = ref(route.query.type || 'song'); 
+const searchType = ref(route.query.type || 'song');
 const searchResults = ref([]);
 const currentPage = ref(1);
 const pageSize = ref(30);
@@ -122,12 +120,12 @@ const searchTabs = [
 const changeSearchType = (type) => {
     searchType.value = type;
     currentPage.value = 1; // 切换类型时重置页码
-    
+
     // 更新URL参数
     router.push({
-        query: { 
+        query: {
             ...route.query,
-            type: type 
+            type: type
         }
     });
     performSearch();
@@ -136,7 +134,7 @@ const changeSearchType = (type) => {
 const showContextMenu = (event, song) => {
     if (contextMenuRef.value) {
         song.cover = song.Image?.replace("{size}", 480) || './assets/images/ico.png',
-        song.timeLength = song.Duration;
+            song.timeLength = song.Duration;
         song.OriSongName = song.FileName;
         contextMenuRef.value.openContextMenu(event, song);
     }
@@ -252,7 +250,7 @@ const handlePlaylistClick = (playlist) => {
 const handleArtistClick = (artist) => {
     router.push({
         path: '/PlaylistDetail',
-        query: { 
+        query: {
             singerid: artist.AuthorId
         }
     });
@@ -261,296 +259,297 @@ const handleArtistClick = (artist) => {
 
 <style lang="scss" scoped>
 .search-results {
-	padding: 20px;
+    padding: 20px;
 }
 
 .search-tabs {
-	display: flex;
-	margin-bottom: 20px;
-	border-bottom: 1px solid #eee;
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
 }
 
 .tab-button {
-	padding: 10px 20px;
-	background: none;
-	border: none;
-	cursor: pointer;
-	font-size: 16px;
-	color: #666;
-	position: relative;
-	transition: all 0.3s;
-	border-radius: 5px 5px 0 0;
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #666;
+    position: relative;
+    transition: all 0.3s;
+    border-radius: 5px 5px 0 0;
 
-	&:hover {
-		color: var(--primary-color);
-	}
+    &:hover {
+        color: var(--primary-color);
+    }
 
-	&.active {
-		color: var(--primary-color);
-		font-weight: bold;
+    &.active {
+        color: var(--primary-color);
+        font-weight: bold;
 
-		&::after {
-			content: '';
-			position: absolute;
-			bottom: -1px;
-			left: 0;
-			width: 100%;
-			height: 2px;
-			background-color: var(--primary-color);
-		}
-	}
+        &::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--primary-color);
+        }
+    }
 }
 
 .result-item {
-	display: flex;
-	align-items: center;
-	padding: 10px;
-	border-bottom: 1px solid #f0f0f0;
-	transition: background-color 0.3s;
-	cursor: pointer;
-	border-radius: 5px;
-	gap: 10px;
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.3s;
+    cursor: pointer;
+    border-radius: 5px;
+    gap: 10px;
 
-	&:hover {
-		background-color: #f5f5f5;
-	}
+    &:hover {
+        background-color: #f5f5f5;
+    }
 
-	img {
-		width: 50px;
-		height: 50px;
-		border-radius: 5px;
-		margin-right: 10px;
-	}
+    img {
+        width: 50px;
+        height: 50px;
+        border-radius: 5px;
+        margin-right: 10px;
+    }
 }
 
 .result-info {
-	display: flex;
-	flex-direction: column;
-	flex: 1;
-	min-width: 0;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
 }
 
 .result-meta {
-	display: flex;
-	margin-left: auto;
-	min-width: 120px;
-	justify-content: flex-end;
-	padding-right: 20px;
+    display: flex;
+    margin-left: auto;
+    min-width: 120px;
+    justify-content: flex-end;
+    padding-right: 20px;
 }
 
 .meta-column {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-end;
-	gap: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
 }
 
 .result-name {
-	font-size: 16px;
-	font-weight: bold;
-	height: 23px;
-	margin: 0;
-	max-width: 900px;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+    font-size: 16px;
+    font-weight: bold;
+    height: 23px;
+    margin: 0;
+    max-width: 900px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .result-duration,
 .result-publish-date {
-	font-size: 14px;
-	color: #888;
-	margin: 0;
-	white-space: nowrap;
+    font-size: 14px;
+    color: #888;
+    margin: 0;
+    white-space: nowrap;
 }
 
 .result-duration {
-	color: #666;
+    color: #666;
 }
 
 .result-publish-date {
-	font-size: 12px;
-	color: #999;
+    font-size: 12px;
+    color: #999;
 }
 
 .result-type {
-	font-size: 14px;
-	color: #666;
-	margin: 6px 0 0 0;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+    font-size: 14px;
+    color: #666;
+    margin: 6px 0 0 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .pagination {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	margin: 20px 0;
-	gap: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+    gap: 10px;
 }
 
 .page-numbers {
-	display: flex;
-	gap: 5px;
+    display: flex;
+    gap: 5px;
 }
 
 .page-number {
-	padding: 8px 12px;
-	background-color: #f5f5f5;
-	border: 1px solid #ddd;
-	border-radius: 4px;
-	cursor: pointer;
-	color: #333;
-	min-width: 40px;
-	transition: all 0.3s;
+    padding: 8px 12px;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #333;
+    min-width: 40px;
+    transition: all 0.3s;
 
-	&:hover {
-		background-color: var(--primary-color);
-		color: white;
-	}
+    &:hover {
+        background-color: var(--primary-color);
+        color: white;
+    }
 
-	&.active {
-		background-color: var(--primary-color);
-		color: white;
-		border-color: var(--primary-color);
-	}
+    &.active {
+        background-color: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
 
-	&.ellipsis {
-		background-color: transparent;
-		border: none;
-		cursor: default;
-		pointer-events: none;
-		padding: 8px 8px;
-		min-width: 30px;
+    &.ellipsis {
+        background-color: transparent;
+        border: none;
+        cursor: default;
+        pointer-events: none;
+        padding: 8px 8px;
+        min-width: 30px;
 
-		&:hover {
-			background-color: transparent;
-			color: #333;
-		}
-	}
+        &:hover {
+            background-color: transparent;
+            color: #333;
+        }
+    }
 }
 
 .pagination button {
-	padding: 8px 15px;
-	background-color: white;
-	color: #333;
-	border: 1px solid #ddd;
-	border-radius: 8px;
-	cursor: pointer;
-	transition: all 0.3s;
+    padding: 8px 15px;
+    background-color: white;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
 
-	&:hover:not(:disabled) {
-		background-color: var(--primary-color);
-		color: white;
-	}
+    &:hover:not(:disabled) {
+        background-color: var(--primary-color);
+        color: white;
+    }
 
-	&:disabled {
-		background-color: white;
-		color: #999;
-		cursor: not-allowed;
-		border-color: #ddd;
-	}
+    &:disabled {
+        background-color: white;
+        color: #999;
+        cursor: not-allowed;
+        border-color: #ddd;
+    }
 }
 
 .section-title {
-	font-size: 28px;
-	font-weight: bold;
-	margin-bottom: 30px;
-	color: var(--primary-color);
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    color: var(--primary-color);
 }
 </style>
 
 <style lang="scss" scoped>
 @keyframes shimmer {
-	0% {
-		background-position: -468px 0;
-	}
-	100% {
-		background-position: 468px 0;
-	}
+    0% {
+        background-position: -468px 0;
+    }
+
+    100% {
+        background-position: 468px 0;
+    }
 }
 
 .skeleton-container {
-	width: 100%;
+    width: 100%;
 }
 
 .skeleton-item {
-	margin-bottom: 15px;
+    margin-bottom: 15px;
 }
 
 .skeleton-cover,
 .skeleton-avatar {
-	width: 50px;
-	height: 50px;
-	border-radius: 5px;
-	background: linear-gradient(to right, #f0f0f0 8%, #e0e0e0 18%, #f0f0f0 33%);
-	background-size: 800px 104px;
-	animation: shimmer 1.5s linear infinite forwards;
+    width: 50px;
+    height: 50px;
+    border-radius: 5px;
+    background: linear-gradient(to right, #f0f0f0 8%, #e0e0e0 18%, #f0f0f0 33%);
+    background-size: 800px 104px;
+    animation: shimmer 1.5s linear infinite forwards;
 }
 
 .skeleton-avatar {
-	border-radius: 50%;
-	width: 100px;
-	height: 100px;
-	margin: 0 auto 10px;
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 10px;
 }
 
 .skeleton-cover.square {
-	width: 150px;
-	height: 150px;
-	margin: 0 auto 10px;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 10px;
 }
 
 .skeleton-info {
-	flex: 1;
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .skeleton-meta {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-	min-width: 120px;
-	align-items: flex-end;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 120px;
+    align-items: flex-end;
 }
 
 .skeleton-line {
-	height: 16px;
-	background: linear-gradient(to right, #f0f0f0 8%, #e0e0e0 18%, #f0f0f0 33%);
-	background-size: 800px 104px;
-	animation: shimmer 1.5s linear infinite forwards;
-	border-radius: 3px;
-	width: 100%;
-	margin-top: 5px;
+    height: 16px;
+    background: linear-gradient(to right, #f0f0f0 8%, #e0e0e0 18%, #f0f0f0 33%);
+    background-size: 800px 104px;
+    animation: shimmer 1.5s linear infinite forwards;
+    border-radius: 3px;
+    width: 100%;
+    margin-top: 5px;
 
-	&.short {
-		width: 60%;
-	}
+    &.short {
+        width: 60%;
+    }
 
-	&.tiny {
-		width: 40%;
-		height: 12px;
-	}
+    &.tiny {
+        width: 40%;
+        height: 12px;
+    }
 }
 
 .skeleton-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-	gap: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
 }
 
 .skeleton-artist-card,
 .skeleton-album-card,
 .skeleton-playlist-card {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	padding: 15px;
-	background-color: #f9f9f9;
-	border-radius: 8px;
-	transition: transform 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    transition: transform 0.3s;
 }
 </style>

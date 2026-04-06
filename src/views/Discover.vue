@@ -1,23 +1,18 @@
 <template>
     <div class="discover-page">
         <h2 class="section-title">{{ $t('fa-xian') }}</h2>
-        
+
         <div class="category-container">
             <div class="main-categories">
-                <button v-for="(category, index) in categories" 
-                    :key="index" 
-                    @click="selectMainCategory(index)"
+                <button v-for="(category, index) in categories" :key="index" @click="selectMainCategory(index)"
                     :class="{ active: selectedMainCategory === index }">
                     {{ category.tag_name }}
                 </button>
             </div>
-            
+
             <div class="sub-categories">
-                <button v-for="(tab, index) in currentSubCategories" 
-                    :key="index" 
-                    @click="selectSubCategory(index)"
-                    :class="{ active: selectedSubCategory === index }"
-                    :tag_id="tab.tag_id">
+                <button v-for="(tab, index) in currentSubCategories" :key="index" @click="selectSubCategory(index)"
+                    :class="{ active: selectedSubCategory === index }" :tag_id="tab.tag_id">
                     {{ tab.tag_name }}
                 </button>
             </div>
@@ -32,7 +27,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div v-else class="music-grid">
             <div class="music-card" v-for="(playlist, index) in playlistList" :key="index">
                 <router-link :to="{
@@ -55,7 +50,7 @@ import { ref, onMounted, computed } from "vue";
 import { get } from '../utils/request';
 import { useRouter } from 'vue-router';
 const router = useRouter();
-const categories = ref([]); 
+const categories = ref([]);
 const selectedMainCategory = ref(0);
 const selectedSubCategory = ref(0);
 const tag_id = ref(0);
@@ -97,13 +92,13 @@ const selectMainCategory = (index) => {
     selectedSubCategory.value = 0;
     if (currentSubCategories.value.length > 0) {
         tag_id.value = currentSubCategories.value[0].tag_id;
-        router.replace({ 
-            path: '/discover', 
-            query: { 
+        router.replace({
+            path: '/discover',
+            query: {
                 main: index,
                 sub: 0,
-                tag: currentSubCategories.value[0].tag_id 
-            } 
+                tag: currentSubCategories.value[0].tag_id
+            }
         });
         playlist();
     }
@@ -114,13 +109,13 @@ const selectSubCategory = (index) => {
     isLoading.value = true;
     selectedSubCategory.value = index;
     tag_id.value = currentSubCategories.value[index].tag_id;
-    router.replace({ 
-        path: '/discover', 
-        query: { 
+    router.replace({
+        path: '/discover',
+        query: {
             main: selectedMainCategory.value,
             sub: index,
-            tag: currentSubCategories.value[index].tag_id 
-        } 
+            tag: currentSubCategories.value[index].tag_id
+        }
     });
     playlist();
 };
@@ -136,147 +131,147 @@ const playlist = async () => {
 
 <style lang="scss" scoped>
 .discover-page {
-	padding: 20px;
+    padding: 20px;
 }
 
 .section-title {
-	font-size: 28px;
-	font-weight: bold;
-	margin-bottom: 30px;
-	color: var(--primary-color);
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    color: var(--primary-color);
 }
 
 .category-container {
-	margin-bottom: 30px;
+    margin-bottom: 30px;
 }
 
 .main-categories {
-	display: flex;
-	gap: 10px;
-	margin-bottom: 15px;
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
 
-	button {
-		background-color: var(--secondary-color);
-		color: #fff;
-		border: none;
-		padding: 10px 20px;
-		border-radius: 20px;
-		cursor: pointer;
-		font-size: 15px;
+    button {
+        background-color: var(--secondary-color);
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 15px;
 
-		&.active {
-			background-color: var(--primary-color);
-		}
-	}
+        &.active {
+            background-color: var(--primary-color);
+        }
+    }
 }
 
 .sub-categories {
-	display: flex;
-	gap: 10px;
-	flex-wrap: wrap;
-	margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
 
-	button {
-		background-color: #f5f5f5;
-		border: none;
-		padding: 8px 15px;
-		border-radius: 15px;
-		cursor: pointer;
-		font-size: 14px;
+    button {
+        background-color: #f5f5f5;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 15px;
+        cursor: pointer;
+        font-size: 14px;
 
-		&.active {
-			background-color: var(--secondary-color);
-			color: #fff;
-		}
-	}
+        &.active {
+            background-color: var(--secondary-color);
+            color: #fff;
+        }
+    }
 }
 
 .music-grid {
-	display: flex;
-	gap: 15px;
-	flex-wrap: wrap;
-	justify-content: space-evenly;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
 }
 
 .music-card {
-	background-color: #fff;
-	border-radius: 10px;
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-	transition: transform 0.3s ease, box-shadow 0.3s ease;
-	padding: 10px;
-	text-align: center;
-	width: 180px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    padding: 10px;
+    text-align: center;
+    width: 180px;
 
-	&:hover {
-		transform: translateY(-5px);
-		box-shadow: 0 10px 20px var(--color-box-shadow);
-	}
+    &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px var(--color-box-shadow);
+    }
 
-	img {
-		width: 100%;
-		border-radius: 8px;
-	}
+    img {
+        width: 100%;
+        border-radius: 8px;
+    }
 }
 
 .music-info {
-	h3 {
-		font-size: 16px;
-		margin: 10px 0 5px;
-	}
+    h3 {
+        font-size: 16px;
+        margin: 10px 0 5px;
+    }
 
-	p {
-		font-size: 12px;
-		color: #666;
-		display: -webkit-box;
-		-webkit-line-clamp: 2;
-		-webkit-box-orient: vertical;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		max-height: 50px;
-		line-height: 25px;
-	}
+    p {
+        font-size: 12px;
+        color: #666;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-height: 50px;
+        line-height: 25px;
+    }
 }
 
 .skeleton-grid {
-	display: flex;
-	gap: 15px;
-	flex-wrap: wrap;
-	justify-content: space-evenly;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
 }
 
 .skeleton-card {
-	background-color: #f0f0f0;
-	border-radius: 10px;
-	padding: 10px;
-	width: 200px;
-	text-align: center;
-	height: 250px;
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    padding: 10px;
+    width: 200px;
+    text-align: center;
+    height: 250px;
 }
 
 .skeleton-image {
-	width: 100%;
-	height: 200px;
-	background-color: #e0e0e0;
-	border-radius: 8px;
+    width: 100%;
+    height: 200px;
+    background-color: #e0e0e0;
+    border-radius: 8px;
 }
 
 .skeleton-info {
-	margin-top: 10px;
+    margin-top: 10px;
 }
 
 .skeleton-title {
-	width: 60%;
-	height: 16px;
-	background-color: #e0e0e0;
-	margin: 10px auto;
-	border-radius: 4px;
+    width: 60%;
+    height: 16px;
+    background-color: #e0e0e0;
+    margin: 10px auto;
+    border-radius: 4px;
 }
 
 .skeleton-text {
-	width: 80%;
-	height: 12px;
-	background-color: #e0e0e0;
-	margin: 5px auto;
-	border-radius: 4px;
+    width: 80%;
+    height: 12px;
+    background-color: #e0e0e0;
+    margin: 5px auto;
+    border-radius: 4px;
 }
 </style>

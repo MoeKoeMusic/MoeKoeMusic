@@ -13,10 +13,13 @@
                     </li>
                 </ul>
             </li>
-            <li v-if="contextSong.mvhash" @click="playMV(contextSong.mvhash)"><i class="fa-solid fa-video"></i> 播放MV</li>
+            <li v-if="contextSong.mvhash" @click="playMV(contextSong.mvhash)"><i class="fa-solid fa-video"></i> 播放MV
+            </li>
             <li @click="shareSong(contextSong)"><i class="fa-solid fa-share-nodes"></i> 分享</li>
-            <li v-if="MoeAuth.isAuthenticated && listId && contextSong.userid === MoeAuth.UserInfo.userid" @click="cancel()"><i class="fa-solid fa-heart"></i> 取消收藏</li>
-            <li v-if="MoeAuth.isAuthenticated" @click="addToNext(contextSong)"><i class="fa-solid fa-arrow-right"></i> 添加到下一首</li>
+            <li v-if="MoeAuth.isAuthenticated && listId && contextSong.userid === MoeAuth.UserInfo.userid"
+                @click="cancel()"><i class="fa-solid fa-heart"></i> 取消收藏</li>
+            <li v-if="MoeAuth.isAuthenticated" @click="addToNext(contextSong)"><i class="fa-solid fa-arrow-right"></i>
+                添加到下一首</li>
         </ul>
     </div>
 </template>
@@ -53,11 +56,11 @@ const hideContextMenu = () => {
 };
 // 获取歌单列表
 const fetchPlaylists = async () => {
-    if(!MoeAuth.isAuthenticated) return;
+    if (!MoeAuth.isAuthenticated) return;
     showSubMenu.value = true;
     try {
-        const playlistResponse = await get('/user/playlist',{
-            pagesize:100
+        const playlistResponse = await get('/user/playlist', {
+            pagesize: 100
         });
         if (playlistResponse.status === 1) {
             playlists.value = playlistResponse.data.info.filter(playlist => playlist.list_create_userid === MoeAuth.UserInfo.userid);
@@ -170,43 +173,43 @@ defineExpose({ openContextMenu });
 
 <style lang="scss" scoped>
 .context-menu {
-	position: fixed;
-	background-color: white;
-	border: 1px solid #ddd;
-	border-radius: 10px;
-	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-	z-index: 1000;
+    position: fixed;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
 
-	ul {
-		list-style: none;
-		padding: 0;
-		margin: 0;
-	}
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
 
-	li {
-		padding: 8px 14px;
-		cursor: pointer;
-		position: relative;
-		border-radius: 10px;
+    li {
+        padding: 8px 14px;
+        cursor: pointer;
+        position: relative;
+        border-radius: 10px;
 
-		&:hover {
-			background-color: var(--background-color);
-		}
-	}
+        &:hover {
+            background-color: var(--background-color);
+        }
+    }
 }
 
 .submenu {
-	position: absolute;
-	left: 100%;
-	top: 0;
-	background-color: white;
-	border: 1px solid #ddd;
-	border-radius: 10px;
-	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
-	padding: 5px 0;
+    position: absolute;
+    left: 100%;
+    top: 0;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    padding: 5px 0;
 
-	li {
-		width: 150px;
-	}
+    li {
+        width: 150px;
+    }
 }
 </style>

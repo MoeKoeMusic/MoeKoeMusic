@@ -1526,5 +1526,5 @@ const onQueueLocalSongAdd = async (item) => {
 </script>
 
 <style scoped>
-@import '@/assets/style/PlayerControl.css';
+@import '@/assets/style/PlayerControl.scss';
 </style>

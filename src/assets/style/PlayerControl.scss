@@ -216,6 +216,10 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
     box-shadow: $shadow-soft;
     border: 1px solid rgba(0, 0, 0, 0.06);
     z-index: 10;
+
+    &:is(.dark .quality-menu) {
+        background: #121212;
+    }
 }
 
 .quality-menu-item {

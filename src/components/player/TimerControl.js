@@ -181,6 +181,13 @@ export default function useTimerControl() {
         switch (mode) {
             case 'stop':
                 dispatchTimerStopPlayback();
+                if (window.electron?.ipcRenderer) {
+                    try {
+                        window.electron.ipcRenderer.send('timer-action', { action: 'timer-completed' });
+                    } catch (error) {
+                        console.error('[TimerControl] IPC timer-completed send failed:', error);
+                    }
+                }
                 break;
             case 'exit':
             case 'sleep':

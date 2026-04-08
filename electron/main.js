@@ -10,7 +10,6 @@ import { setupAutoUpdater } from './services/updater.js';
 import apiService from './services/apiService.js';
 import statusBarLyricsService from './services/statusBarLyricsService.js';
 import { executeSystemSleep, executeSystemShutdown, checkSystemPermission } from './services/timerService.js';
-import getLocalMusicService from './services/localMusicService.js';
 import Store from 'electron-store';
 import path from 'path';
 import { fileURLToPath } from 'url';

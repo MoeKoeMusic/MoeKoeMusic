@@ -4,7 +4,7 @@ import { platform } from 'os';
 const SHUTDOWN_DELAY_SECONDS = 5;
 
 const SLEEP_COMMANDS = {
-    win32: { cmd: 'rundll32.exe', args: ['powrprof.dll,SetSuspendState', '0', '1', '0'] },
+    win32: { cmd: 'powershell.exe', args: ['-Command', 'Add-Type -Assembly System.Windows.Forms; [System.Windows.Forms.Application]::SetSuspendState([System.Windows.Forms.PowerState]::Suspend, $false, $false)'] },
     darwin: { cmd: 'pmset', args: ['sleepnow'] },
     linux: { cmd: 'systemctl', args: ['suspend'] }
 };

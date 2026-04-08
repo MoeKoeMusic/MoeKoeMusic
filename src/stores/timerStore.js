@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 
 export const VALID_MODES = ['stop', 'exit', 'sleep', 'shutdown'];
-export const WARNING_THRESHOLD_MS = 60000;
+export const WARNING_THRESHOLD_MS = 30000;
 
 export const useTimerStore = defineStore('timer', {
     state: () => ({

@@ -69,19 +69,98 @@ const router = createRouter({
     }
 });
 
-// 全局导航守卫
-router.beforeEach((to, from, next) => {
+const VALID_START_PAGES = routes[0].children
+    .filter(r => !r.meta?.requiresAuth || r.path === '/library')
+    .map(r => r.path === '' ? '/' : r.path);
+VALID_START_PAGES.push('/library');
+
+const getStartPageFromStorage = () => {
+    try {
+        const stored = localStorage.getItem('settings');
+        if (stored) {
+            const settings = JSON.parse(stored);
+            const page = settings.startPage;
+            if (page && VALID_START_PAGES.includes(page)) {
+                return page;
+            }
+            if (page && !VALID_START_PAGES.includes(page)) {
+                console.warn(`[StartPage] 无效的启动页路径: "${page}"，将使用默认首页`);
+            }
+        }
+    } catch (error) {
+        console.error('[StartPage] 解析设置失败:', error);
+    }
+    return '/';
+};
+
+let cachedStartPage = null;
+let cachedStartPageTimestamp = 0;
+
+export const clearStartPageCache = () => {
+    cachedStartPage = null;
+    cachedStartPageTimestamp = 0;
+};
+
+export const updateStartPageCache = (newPage) => {
+    if (newPage && VALID_START_PAGES.includes(newPage)) {
+        cachedStartPage = newPage;
+    } else {
+        cachedStartPage = '/';
+    }
+    cachedStartPageTimestamp = Date.now();
+};
+
+if (typeof window !== 'undefined') {
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'settings') {
+            cachedStartPage = getStartPageFromStorage();
+            cachedStartPageTimestamp = Date.now();
+        }
+    });
+}
+
+router.beforeEach(async (to, from, next) => {
     console.log('完整的路由地址:', to.fullPath);
-    const MoeAuth = MoeAuthStore()
-    // 检查是否需要登录
+
+    if (to.path === '/' && !from.name) {
+        if (cachedStartPage === null) {
+            cachedStartPage = getStartPageFromStorage();
+        }
+
+        const startPage = cachedStartPage;
+
+        if (startPage && startPage !== '/') {
+            const targetRoute = router.resolve(startPage);
+            const requiresAuth = targetRoute.matched.some(record => record.meta.requiresAuth);
+
+            if (requiresAuth) {
+                try {
+                    const MoeAuth = MoeAuthStore();
+                    await MoeAuth.$state;
+                    if (MoeAuth.isAuthenticated) {
+                        next({ path: startPage, replace: true });
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('[StartPage] 登录状态验证失败，跳转到登录页');
+                }
+            } else {
+                next({ path: startPage, replace: true });
+                return;
+            }
+        }
+    }
+
+    const MoeAuth = MoeAuthStore();
     if (to.matched.some(record => record.meta.requiresAuth)) {
         if (!MoeAuth.isAuthenticated) {
             next({
                 path: '/login',
-                query: { redirect: to.fullPath } 
+                query: { redirect: to.fullPath }
             });
-        } 
-    } 
+            return;
+        }
+    }
     next();
 });
 

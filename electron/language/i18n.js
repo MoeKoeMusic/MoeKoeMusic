@@ -38,7 +38,12 @@ const translations = {
     'update-ready-msg': '新版本已下载完成，立即安装？',
     'install-now': '现在安装',
     'install-later': '稍后安装',
-    'non-windows-update': '非 Windows 平台暂不支持在线更新，请前往官网或应用市场下载最新版本。'
+    'non-windows-update': '非 Windows 平台暂不支持在线更新，请前往官网或应用市场下载最新版本。',
+    'timer-reminder': '定时器提醒',
+    'timer-sleep-warning': '定时器即将触发，系统将进入睡眠模式，请注意保存工作。',
+    'timer-shutdown-warning': '定时器即将触发，系统将关机，请立即保存工作！',
+    'timer-sleep-failed': '系统睡眠失败，请检查权限设置。',
+    'timer-shutdown-failed': '系统关机失败，请检查权限设置。'
   },
   'zh-TW': {
     'project-home': '專案首頁',
@@ -74,7 +79,12 @@ const translations = {
     'update-ready-msg': '新版本已下載完成，立即安裝？',
     'install-now': '現在安裝',
     'install-later': '稍後安裝',
-    'non-windows-update': '非 Windows 平台暫不支持線上更新，請前往官網或應用市場下載最新版本。'
+    'non-windows-update': '非 Windows 平台暫不支持線上更新，請前往官網或應用市場下載最新版本。',
+    'timer-reminder': '定時器提醒',
+    'timer-sleep-warning': '定時器即將觸發，系統將進入睡眠模式，請注意保存工作。',
+    'timer-shutdown-warning': '定時器即將觸發，系統將關機，請立即保存工作！',
+    'timer-sleep-failed': '系統睡眠失敗，請檢查權限設置。',
+    'timer-shutdown-failed': '系統關機失敗，請檢查權限設置。'
   },
   'en': {
     'project-home': 'Project Homepage',
@@ -110,7 +120,12 @@ const translations = {
     'update-ready-msg': 'Update downloaded. Install now?',
     'install-now': 'Install Now',
     'install-later': 'Later',
-    'non-windows-update': 'Auto-update is only available on Windows. Please download from the official website.'
+    'non-windows-update': 'Auto-update is only available on Windows. Please download from the official website.',
+    'timer-reminder': 'Timer Reminder',
+    'timer-sleep-warning': 'Timer is about to trigger. System will enter sleep mode. Please save your work.',
+    'timer-shutdown-warning': 'Timer is about to trigger. System will shut down. Save your work immediately!',
+    'timer-sleep-failed': 'System sleep failed. Please check permission settings.',
+    'timer-shutdown-failed': 'System shutdown failed. Please check permission settings.'
   },
   'ru': {
     'project-home': 'Страница проекта',
@@ -146,7 +161,12 @@ const translations = {
     'update-ready-msg': 'Обновление загружено. Установить сейчас?',
     'install-now': 'Установить',
     'install-later': 'Позже',
-    'non-windows-update': 'Автообновление доступно только на Windows. Скачайте с официального сайта.'
+    'non-windows-update': 'Автообновление доступно только на Windows. Скачайте с официального сайта.',
+    'timer-reminder': 'Напоминание таймера',
+    'timer-sleep-warning': 'Таймер скоро сработает. Система перейдет в спящий режим. Сохраните работу.',
+    'timer-shutdown-warning': 'Таймер скоро сработает. Система выключится. Сохраните работу немедленно!',
+    'timer-sleep-failed': 'Не удалось перевести систему в спящий режим. Проверьте разрешения.',
+    'timer-shutdown-failed': 'Не удалось выключить систему. Проверьте разрешения.'
   },
   'ja': {
     'project-home': 'プロジェクトホーム',
@@ -182,7 +202,12 @@ const translations = {
     'update-ready-msg': '更新がダウンロードされました。今すぐインストールしますか？',
     'install-now': '今すぐインストール',
     'install-later': '後で',
-    'non-windows-update': '自動更新はWindowsでのみ利用可能です。公式サイトからダウンロードしてください。'
+    'non-windows-update': '自動更新はWindowsでのみ利用可能です。公式サイトからダウンロードしてください。',
+    'timer-reminder': 'タイマー通知',
+    'timer-sleep-warning': 'タイマーがまもなく作動します。システムがスリープモードに入ります。作業を保存してください。',
+    'timer-shutdown-warning': 'タイマーがまもなく作動します。システムがシャットダウンします。今すぐ作業を保存してください！',
+    'timer-sleep-failed': 'スリープに失敗しました。権限設定を確認してください。',
+    'timer-shutdown-failed': 'シャットダウンに失敗しました。権限設定を確認してください。'
   },
   'ko': {
     'project-home': '프로젝트 홈',
@@ -218,7 +243,12 @@ const translations = {
     'update-ready-msg': '업데이트가 다운로드되었습니다. 지금 설치하시겠습니까?',
     'install-now': '지금 설치',
     'install-later': '나중에',
-    'non-windows-update': '자동 업데이트는 Windows에서만 사용 가능합니다. 공식 웹사이트에서 다운로드하세요.'
+    'non-windows-update': '자동 업데이트는 Windows에서만 사용 가능합니다. 공식 웹사이트에서 다운로드하세요.',
+    'timer-reminder': '타이머 알림',
+    'timer-sleep-warning': '타이머가 곧 작동합니다. 시스템이 절전 모드로 들어갑니다. 작업을 저장하세요.',
+    'timer-shutdown-warning': '타이머가 곧 작동합니다. 시스템이 종료됩니다. 지금 작업을 저장하세요!',
+    'timer-sleep-failed': '절전 모드 진입 실패. 권한 설정을 확인하세요.',
+    'timer-shutdown-failed': '시스템 종료 실패. 권한 설정을 확인하세요.'
   }
 };
 

@@ -9,6 +9,8 @@ import { initializeExtensions, cleanupExtensions } from './extensions/extensions
 import { setupAutoUpdater } from './services/updater.js';
 import apiService from './services/apiService.js';
 import statusBarLyricsService from './services/statusBarLyricsService.js';
+import { executeSystemSleep, executeSystemShutdown, checkSystemPermission } from './services/timerService.js';
+import getLocalMusicService from './services/localMusicService.js';
 import Store from 'electron-store';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -16,6 +18,7 @@ import { t } from './language/i18n.js';
 
 let mainWindow = null;
 let blockerId = null;
+let timerBlockerId = null;
 const store = new Store();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -116,6 +119,10 @@ app.on('before-quit', () => {
     }
     if (blockerId !== null) {
         powerSaveBlocker.stop(blockerId);
+    }
+    if (timerBlockerId !== null) {
+        powerSaveBlocker.stop(timerBlockerId);
+        timerBlockerId = null;
     }
 
     // 清理状态栏歌词服务
@@ -298,3 +305,114 @@ ipcMain.handle('open-mv-window', (e, url) => {
         }
     })();
 });
+
+// ==================== 定时器功能 IPC ====================
+
+ipcMain.handle('check-timer-permission', (event, mode) => {
+    return checkSystemPermission(mode);
+});
+
+ipcMain.on('timer-action', (event, { action, mode, duration }) => {
+    switch (action) {
+        case 'start':
+            if (timerBlockerId === null) {
+                timerBlockerId = powerSaveBlocker.start('prevent-app-suspension');
+            }
+            break;
+        case 'cancel':
+        case 'timer-completed':
+            if (timerBlockerId !== null) {
+                powerSaveBlocker.stop(timerBlockerId);
+                timerBlockerId = null;
+            }
+            break;
+        case 'warning':
+            handleTimerWarning(mode);
+            break;
+        case 'trigger':
+            handleTimerTrigger(mode).catch(error => {
+                console.error('[Timer] Trigger failed:', error);
+                mainWindow?.webContents.send('timer-execute', { 
+                    mode: 'stop', 
+                    error: 'trigger-failed' 
+                });
+            });
+            break;
+    }
+});
+
+function handleTimerWarning(mode) {
+    const title = t('timer-reminder');
+    let body = '';
+    if (mode === 'sleep') {
+        body = t('timer-sleep-warning');
+    } else if (mode === 'shutdown') {
+        body = t('timer-shutdown-warning');
+    }
+    if (body) {
+        new Notification({
+            title: title,
+            body: body,
+            silent: false
+        }).show();
+    }
+}
+
+async function handleTimerTrigger(mode) {
+    switch (mode) {
+        case 'stop':
+            mainWindow?.webContents.send('timer-execute', { mode: 'stop' });
+            break;
+        case 'exit':
+            if (timerBlockerId !== null) {
+                powerSaveBlocker.stop(timerBlockerId);
+                timerBlockerId = null;
+            }
+            app.isQuitting = true;
+            app.quit();
+            break;
+        case 'sleep':
+            try {
+                await executeSystemSleep();
+            } catch (error) {
+                console.error('[Timer] Sleep failed:', error);
+                mainWindow?.webContents.send('timer-execute', { 
+                    mode: 'stop', 
+                    error: 'sleep-failed',
+                    message: t('timer-sleep-failed')
+                });
+                new Notification({
+                    title: t('timer-reminder'),
+                    body: t('timer-sleep-failed'),
+                    silent: false
+                }).show();
+            } finally {
+                if (timerBlockerId !== null) {
+                    powerSaveBlocker.stop(timerBlockerId);
+                    timerBlockerId = null;
+                }
+            }
+            break;
+        case 'shutdown':
+            try {
+                await executeSystemShutdown();
+            } catch (error) {
+                console.error('[Timer] Shutdown failed:', error);
+                mainWindow?.webContents.send('timer-execute', { 
+                    mode: 'stop',
+                    error: 'shutdown-failed',
+                    message: t('timer-shutdown-failed')
+                });
+                new Notification({
+                    title: t('timer-reminder'),
+                    body: t('timer-shutdown-failed'),
+                    silent: false
+                }).show();
+            }
+            if (timerBlockerId !== null) {
+                powerSaveBlocker.stop(timerBlockerId);
+                timerBlockerId = null;
+            }
+            break;
+    }
+}

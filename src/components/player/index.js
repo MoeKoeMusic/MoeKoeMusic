@@ -6,6 +6,7 @@ import usePlaybackMode from './PlaybackMode';
 import useMediaSession from './MediaSession';
 import useSongQueue from './SongQueue';
 import { useHelpers } from './Helpers';
+import useTimerControl from './TimerControl';
 
 export {
   useAudioController,
@@ -14,5 +15,6 @@ export {
   usePlaybackMode,
   useMediaSession,
   useSongQueue,
-  useHelpers
+  useHelpers,
+  useTimerControl
 }; 

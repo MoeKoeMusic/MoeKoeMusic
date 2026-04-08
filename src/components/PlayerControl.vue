@@ -84,6 +84,10 @@
                     </span>
                 </button>
                 <button class="extra-btn" :title="t('bo-fang-lie-biao')" @click="queueList.openQueue()"><i class="fas fa-list"></i></button>
+                <button class="extra-btn timer-btn" :class="{ active: timerStore.isRunning }" :title="t('ding-shi-qi')" @click="toggleTimerPanel">
+                    <i class="fas fa-clock"></i>
+                    <span v-if="timerStore.isRunning" class="timer-dot"></span>
+                </button>
                 <!-- 音量控制 -->
                 <div class="volume-control" @wheel="handleVolumeScroll">
                     <i :class="isMuted ? 'fas fa-volume-mute' : 'fas fa-volume-up'" @click="toggleMute"></i>
@@ -99,6 +103,9 @@
     <!-- 播放队列 -->
     <QueueList :current-song="currentSong" @add-song-to-queue="onQueueSongAdd"
         @add-cloud-music-to-queue="onQueueCloudSongAdd" @add-local-music-to-queue="onQueueLocalSongAdd" ref="queueList" />
+
+    <!-- 定时器面板 -->
+    <TimerPanel ref="timerPanelRef" />
 
     <!-- 全屏歌词界面 -->
     <transition name="slide-up">
@@ -204,6 +211,7 @@ import { useMusicQueueStore } from '../stores/musicQueue';
 import { useI18n } from 'vue-i18n';
 import PlaylistSelectModal from './PlaylistSelectModal.vue';
 import QueueList from './QueueList.vue';
+import TimerPanel from './TimerPanel.vue';
 import { useRouter } from 'vue-router';
 import { getCover, getAudioOutputDeviceSignature, share } from '../utils/utils';
 
@@ -215,7 +223,8 @@ import {
     usePlaybackMode,
     useMediaSession,
     useSongQueue,
-    useHelpers
+    useHelpers,
+    useTimerControl
 } from './player';
 
 // 基础设置
@@ -238,6 +247,11 @@ const lyricsFlag = ref(false);
 
 // 辅助函数
 const { isElectron, throttle, getVip, desktopLyrics } = useHelpers(t);
+
+// 定时器控制
+const timerControl = useTimerControl();
+const { timerStore } = timerControl;
+const timerPanelRef = ref(null);
 
 // Easter Egg 相关
 const easterEggImages = [
@@ -546,6 +560,11 @@ const switchLyricsMode = () => {
 const toggleCoverMode = () => {
     coverMode.value = coverMode.value === 'square' ? 'vinyl' : 'square';
     localStorage.setItem('lyrics-cover-mode', coverMode.value);
+};
+
+// 切换定时器面板
+const toggleTimerPanel = () => {
+    timerControl.togglePanel();
 };
 
 // 播放歌曲
@@ -1061,6 +1080,10 @@ const pausePlayback = (reason) => {
     if (reason) console.log('[PlayerControl] 暂停播放:', reason);
 };
 
+const handleTimerStopPlayback = () => {
+    pausePlayback('定时器触发');
+};
+
 const showSpeedMenu = ref(false);
 const currentSpeed = ref(1.0);
 const playbackSpeeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
@@ -1311,6 +1334,10 @@ onMounted(() => {
     });
 
     console.log('[PlayerControl] 音频初始化完成');
+
+    // 初始化定时器
+    timerControl.initTimer();
+    window.addEventListener('timer-stop-playback', handleTimerStopPlayback);
 });
 
 // 监听歌词数据变化，同步歌词到当前播放进度
@@ -1365,6 +1392,10 @@ onUnmounted(() => {
 
     // 清理键盘事件
     document.removeEventListener('keydown', handleKeyDown);
+
+    // 清理定时器
+    timerControl.destroyTimer();
+    window.removeEventListener('timer-stop-playback', handleTimerStopPlayback);
 });
 
 // 对外暴露接口

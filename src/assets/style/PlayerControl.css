@@ -894,3 +894,27 @@
   opacity: 1;
   transform: scale(1) translateY(0);
 }
+
+.timer-btn {
+    position: relative;
+}
+
+.timer-btn.active {
+    color: var(--primary-color, #00d4ff);
+}
+
+.timer-dot {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 8px;
+    height: 8px;
+    background: #4caf50;
+    border-radius: 50%;
+    animation: timerPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes timerPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+}

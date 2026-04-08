@@ -16,6 +16,7 @@
                  v-show="activeTab === sectionIndex">
                 <h3>{{ section.title }}</h3>
                 <ExtensionManager v-if="section.title === t('cha-jian')" />
+                <ThemeCustomizer v-else-if="section.title === t('zhu-ti-ding-zhi')" />
                 <div v-else class="settings-cards">
                     <div v-for="(item, itemIndex) in section.items" :key="itemIndex"
                         class="setting-card" @click="item.action ? item.action(item.helpLink) : openSelection(item.key, item.helpLink)">
@@ -203,8 +204,10 @@ import { ref, onMounted, getCurrentInstance, onUnmounted, computed, reactive } f
 import { useI18n } from 'vue-i18n';
 import { MoeAuthStore } from '../stores/store';
 import ExtensionManager from '@/components/ExtensionManager.vue';
+import ThemeCustomizer from '@/components/ThemeCustomizer.vue';
 import { requestMicrophonePermission } from '../utils/utils';
 import { DEFAULT_API_BASE_URL, validateApiBaseUrl, testApiBaseUrl as testApiBaseUrlRequest } from '@/utils/apiBaseUrl';
+import { updateStartPageCache } from '@/router/router.js';
 
 const MoeAuth = MoeAuthStore();
 const { t } = useI18n();
@@ -214,7 +217,6 @@ const platform = ref('');
 const activeTab = ref(0);
 const defaultApiBaseUrl = DEFAULT_API_BASE_URL;
 
-// 设置配置
 const selectedSettings = ref({
     language: { displayText: '🌏 ' + t('zi-dong'), value: '' },
     themeColor: { displayText: t('shao-nv-fen'), value: 'pink' },
@@ -231,7 +233,7 @@ const selectedSettings = ref({
     fontUrl: { displayText: t('mo-ren-zi-ti'), value: '' },
     greetings: { displayText: t('kai-qi'), value: 'on' },
     gpuAcceleration: { displayText: t('guan-bi'), value: 'off' },
-    minimizeToTray: { displayText: t('da-kai'), value: 'on' },
+    minimizeToTray: { displayText: t('da-kao'), value: 'on' },
     highDpi: { displayText: t('guan-bi'), value: 'off' },
     dpiScale: { displayText: '1.0', value: '1.0' },
     apiMode: { displayText: t('guan-bi'), value: 'off' },
@@ -248,116 +250,45 @@ const selectedSettings = ref({
     loudnessNormalization: { displayText: t('guan-bi'), value: 'off' },
     pauseOnAudioOutputChange: { displayText: t('guan-bi'), value: 'off' },
     audioOutputDevice: { displayText: '默认', value: 'default' },
+    startPage: { displayText: t('shou-ye'), value: '/' },
 });
 
-// 设置分区配置
 const settingSections = computed(() => [
+    {
+        title: t('zhu-ti-ding-zhi'),
+        items: []
+    },
     {
         title: t('jie-mian'),
         items: [
-            {
-                key: 'language',
-                label: t('yu-yan')
-            },
-            {
-                key: 'themeColor',
-                label: t('zhu-se-tiao'),
-                icon: '🎨 '
-            },
-            {
-                key: 'theme',
-                label: t('wai-guan')
-            },
-            {
-                key: 'nativeTitleBar',
-                label: t('native-title-bar'),
-                showRefreshHint: true,
-                refreshHintText: t('zhong-qi-hou-sheng-xiao')
-            },
-            {
-                key: 'font',
-                label: t('zi-ti-she-zhi'),
-                showRefreshHint: true,
-                refreshHintText: t('shua-xin-hou-sheng-xiao'),
-                helpLink:'https://music.moekoe.cn/guide/font-settings.html'
-            }
+            { key: 'language', label: t('yu-yan') },
+            { key: 'themeColor', label: t('zhu-se-tiao'), icon: '🎨 ' },
+            { key: 'theme', label: t('wai-guan') },
+            { key: 'nativeTitleBar', label: t('native-title-bar'), showRefreshHint: true, refreshHintText: t('zhong-qi-hou-sheng-xiao') },
+            { key: 'startPage', label: t('qi-dong-ye'), icon: '🏠 ' },
+            { key: 'font', label: t('zi-ti-she-zhi'), showRefreshHint: true, refreshHintText: t('shua-xin-hou-sheng-xiao'), helpLink:'https://music.moekoe.cn/guide/font-settings.html' }
         ]
     },
     {
         title: t('sheng-yin'),
         items: [
-            {
-                key: 'quality',
-                label: t('yin-zhi-xuan-ze'),
-                icon: '🎧 '
-            },
-            {
-                key: 'loudnessNormalization',
-                label: t('ping-heng-yin-pin-xiang-du'),
-                icon: '🎚️ ',
-                showRefreshHint: true,
-                refreshHintText: t('shua-xin-hou-sheng-xiao')
-            },
-            {
-                key: 'pauseOnAudioOutputChange',
-                label: '输出设备变化自动暂停',
-                icon: '🎧 ',
-                helpLink:'https://music.moekoe.cn/guide/auto-pause-on-output-device-change.html'
-            },
-            {
-                key: 'audioOutputDevice',
-                label: '音频输出设备',
-                icon: '🔊 ',
-                helpLink:'https://music.moekoe.cn/guide/audio-output-device.html'
-            },
-            {
-                key: 'greetings',
-                label: t('qi-dong-wen-hou-yu'),
-                icon: '👋 '
-            },
-            {
-                key: 'dataSource',
-                label: t('shu-ju-yuan'),
-                icon: '🔌 ',
-                showRefreshHint: true,
-                refreshHintText: t('zhong-qi-hou-sheng-xiao'),
-                helpLink:'https://music.moekoe.cn/guide/data-source.html'
-            }
+            { key: 'quality', label: t('yin-zhi-xuan-ze'), icon: '🎧 ' },
+            { key: 'loudnessNormalization', label: t('ping-heng-yin-pin-xiang-du'), icon: '🎚️ ', showRefreshHint: true, refreshHintText: t('shua-xin-hou-sheng-xiao') },
+            { key: 'pauseOnAudioOutputChange', label: '输出设备变化自动暂停', icon: '🎧 ', helpLink:'https://music.moekoe.cn/guide/auto-pause-on-output-device-change.html' },
+            { key: 'audioOutputDevice', label: '音频输出设备', icon: '🔊 ', helpLink:'https://music.moekoe.cn/guide/audio-output-device.html' },
+            { key: 'greetings', label: t('qi-dong-wen-hou-yu'), icon: '👋 ' },
+            { key: 'dataSource', label: t('shu-ju-yuan'), icon: '🔌 ', showRefreshHint: true, refreshHintText: t('zhong-qi-hou-sheng-xiao'), helpLink:'https://music.moekoe.cn/guide/data-source.html' }
         ]
     },
     {
         title: t('ge-ci'),
         items: [
-            {
-                key: 'lyricsBackground',
-                label: t('xian-shi-ge-ci-bei-jing'),
-                showRefreshHint: true,
-                refreshHintText: t('shua-xin-hou-sheng-xiao')
-            },
-            {
-                key: 'lyricsFontSize',
-                label: t('ge-ci-zi-ti-da-xiao'),
-                showRefreshHint: true,
-                refreshHintText: t('shua-xin-hou-sheng-xiao')
-            },
-            {
-                key: 'desktopLyrics',
-                label: t('xian-shi-zhuo-mian-ge-ci')
-            },
-            {
-                key: 'statusBarLyrics',
-                label: t('zhuang-tai-lan-ge-ci'),
-                showRefreshHint: true,
-                refreshHintText: t('zhong-qi-hou-sheng-xiao')
-            },
-            {
-                key: 'lyricsTranslation',
-                label: t('ge-ci-fan-yi')
-            },
-            {
-                key: 'lyricsAlign',
-                label: t('dui-qi-fang-shi'),
-            }
+            { key: 'lyricsBackground', label: t('xian-shi-ge-ci-bei-jing'), showRefreshHint: true, refreshHintText: t('shua-xin-hou-sheng-xiao') },
+            { key: 'lyricsFontSize', label: t('ge-ci-zi-ti-da-xiao'), showRefreshHint: true, refreshHintText: t('shua-xin-hou-sheng-xiao') },
+            { key: 'desktopLyrics', label: t('xian-shi-zhuo-mian-ge-ci') },
+            { key: 'statusBarLyrics', label: t('zhuang-tai-lan-ge-ci'), showRefreshHint: true, refreshHintText: t('zhong-qi-hou-sheng-xiao') },
+            { key: 'lyricsTranslation', label: t('ge-ci-fan-yi') },
+            { key: 'lyricsAlign', label: t('dui-qi-fang-shi') }
         ]
     },
     {
@@ -367,88 +298,26 @@ const settingSections = computed(() => [
     {
         title: t('xi-tong'),
         items: [
-            {
-                key: 'gpuAcceleration',
-                label: t('jin-yong-gpu-jia-su-zhong-qi-sheng-xiao'),
-                showRefreshHint: true,
-                refreshHintText: t('zhong-qi-hou-sheng-xiao')
-            },
-            {
-                key: 'highDpi',
-                label: t('shi-pei-gao-dpi'),
-                showRefreshHint: true,
-                refreshHintText: t('zhong-qi-hou-sheng-xiao')
-            },
-            {
-                key: 'minimizeToTray',
-                label: t('guan-bi-shi-minimize-to-tray')
-            },
-            {
-                key: 'autoStart',
-                label: t('kai-ji-zi-qi-dong')
-            },
-            {
-                key: 'networkMode',
-                label: t('wang-luo-mo-shi'),
-                showRefreshHint: true,
-                refreshHintText: t('zhong-qi-hou-sheng-xiao'),
-                helpLink:'https://music.moekoe.cn/guide/network-modes.html'
-            },
-            {
-                key: 'startMinimized',
-                label: t('qi-dong-shi-zui-xiao-hua')
-            },
-            {
-                key: 'preventAppSuspension',
-                label: t('zu-zhi-xi-tong-xiu-mian'),
-                showRefreshHint: true,
-                refreshHintText: t('zhong-qi-hou-sheng-xiao')
-            },
-            {
-                key: 'apiMode',
-                label: t('api-mo-shi'),
-                showRefreshHint: true,
-                refreshHintText: t('zhong-qi-hou-sheng-xiao')
-            },
-             {
-                key: 'apiBaseUrlMode',
-                label: 'RPC地址',
-                showRefreshHint: true,
-                refreshHintText: t('shua-xin-hou-sheng-xiao'),
-                helpLink:'https://music.moekoe.cn/guide/rpc-api-base-url.html'
-             },
-            {
-                key: 'touchBar',
-                label: 'TouchBar',
-                showRefreshHint: true,
-                refreshHintText: t('zhong-qi-hou-sheng-xiao')
-            },
-            {
-                key: 'shortcuts',
-                label: t('quan-ju-kuai-jie-jian'),
-                customText: t('zi-ding-yi-kuai-jie-jian'),
-                action: openShortcutSettings
-            },
-            {
-                key: 'pwa',
-                label: t('pwa-app'),
-                customText: t('install'),
-                action: installPWA
-            },
-            {
-                key: 'proxy',
-                label: t('wang-luo-dai-li'),
-                showRefreshHint: true,
-                refreshHintText: t('zhong-qi-hou-sheng-xiao'),
-                helpLink:'https://music.moekoe.cn/guide/proxy-settings.html'
-            }
+            { key: 'gpuAcceleration', label: t('jin-yong-gpu-jia-su-zhong-qi-sheng-xiao'), showRefreshHint: true, refreshHintText: t('zhong-qi-hou-sheng-xiao') },
+            { key: 'highDpi', label: t('shi-pei-gao-dpi'), showRefreshHint: true, refreshHintText: t('zhong-qi-hou-sheng-xiao') },
+            { key: 'minimizeToTray', label: t('guan-bi-shi-minimize-to-tray') },
+            { key: 'autoStart', label: t('kai-ji-zi-qi-dong') },
+            { key: 'networkMode', label: t('wang-luo-mo-shi'), showRefreshHint: true, refreshHintText: t('zhong-qi-hou-sheng-xiao'), helpLink:'https://music.moekoe.cn/guide/network-modes.html' },
+            { key: 'startMinimized', label: t('qi-dong-shi-zui-xiao-hua') },
+            { key: 'preventAppSuspension', label: t('zu-zhi-xi-tong-xiu-mian'), showRefreshHint: true, refreshHintText: t('zhong-qi-hou-sheng-xiao') },
+            { key: 'apiMode', label: t('api-mo-shi'), showRefreshHint: true, refreshHintText: t('zhong-qi-hou-sheng-xiao') },
+            { key: 'apiBaseUrlMode', label: 'RPC地址', showRefreshHint: true, refreshHintText: t('shua-xin-hou-sheng-xiao'), helpLink:'https://music.moekoe.cn/guide/rpc-api-base-url.html' },
+            { key: 'touchBar', label: 'TouchBar', showRefreshHint: true, refreshHintText: t('zhong-qi-hou-sheng-xiao') },
+            { key: 'shortcuts', label: t('quan-ju-kuai-jie-jian'), customText: t('zi-ding-yi-kuai-jie-jian'), action: openShortcutSettings },
+            { key: 'pwa', label: t('pwa-app'), customText: t('install'), action: installPWA },
+            { key: 'proxy', label: t('wang-luo-dai-li'), showRefreshHint: true, refreshHintText: t('zhong-qi-hou-sheng-xiao'), helpLink:'https://music.moekoe.cn/guide/proxy-settings.html' }
         ]
     }
 ]);
 
-// 获取每个部分的图标
 const getSectionIcon = (title) => {
     const iconMap = {
+        [t('zhu-ti-ding-zhi')]: 'fas fa-brush',
         [t('jie-mian')]: 'fas fa-palette',
         [t('sheng-yin')]: 'fas fa-volume-up',
         [t('ge-ci')]: 'fas fa-music',
@@ -458,13 +327,13 @@ const getSectionIcon = (title) => {
     return iconMap[title] || 'fas fa-cog';
 };
 
-// 获取每个设置项的图标
 const getItemIcon = (key) => {
     const iconMap = {
         'language': 'fas fa-language',
         'themeColor': 'fas fa-paint-brush',
         'theme': 'fas fa-moon',
         'nativeTitleBar': 'fas fa-window-maximize',
+        'startPage': 'fas fa-home',
         'font': 'fas fa-font',
         'quality': 'fas fa-headphones',
         'loudnessNormalization': 'fas fa-sliders-h',
@@ -499,7 +368,6 @@ const selectionType = ref('');
 const fontUrlInput = ref('');
 const fontFamilyInput = ref('');
 
-// 选项配置
 const selectionTypeMap = {
     language: {
         title: t('xuan-ze-yu-yan'),
@@ -558,14 +426,14 @@ const selectionTypeMap = {
     desktopLyrics: {
         title: t('xian-shi-zhuo-mian-ge-ci'),
         options: [
-            { displayText: t('da-kai'), value: 'on' },
+            { displayText: t('da-kao'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
         ]
     },
     statusBarLyrics: {
         title: t('zhuang-tai-lan-ge-ci'),
         options: [
-            { displayText: t('da-kai') + t('jin-zhi-chi-mac'), value: 'on' },
+            { displayText: t('da-kao') + t('jin-zhi-chi-mac'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
         ]
     },
@@ -587,28 +455,28 @@ const selectionTypeMap = {
     gpuAcceleration: {
         title: t('jin-yong-gpu-jia-su-zhong-qi-sheng-xiao'),
         options: [
-            { displayText: t('da-kai'), value: 'on' },
+            { displayText: t('da-kao'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
         ]
     },
     minimizeToTray: {
         title: t('guan-bi-shi-minimize-to-tray'),
         options: [
-            { displayText: t('da-kai'), value: 'on' },
+            { displayText: t('da-kao'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
         ]
     },
     highDpi: {
         title: t('shi-pei-gao-dpi'),
         options: [
-            { displayText: t('da-kai'), value: 'on' },
+            { displayText: t('da-kao'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
         ]
     },
     lyricsTranslation: {
         title: t('ge-ci-fan-yi'),
         options: [
-            { displayText: t('da-kai'), value: 'on' },
+            { displayText: t('da-kao'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
         ]
     },
@@ -616,31 +484,25 @@ const selectionTypeMap = {
         title: t('dui-qi-fang-shi'),
         options: [
             { displayText: t('ju-zuo'), value: 'left' },
-            { displayText: t('ju-zhong'), value: 'center' },
+            { displayText: t('ju-zhong'), value: 'center' }
         ]
     },
     dpiScale: {
         title: t('suo-fang-yin-zi'),
-        options: [
-            { displayText: '1.0', value: '1.0' }
-        ]
+        options: [{ displayText: '1.0', value: '1.0' }]
     },
     font: {
         title: t('zi-ti-she-zhi'),
-        options: [
-            { displayText: t('mo-ren-zi-ti'), value: '' }
-        ]
+        options: [{ displayText: t('mo-ren-zi-ti'), value: '' }]
     },
     fontUrl: {
         title: t('zi-ti-wen-jian-di-zhi'),
-        options: [
-            { displayText: t('mo-ren-zi-ti'), value: '' }
-        ]
+        options: [{ displayText: t('mo-ren-zi-ti'), value: '' }]
     },
     apiMode: {
         title: t('api-mo-shi'),
         options: [
-            { displayText: t('da-kai'), value: 'on' },
+            { displayText: t('da-kao'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
         ]
     },
@@ -654,28 +516,28 @@ const selectionTypeMap = {
     touchBar: {
         title: 'TouchBar',
         options: [
-            { displayText: t('da-kai'), value: 'on' },
+            { displayText: t('da-kao'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
         ]
     },
     autoStart: {
         title: t('kai-ji-zi-qi-dong'),
         options: [
-            { displayText: t('da-kai'), value: 'on' },
+            { displayText: t('da-kao'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
         ]
     },
     startMinimized: {
         title: t('qi-dong-shi-zui-xiao-hua'),
         options: [
-            { displayText: t('da-kai'), value: 'on' },
+            { displayText: t('da-kao'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
         ]
     },
     preventAppSuspension: {
         title: t('zu-zhi-xi-tong-xiu-mian'),
         options: [
-            { displayText: t('da-kai'), value: 'on' },
+            { displayText: t('da-kao'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
         ]
     },
@@ -694,10 +556,7 @@ const selectionTypeMap = {
             { displayText: t('jin-yong'), value: 'off' }
         ]
     },
-    proxyUrl: {
-        title: t('dai-li-di-zhi'),
-        options: []
-    },
+    proxyUrl: { title: t('dai-li-di-zhi'), options: [] },
     dataSource: {
         title: t('shu-ju-yuan'),
         options: [
@@ -708,22 +567,26 @@ const selectionTypeMap = {
     loudnessNormalization: {
         title: t('ping-heng-yin-pin-xiang-du')+'(实验性)',
         options: [
-            { displayText: t('da-kai'), value: 'on' },
+            { displayText: t('da-kao'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
         ]
     },
     pauseOnAudioOutputChange: {
         title: '输出设备变化自动暂停(实验性)',
         options: [
-            { displayText: t('da-kai'), value: 'on' },
+            { displayText: t('da-kao'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
         ]
     },
-    audioOutputDevice: {
-        title: '音频输出设备(实验性)',
-        options: []
-    },
-
+    audioOutputDevice: { title: '音频输出设备(实验性)', options: [] },
+    startPage: {
+        title: t('xuan-ze-qi-dong-ye'),
+        options: [
+            { displayText: t('shou-ye'), value: '/' },
+            { displayText: t('fa-xian'), value: '/discover' },
+            { displayText: t('yin-le-ku'), value: '/library' }
+        ]
+    }
 };
 
 const showRefreshHint = ref({
@@ -752,7 +615,6 @@ const updateAudioOutputDeviceDisplayText = async (deviceId) => {
         selectedSettings.value.audioOutputDevice = { displayText: '默认', value: 'default' };
         return;
     }
-
     let displayText = `已选择设备 (${deviceId.slice(0, 8)}...)`;
     try {
         if (navigator?.mediaDevices?.enumerateDevices) {
@@ -760,10 +622,7 @@ const updateAudioOutputDeviceDisplayText = async (deviceId) => {
             const matched = devices.find(d => d.kind === 'audiooutput' && d.deviceId === deviceId);
             if (matched?.label) displayText = matched.label;
         }
-    } catch {
-        // 忽略枚举失败
-    }
-
+    } catch { }
     selectedSettings.value.audioOutputDevice = { displayText, value: deviceId };
 };
 
@@ -772,22 +631,17 @@ const loadAudioOutputDevices = async () => {
         audioOutputDeviceOptions.value = [];
         return;
     }
-
     audioOutputDevicesLoading.value = true;
-
     try {
         const devices = await navigator.mediaDevices.enumerateDevices();
         const outputs = devices.filter(d => d.kind === 'audiooutput');
-
         const options = [{ displayText: '默认', value: 'default' }];
         let unnamedIndex = 1;
-
         for (const output of outputs) {
             if (!output.deviceId) continue;
             const displayText = output.label || `输出设备 ${unnamedIndex++}`;
             options.push({ displayText, value: output.deviceId });
         }
-
         const seen = new Set();
         audioOutputDeviceOptions.value = options.filter(opt => {
             if (seen.has(opt.value)) return false;
@@ -805,26 +659,21 @@ const openSelection = (type, helpLink) => {
     isSelectionOpen.value = true;
     selectionType.value = type;
     currentHelpLink.value = helpLink || selectionTypeMap[type]?.helpLink || '';
-
     if (type === 'highDpi') {
         dpiScale.value = parseFloat(selectedSettings.value.dpiScale?.value || '1.0');
     }
-
     if (type === 'font') {
         fontUrlInput.value = selectedSettings.value.fontUrl?.value || '';
         fontFamilyInput.value = selectedSettings.value.font?.value || '';
     }
-    
     if (type === 'proxy') {
         proxyForm.url = selectedSettings.value.proxyUrl?.value || '';
     }
-
     if (type === 'apiBaseUrlMode') {
         apiBaseUrlForm.url = selectedSettings.value.apiBaseUrl?.value || '';
         apiBaseUrlForm.testResult = '';
         apiBaseUrlForm.testStatus = '';
     }
-
     if (type === 'audioOutputDevice') {
         void loadAudioOutputDevices();
     }
@@ -840,7 +689,7 @@ const openHelpLink = () => {
     }
 };
 
-    const selectOption = async (option) => {
+const selectOption = async (option) => {
     const electronFeatures = ['desktopLyrics', 'statusBarLyrics', 'gpuAcceleration', 'minimizeToTray', 'highDpi', 'nativeTitleBar', 'touchBar', 'autoStart', 'startMinimized', 'preventAppSuspension', 'networkMode', 'poxySettings', 'apiMode', 'dataSource', 'statusBarLyrics'];
     if (!isElectron() && electronFeatures.includes(selectionType.value)) {
         window.$modal.alert(t('fei-ke-hu-duan-huan-jing-wu-fa-qi-yong'));
@@ -879,7 +728,6 @@ const openHelpLink = () => {
             window.electron.ipcRenderer.send('desktop-lyrics-action', action);
         },
         'loudnessNormalization': () => {
-            // 触发响度规格化开关变更事件
             window.dispatchEvent(new CustomEvent('loudness-normalization-change', {
                 detail: { enabled: option.value === 'on' }
             }));
@@ -888,21 +736,13 @@ const openHelpLink = () => {
             if (option.value === 'on') {
                 const granted = await requestMicrophonePermission();
                 if (!granted) {
-                    selectedSettings.value.pauseOnAudioOutputChange = {
-                        displayText: t('guan-bi'),
-                        value: 'off'
-                    };
-                    window.dispatchEvent(new CustomEvent('audio-output-device-watch-change', {
-                        detail: { enabled: false }
-                    }));
+                    selectedSettings.value.pauseOnAudioOutputChange = { displayText: t('guan-bi'), value: 'off' };
+                    window.dispatchEvent(new CustomEvent('audio-output-device-watch-change', { detail: { enabled: false } }));
                     window.$modal.alert('音频权限申请失败，无法启用该功能');
                     return;
                 }
             }
-
-            window.dispatchEvent(new CustomEvent('audio-output-device-watch-change', {
-                detail: { enabled: option.value === 'on' }
-            }));
+            window.dispatchEvent(new CustomEvent('audio-output-device-watch-change', { detail: { enabled: option.value === 'on' } }));
         },
         'apiBaseUrlMode': () => {
             if (option.value === 'default') {
@@ -910,14 +750,28 @@ const openHelpLink = () => {
             }
         },
         'audioOutputDevice': async () => {
-            window.dispatchEvent(new CustomEvent('audio-output-device-change', {
-                detail: { deviceId: option.value }
-            }));
+            window.dispatchEvent(new CustomEvent('audio-output-device-change', { detail: { deviceId: option.value } }));
+        },
+        'startPage': async () => {
+            if (option.value === '/library' && !MoeAuth.isAuthenticated) {
+                const result = await window.$modal.confirm(
+                    t('yin-le-ku') + t('xu-yao-deng-lu-hou-cai-neng-fang-wen') + '\n（' + t('wei-deng-lu') + t('jiang-xian-shi') + t('shou-ye') + '）'
+                );
+                if (!result) {
+                    selectedSettings.value.startPage = { displayText: t('shou-ye'), value: '/' };
+                    return;
+                }
+            }
         }
     };
     await actions[selectionType.value]?.();
     saveSettings();
-    if(!['apiMode','font','fontUrl', 'proxy', 'apiBaseUrlMode'].includes(selectionType.value)) closeSelection();
+    
+    if (selectionType.value === 'startPage') {
+        window.$modal.alert(t('qi-dong-ye-she-zhi-cheng-gong'));
+    }
+    
+    if(!['apiMode','font','fontUrl', 'proxy', 'apiBaseUrlMode', 'startPage'].includes(selectionType.value)) closeSelection();
     const refreshHintTypes = ['nativeTitleBar','lyricsBackground', 'lyricsFontSize', 'gpuAcceleration', 'highDpi', 'apiMode', 'apiBaseUrlMode', 'touchBar', 'preventAppSuspension', 'networkMode', 'font', 'proxy', 'dataSource', 'loudnessNormalization', 'statusBarLyrics'];
     if (refreshHintTypes.includes(selectionType.value)) {
         showRefreshHint.value[selectionType.value] = true;
@@ -943,6 +797,7 @@ const handleFontFocusOut = async (e) => {
 const isElectron = () => {
     return typeof window !== 'undefined' && typeof window.electron !== 'undefined';
 };
+
 const saveSettings = () => {
     const settingsToSave = Object.fromEntries(
         Object.entries(selectedSettings.value).map(([key, setting]) => [key, setting.value])
@@ -950,6 +805,7 @@ const saveSettings = () => {
     settingsToSave.shortcuts = shortcuts.value;
     localStorage.setItem('settings', JSON.stringify(settingsToSave));
     isElectron() && window.electron.ipcRenderer.send('save-settings', JSON.parse(JSON.stringify(settingsToSave)));
+    updateStartPageCache(settingsToSave.startPage);
 };
 
 const closeSelection = () => {
@@ -957,7 +813,15 @@ const closeSelection = () => {
 };
 
 onMounted(() => {
-    const savedSettings = JSON.parse(localStorage.getItem('settings'));
+    let savedSettings = null;
+    try {
+        const stored = localStorage.getItem('settings');
+        if (stored) {
+            savedSettings = JSON.parse(stored);
+        }
+    } catch (error) {
+        console.error('Failed to parse settings:', error);
+    }
     
     if (savedSettings) {
         if (savedSettings.apiBaseUrlMode === undefined) {
@@ -974,10 +838,7 @@ onMounted(() => {
             }
             if (key === 'apiBaseUrlMode') {
                 const value = savedSettings[key] || 'default';
-                selectedSettings.value[key] = {
-                    displayText: value === 'custom' ? '自定义' : '默认',
-                    value: value
-                };
+                selectedSettings.value[key] = { displayText: value === 'custom' ? '自定义' : '默认', value: value };
                 continue;
             }
             if (key === 'apiBaseUrl') {
@@ -987,24 +848,19 @@ onMounted(() => {
             }
             if (key === 'proxyUrl') {
                 const value = savedSettings[key];
-                selectedSettings.value[key] = {
-                    displayText: value,
-                    value: value
-                };
+                selectedSettings.value[key] = { displayText: value, value: value };
                 continue;
             }
             if (selectionTypeMap[key] && selectionTypeMap[key].options) {
                 if (key === 'font') {
                     const value = savedSettings[key];
-                    selectedSettings.value[key] = {
-                        displayText: value || t('mo-ren-zi-ti'),
-                        value: value
-                    };
+                    selectedSettings.value[key] = { displayText: value || t('mo-ren-zi-ti'), value: value };
+                } else if (key === 'startPage') {
+                    const option = selectionTypeMap[key].options.find((opt) => opt.value === savedSettings[key]);
+                    const defaultOption = selectionTypeMap[key].options[0];
+                    selectedSettings.value[key] = { displayText: option?.displayText || defaultOption.displayText, value: savedSettings[key] || defaultOption.value };
                 } else {
-                    // Always get displayText from current translation, not from localStorage
-                    const option = selectionTypeMap[key].options.find(
-                        (opt) => opt.value === savedSettings[key]
-                    );
+                    const option = selectionTypeMap[key].options.find((opt) => opt.value === savedSettings[key]);
                     const displayText = option?.displayText || '🌏 ' + t('zi-dong');
                     selectedSettings.value[key] = { displayText, value: savedSettings[key] };
                 }
@@ -1023,7 +879,6 @@ onMounted(() => {
         appVersion.value = localStorage.getItem('version');
         platform.value = window.electron.platform;
     }
-
     if (savedSettings?.audioOutputDevice !== undefined) {
         void updateAudioOutputDeviceDisplayText(savedSettings.audioOutputDevice);
     }
@@ -1042,15 +897,12 @@ const testApiBaseUrl = async () => {
         apiBaseUrlForm.testStatus = 'error';
         return;
     }
-
     const candidate = validation.value || defaultApiBaseUrl;
     apiBaseUrlForm.testing = true;
     apiBaseUrlForm.testResult = t('zheng-zai-ce-shi');
     apiBaseUrlForm.testStatus = 'testing';
-
     const result = await testApiBaseUrlRequest(candidate, { path: '/register/dev' });
     apiBaseUrlForm.testing = false;
-
     if (result.ok) {
         apiBaseUrlForm.testResult = '连接成功';
         apiBaseUrlForm.testStatus = 'success';
@@ -1075,7 +927,6 @@ const saveApiBaseUrl = () => {
         window.$modal.alert(validation.error);
         return;
     }
-
     const value = validation.value;
     if (!value) {
         selectedSettings.value.apiBaseUrlMode = { displayText: '默认', value: 'default' };
@@ -1096,7 +947,6 @@ const testProxyConnection = async () => {
         proxyForm.testStatus = 'error';
         return;
     }
-
     try {
         const url = new URL(proxyUrl);
         if (!['http:', 'https:'].includes(url.protocol)) {
@@ -1109,35 +959,21 @@ const testProxyConnection = async () => {
         proxyForm.testStatus = 'error';
         return;
     }
-
     proxyForm.testing = true;
     proxyForm.testResult = t('zheng-zai-ce-shi');
     proxyForm.testStatus = 'testing';
-
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-        const proxyUrl = new URL(proxyForm.url.trim());
+        const proxyUrlObj = new URL(proxyForm.url.trim());
         const fetchOptions = {
             method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'Proxy-Authorization': `Basic ${btoa(`${proxyUrl.username || ''}:${proxyUrl.password || ''}`)}`,
-            },
+            headers: { 'Accept': 'application/json', 'Proxy-Authorization': `Basic ${btoa(`${proxyUrlObj.username || ''}:${proxyUrlObj.password || ''}`)}` },
             signal: controller.signal,
-            agent: {
-                protocol: proxyUrl.protocol,
-                host: proxyUrl.hostname,
-                port: proxyUrl.port,
-                auth: proxyUrl.username && proxyUrl.password ? 
-                    `${proxyUrl.username}:${proxyUrl.password}` : undefined
-            }
+            agent: { protocol: proxyUrlObj.protocol, host: proxyUrlObj.hostname, port: proxyUrlObj.port, auth: proxyUrlObj.username && proxyUrlObj.password ? `${proxyUrlObj.username}:${proxyUrlObj.password}` : undefined }
         };
-
         const response = await fetch('https://api.ipify.org?format=json', fetchOptions);
         clearTimeout(timeoutId);
-
         if (response.ok) {
             const data = await response.json();
             proxyForm.testResult = t('dai-li-lian-jie-cheng-gong') + data.ip;
@@ -1160,7 +996,6 @@ const testProxyConnection = async () => {
 
 const saveProxy = () => {
     const proxyUrl = proxyForm.url.trim();
-
     try {
         if (proxyUrl) {
             const url = new URL(proxyUrl);
@@ -1173,78 +1008,28 @@ const saveProxy = () => {
         window.$modal.alert(t('qing-shu-ru-you-xiao-de-url'));
         return;
     }
-
-    // 更新代理状态
-    selectedSettings.value.proxy = {
-        displayText: proxyUrl ? t('qi-yong') : t('jin-yong'),
-        value: proxyUrl ? 'on' : 'off'
-    };
-    
-    // 更新代理地址
-    selectedSettings.value.proxyUrl = {
-        displayText: proxyUrl,
-        value: proxyUrl
-    };
-
+    selectedSettings.value.proxy = { displayText: proxyUrl ? t('qi-yong') : t('jin-yong'), value: proxyUrl ? 'on' : 'off' };
+    selectedSettings.value.proxyUrl = { displayText: proxyUrl, value: proxyUrl };
     saveSettings();
     closeSelection();
 };
 
 const shortcutConfigs = ref({
-    mainWindow: {
-        label: t('xian-shi-yin-cang-zhu-chuang-kou'),
-        defaultValue: 'Ctrl+Shift+S'
-    },
-    quitApp: {
-        label: t('tui-chu-zhu-cheng-xu'),
-        defaultValue: 'Ctrl+Q'
-    },
-    prevTrack: {
-        label: t('shang-yi-shou'),
-        defaultValue: 'Alt+Ctrl+Left'
-    },
-    nextTrack: {
-        label: t('xia-yi-shou'),
-        defaultValue: 'Alt+Ctrl+Right'
-    },
-    playPause: {
-        label: t('zan-ting-bo-fang'),
-        defaultValue: 'Alt+Ctrl+Space'
-    },
-    volumeUp: {
-        label: t('yin-liang-zeng-jia'),
-        defaultValue: 'Alt+Ctrl+Up'
-    },
-    volumeDown: {
-        label: t('yin-liang-jian-xiao'),
-        defaultValue: 'Alt+Ctrl+Down'
-    },
-    mute: {
-        label: t('jing-yin'),
-        defaultValue: 'Alt+Ctrl+M'
-    },
-    like: {
-        label: t('tian-jia-wo-xi-huan'),
-        defaultValue: 'Alt+Ctrl+L'
-    },
-    mode: {
-        label: t('qie-huan-bo-fang-mo-shi'),
-        defaultValue: 'Alt+Ctrl+P'
-    },
-    toggleDesktopLyrics: {
-        label: t('xian-shi-yin-cang-zhuo-mian-ge-ci'),
-        defaultValue: 'Alt+Ctrl+D'
-    }
+    mainWindow: { label: t('xian-shi-yin-cang-zhu-chuang-kou'), defaultValue: 'Ctrl+Shift+S' },
+    quitApp: { label: t('tui-chu-zhu-cheng-xu'), defaultValue: 'Ctrl+Q' },
+    prevTrack: { label: t('shang-yi-shou'), defaultValue: 'Alt+Ctrl+Left' },
+    nextTrack: { label: t('xia-yi-shou'), defaultValue: 'Alt+Ctrl+Right' },
+    playPause: { label: t('zan-ting-bo-fang'), defaultValue: 'Alt+Ctrl+Space' },
+    volumeUp: { label: t('yin-liang-zeng-jia'), defaultValue: 'Alt+Ctrl+Up' },
+    volumeDown: { label: t('yin-liang-jian-xiao'), defaultValue: 'Alt+Ctrl+Down' },
+    mute: { label: t('jing-yin'), defaultValue: 'Alt+Ctrl+M' },
+    like: { label: t('tian-jia-wo-xi-huan'), defaultValue: 'Alt+Ctrl+L' },
+    mode: { label: t('qie-huan-bo-fang-mo-shi'), defaultValue: 'Alt+Ctrl+P' },
+    toggleDesktopLyrics: { label: t('xian-shi-yin-cang-zhuo-mian-ge-ci'), defaultValue: 'Alt+Ctrl+D' }
 });
 
-const openShortcutSettings = () => {
-    showShortcutModal.value = true;
-};
-
-const closeShortcutSettings = () => {
-    showShortcutModal.value = false;
-    recordingKey.value = '';
-};
+const openShortcutSettings = () => { showShortcutModal.value = true; };
+const closeShortcutSettings = () => { showShortcutModal.value = false; recordingKey.value = ''; };
 
 const startRecording = (key) => {
     recordingKey.value = key;
@@ -1254,71 +1039,31 @@ const startRecording = (key) => {
 
 const recordShortcut = (e) => {
     if (!recordingKey.value) return;
-
     e.preventDefault();
     const keys = [];
-
-    // 修饰键
     if (e.metaKey) keys.push('CommandOrControl');
     if (e.ctrlKey) keys.push('Ctrl');
     if (e.altKey) keys.push('Alt');
     if (e.shiftKey) keys.push('Shift');
-
-    // 如果按下了修饰键，更新提示
     if (keys.length > 0 && ['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) {
         shortcuts.value[recordingKey.value] = keys.join('+') + t('qing-an-xia-qi-ta-jian');
         return;
     }
-
-    // 特殊键映射
-    const specialKeys = {
-        ' ': 'Space',
-        'ArrowUp': 'Up',
-        'ArrowDown': 'Down',
-        'ArrowLeft': 'Left',
-        'ArrowRight': 'Right',
-        'Escape': 'Esc',
-        'Backspace': 'Backspace',
-        'Delete': 'Delete',
-        'Enter': 'Return',
-        'Tab': 'Tab',
-        'PageUp': 'PageUp',
-        'PageDown': 'PageDown',
-        'Home': 'Home',
-        'End': 'End',
-        '+': 'numadd',
-        '-': 'numsub',
-        '*': 'nummult',
-        '/': 'numdiv',
-        '=': 'Equal',
-        '.': 'Dot',
-        'NumpadDecimal': 'numdec'
-    };
-
+    const specialKeys = { ' ': 'Space', 'ArrowUp': 'Up', 'ArrowDown': 'Down', 'ArrowLeft': 'Left', 'ArrowRight': 'Right', 'Escape': 'Esc', 'Backspace': 'Backspace', 'Delete': 'Delete', 'Enter': 'Return', 'Tab': 'Tab', 'PageUp': 'PageUp', 'PageDown': 'PageDown', 'Home': 'Home', 'End': 'End', '+': 'numadd', '-': 'numsub', '*': 'nummult', '/': 'numdiv', '=': 'Equal', '.': 'Dot', 'NumpadDecimal': 'numdec' };
     const key = specialKeys[e.key] || e.key.toUpperCase();
-
-    // 只有当按下的不是单独的修饰键时才结束记录
     if (!['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) {
         keys.push(key);
-
         if (keys.length > 0) {
-            // 检查是否包含必要的修饰键
             if (!keys.some(k => ['Ctrl', 'Alt', 'Shift', 'CommandOrControl'].includes(k))) {
                 window.$modal.alert(t('kuai-jie-jian-bi-xu-bao-han-zhi-shao-yi-ge-xiu-shi-jian-ctrlaltshiftcommand'));
                 return;
             }
-
-            // 检查快捷键冲突
             const newShortcut = keys.join('+');
-            const conflictKey = Object.entries(shortcuts.value).find(([k, v]) =>
-                v === newShortcut && k !== recordingKey.value
-            );
-
+            const conflictKey = Object.entries(shortcuts.value).find(([k, v]) => v === newShortcut && k !== recordingKey.value);
             if (conflictKey) {
                 window.$modal.alert(t('gai-kuai-jie-jian-yu')+conflictKey[0]+t('de-kuai-jie-jian-chong-tu'));
                 return;
             }
-
             shortcuts.value[recordingKey.value] = newShortcut;
             recordingKey.value = '';
             window.removeEventListener('keydown', recordShortcut);
@@ -1326,51 +1071,36 @@ const recordShortcut = (e) => {
     }
 };
 
-// 添加快捷键验证函数
 const validateShortcut = (shortcut) => {
     const keys = shortcut.split('+');
     return keys.some(k => ['Ctrl', 'Alt', 'Shift', 'Command'].includes(k));
 };
 
-// 修改 saveShortcuts 函数，添加检查
 const saveShortcuts = () => {
     if (!isElectron()) {
         window.$modal.alert(t('fei-ke-hu-duan-huan-jing-wu-fa-qi-yong'));
         return;
     }
-
-    // 验证所有快捷键
-    const invalidShortcuts = Object.entries(shortcuts.value).filter(([key, value]) =>
-        value && !validateShortcut(value)
-    );
-
+    const invalidShortcuts = Object.entries(shortcuts.value).filter(([key, value]) => value && !validateShortcut(value));
     if (invalidShortcuts.length > 0) {
         window.$modal.alert(t('cun-zai-wu-xiao-de-kuai-jie-jian-she-zhi-qing-que-bao-mei-ge-kuai-jie-jian-du-bao-han-xiu-shi-jian'));
         return;
     }
-
     try {
         let settingsToSave = JSON.parse(localStorage.getItem('settings')) || {};
         settingsToSave.shortcuts = shortcuts.value;
         localStorage.setItem('settings', JSON.stringify(settingsToSave));
-        window.electron.ipcRenderer.send('save-settings',  JSON.parse(JSON.stringify(settingsToSave)));
+        window.electron.ipcRenderer.send('save-settings', JSON.parse(JSON.stringify(settingsToSave)));
         window.electron.ipcRenderer.send('custom-shortcut');
     } catch (error) {
         console.error('保存设置失败:', error);
         window.$modal.alert(t('bao-cun-she-zhi-shi-bai'));
     }
-
     closeShortcutSettings();
 };
 
-onUnmounted(() => {
-    window.removeEventListener('keydown', recordShortcut);
-});
-
-const clearShortcut = (key) => {
-    shortcuts.value[key] = '';
-};
-
+onUnmounted(() => { window.removeEventListener('keydown', recordShortcut); });
+const clearShortcut = (key) => { shortcuts.value[key] = ''; };
 const dpiScale = ref(1.0);
 
 const openResetConfirmation = async () => {
@@ -1384,10 +1114,7 @@ const openResetConfirmation = async () => {
 
 let deferredPrompt;
 if(!isElectron()){
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-    });
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
 }
 
 const installPWA = async () => {
@@ -1397,7 +1124,6 @@ const installPWA = async () => {
     }
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    
     if (outcome === 'accepted') {
         console.log('User accepted the PWA installation');
         deferredPrompt = null;
@@ -1408,469 +1134,68 @@ const installPWA = async () => {
 </script>
 
 <style scoped>
-.settings-page {
-    display: flex;
-    height: 100vh;
-    overflow: hidden;
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.15);
-    border-radius: 8px;
-    margin-bottom: -80px;
-}
-
-.settings-sidebar {
-    width: 220px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
-    padding: 20px 0;
-    overflow-y: auto;
-}
-
-.sidebar-item {
-    padding: 12px 20px;
-    margin: 4px 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    transition: all 0.2s ease;
-}
-
-.sidebar-item i {
-    margin-right: 12px;
-    font-size: 16px;
-    width: 20px;
-    text-align: center;
-}
-
-.sidebar-item.active {
-    background-color: var(--color-primary-light, rgba(255, 105, 180, 0.1));
-    color: var(--color-primary, #ff69b4);
-    font-weight: 500;
-}
-
-.sidebar-item:hover:not(.active) {
-    background-color: var(--hover-color, #efefef);
-}
-
-.settings-content {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-}
-
-.setting-section {
-    animation: fadeIn 0.3s ease;
-}
-
-.setting-section h3 {
-    font-size: 22px;
-    font-weight: 600;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border-color, #eaeaea);
-}
-
-.settings-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-}
-
-.setting-card {
-    border-radius: 12px;
-    padding: 16px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
-
-.setting-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-}
-
-.setting-card-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.setting-card-header i {
-    color: var(--color-primary, #ff69b4);
-    margin-right: 10px;
-    font-size: 16px;
-}
-
-.setting-card-value {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 14px;
-    border: 1px solid var(--border-color, #eaeaea);
-}
-
-.setting-card-value i {
-    color: #999;
-    font-size: 12px;
-}
-
-.refresh-hint {
-    color: #ff4d4f;
-    font-size: 12px;
-    margin-left: 8px;
-}
-
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: fadeIn 0.3s ease-in-out;
-    z-index: 9;
-}
-
-.modal-content {
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 400px;
-    text-align: center;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    animation: slideIn 0.3s ease-in-out;
-    position: relative;
-}
-
-.modal-content h3 {
-    font-size: 20px;
-    margin-bottom: 20px;
-    color: #333;
-}
-
-.modal-content ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.modal-content li {
-    padding: 12px;
-    margin: 6px 0;
-    background-color: var(--background-color);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.modal-content li:hover {
-    background-color:var(--secondary-color);
-}
-
-.modal-content button {
-    margin-top: 20px;
-    padding: 10px 20px;
-    background-color: var(--color-primary);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s;
-}
-
-.modal-content button:hover {
-    background-color: var(--color-primary)
-}
-
-.help-link {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    color: var(--color-primary);
-    cursor: pointer;
-    text-decoration: none;
-    font-size: 18px;
-}
-
-.help-link:hover {
-    opacity: 0.85;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes slideIn {
-    from { transform: translateY(-20px); }
-    to { transform: translateY(0); }
-}
-
-.shortcut-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-}
-
-.shortcut-modal-content {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    width: 90%;
-    max-width: 500px;
-}
-
-.shortcut-modal-content h3 {
-    margin: 0 0 20px 0;
-    font-size: 18px;
-    text-align: center;
-}
-
-.shortcut-list {
-    margin-bottom: 20px;
-    max-height: 60vh;
-    overflow-y: auto;
-}
-
-.shortcut-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #eee;
-}
-
-.shortcut-input {
-    position: relative;
-    background: #f5f5f5;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    min-width: 150px;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    font-size: 15px;
-}
-
-.shortcut-input.recording {
-    background: var(--color-primary);
-    color: white;
-}
-
-.shortcut-input.recording .clear-shortcut {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-}
-
-.shortcut-input.recording .clear-shortcut:hover {
-    background: rgba(255, 255, 255, 0.3);
-    color: white;
-}
-
-.clear-shortcut {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 15px;
-    height: 15px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.1);
-    cursor: pointer;
-    font-size: 14px;
-    color: #666;
-    transition: all 0.2s;
-    position: absolute;
-    right: 5px;
-}
-
-.shortcut-modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-top: 20px;
-}
-
-.shortcut-modal-footer button {
-    padding: 8px 20px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-}
-
-.shortcut-modal-footer button.primary {
-    background: var(--color-primary);
-    color: white;
-}
-
-.version-info {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 14px;
-    color: #666;
-}
-
-.reset-settings-container {
-    display: flex;
-    justify-content: center;
-    margin: 30px 0 20px 0;
-}
-
-.reset-settings-button {
-    background-color: #f44336;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 20px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.reset-settings-button:hover {
-    background-color: #e53935;
-}
-
-.scale-slider-container {
-    margin-top: 15px;
-    text-align: left;
-    padding: 15px;
-    background-color: var(--background-color);
-    border-radius: 8px;
-}
-
-.scale-slider-label {
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-
-.scale-slider-hint {
-    font-size: 12px;
-    color: #666;
-}
-
-.scale-slider-wrapper {
-    position: relative;
-    padding-bottom: 20px;
-}
-
-.scale-slider {
-    width: 100%;
-    height: 6px;
-    -webkit-appearance: none;
-    appearance: none;
-    background: #ddd;
-    outline: none;
-    border-radius: 3px;
-}
-
-.scale-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: var(--color-primary);
-    cursor: pointer;
-}
-
-.scale-slider::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: var(--color-primary);
-    cursor: pointer;
-    border: none;
-}
-
-.scale-marks {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 5px;
-    font-size: 12px;
-    color: #666;
-}
-
-.api-settings-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.api-settings-container .api-setting-item {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    margin-bottom: 10px;
-    width: 100%;
-}
-
-.api-settings-container .api-setting-item label {
-    font-size: 14px;
-    color: #333;
-    margin-bottom: 5px;
-}
-
-.api-settings-container .api-setting-item .api-input, .proxy-settings-container .api-input {
-    width: 100%;
-    height: 35px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 5px;
-    padding-left: 10px;
-    box-sizing: border-box;
-}
-
-.api-settings-container .api-hint {
-    font-size: 12px;
-    color: #999;
-    text-align: center;
-}
-
-.proxy-actions {
-    display: flex;
-    gap: 12px;
-    width: 100%;
-}
-
-.proxy-actions button {
-    flex: 1;
-    min-width: 0;
-    padding: 8px 0;
-    border-radius: 6px;
-}
-
-.proxy-test-result {
-    font-size: 13px;
-    line-height: 18px;
-    margin-top: 5px;
-}
-
-.proxy-test-result.success {
-    color: #4caf50;
-}
-
-.proxy-test-result.error {
-    color: #e53935;
-}
+.settings-page { display: flex; height: 100vh; overflow: hidden; box-shadow: 0 0 30px rgba(0, 0, 0, 0.15); border-radius: 8px; margin-bottom: -80px; }
+.settings-sidebar { width: 220px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.15); padding: 20px 0; overflow-y: auto; }
+.sidebar-item { padding: 12px 20px; margin: 4px 10px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; transition: all 0.2s ease; }
+.sidebar-item i { margin-right: 12px; font-size: 16px; width: 20px; text-align: center; }
+.sidebar-item.active { background-color: var(--color-primary-light, rgba(255, 105, 180, 0.1)); color: var(--color-primary, #ff69b4); font-weight: 500; }
+.sidebar-item:hover:not(.active) { background-color: var(--hover-color, #efefef); }
+.settings-content { flex: 1; padding: 20px; overflow-y: auto; }
+.setting-section { animation: fadeIn 0.3s ease; }
+.setting-section h3 { font-size: 22px; font-weight: 600; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color, #eaeaea); }
+.settings-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.setting-card { border-radius: 12px; padding: 16px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15); transition: all 0.2s ease; cursor: pointer; }
+.setting-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18); }
+.setting-card-header { display: flex; align-items: center; margin-bottom: 12px; }
+.setting-card-header i { color: var(--color-primary, #ff69b4); margin-right: 10px; font-size: 16px; }
+.setting-card-value { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-radius: 6px; font-size: 14px; border: 1px solid var(--border-color, #eaeaea); }
+.setting-card-value i { color: #999; font-size: 12px; }
+.refresh-hint { color: #ff4d4f; font-size: 12px; margin-left: 8px; }
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s ease-in-out; z-index: 9; }
+.modal-content { background: white; padding: 25px; border-radius: 12px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); animation: slideIn 0.3s ease-in-out; position: relative; }
+.modal-content h3 { font-size: 20px; margin-bottom: 20px; color: #333; }
+.modal-content ul { list-style: none; padding: 0; margin: 0; }
+.modal-content li { padding: 12px; margin: 6px 0; background-color: var(--background-color); border-radius: 8px; cursor: pointer; transition: background-color 0.2s; }
+.modal-content li:hover { background-color: var(--secondary-color); }
+.modal-content button { margin-top: 20px; padding: 10px 20px; background-color: var(--color-primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; transition: background-color 0.3s; }
+.modal-content button:hover { background-color: var(--color-primary) }
+.help-link { position: absolute; top: 12px; right: 12px; color: var(--color-primary); cursor: pointer; text-decoration: none; font-size: 18px; }
+.help-link:hover { opacity: 0.85; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideIn { from { transform: translateY(-20px); } to { transform: translateY(0); } }
+.shortcut-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.shortcut-modal-content { background: white; border-radius: 12px; padding: 20px; width: 90%; max-width: 500px; }
+.shortcut-modal-content h3 { margin: 0 0 20px 0; font-size: 18px; text-align: center; }
+.shortcut-list { margin-bottom: 20px; max-height: 60vh; overflow-y: auto; }
+.shortcut-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
+.shortcut-input { position: relative; background: #f5f5f5; padding: 8px 16px; border-radius: 6px; cursor: pointer; min-width: 150px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; }
+.shortcut-input.recording { background: var(--color-primary); color: white; }
+.shortcut-input.recording .clear-shortcut { background: rgba(255, 255, 255, 0.2); color: white; }
+.shortcut-input.recording .clear-shortcut:hover { background: rgba(255, 255, 255, 0.3); color: white; }
+.clear-shortcut { display: flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 50%; background: rgba(0, 0, 0, 0.1); cursor: pointer; font-size: 14px; color: #666; transition: all 0.2s; position: absolute; right: 5px; }
+.shortcut-modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; }
+.shortcut-modal-footer button { padding: 8px 20px; border-radius: 6px; border: none; cursor: pointer; }
+.shortcut-modal-footer button.primary { background: var(--color-primary); color: white; }
+.version-info { text-align: center; margin-top: 20px; font-size: 14px; color: #666; }
+.reset-settings-container { display: flex; justify-content: center; margin: 30px 0 20px 0; }
+.reset-settings-button { background-color: #f44336; color: white; border: none; border-radius: 8px; padding: 10px 20px; font-size: 14px; cursor: pointer; transition: background-color 0.3s; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); display: flex; align-items: center; gap: 8px; }
+.reset-settings-button:hover { background-color: #e53935; }
+.scale-slider-container { margin-top: 15px; text-align: left; padding: 15px; background-color: var(--background-color); border-radius: 8px; }
+.scale-slider-label { font-weight: bold; margin-bottom: 10px; }
+.scale-slider-hint { font-size: 12px; color: #666; }
+.scale-slider-wrapper { position: relative; padding-bottom: 20px; }
+.scale-slider { width: 100%; height: 6px; -webkit-appearance: none; appearance: none; background: #ddd; outline: none; border-radius: 3px; }
+.scale-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--color-primary); cursor: pointer; }
+.scale-slider::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--color-primary); cursor: pointer; border: none; }
+.scale-marks { display: flex; justify-content: space-between; margin-top: 5px; font-size: 12px; color: #666; }
+.api-settings-container { display: flex; flex-direction: column; align-items: center; }
+.api-settings-container .api-setting-item { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 10px; width: 100%; }
+.api-settings-container .api-setting-item label { font-size: 14px; color: #333; margin-bottom: 5px; }
+.api-settings-container .api-setting-item .api-input, .proxy-settings-container .api-input { width: 100%; height: 35px; border: 1px solid #ccc; border-radius: 5px; padding: 5px; padding-left: 10px; box-sizing: border-box; }
+.api-settings-container .api-hint { font-size: 12px; color: #999; text-align: center; }
+.proxy-actions { display: flex; gap: 12px; width: 100%; }
+.proxy-actions button { flex: 1; min-width: 0; padding: 8px 0; border-radius: 6px; }
+.proxy-test-result { font-size: 13px; line-height: 18px; margin-top: 5px; }
+.proxy-test-result.success { color: #4caf50; }
+.proxy-test-result.error { color: #e53935; }
 </style>
-

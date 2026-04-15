@@ -156,7 +156,8 @@
                         <span>{{ config.label }}</span>
                         <div class="shortcut-input" @click="startRecording(key)"
                             :class="{ 'recording': recordingKey === key }">
-                            {{ displayShortcut(key) || $t('dian-ji-she-zhi-kuai-jie-jian') }}
+                            <!-- {{ displayShortcut(key) || $t('dian-ji-she-zhi-kuai-jie-jian') }} -->
+                            <span v-html="displayShortcut(key) || $t('dian-ji-she-zhi-kuai-jie-jian')" />
                             <div v-if="shortcuts[key]" class="clear-shortcut" @click.stop="clearShortcut(key)">
                                 ×
                             </div>
@@ -1236,7 +1237,10 @@ const closeShortcutSettings = () => {
 
 const displayShortcut = (key) => {
     if (!shortcuts.value?.[key]) return false;
-    const numkeys = {
+    const keys = {
+        'Meta': isElectron() ?
+            window?.electron.platform === 'darwin' ? '⌘' : '<i class="fab fa-windows"></i>' :
+            '⌘/<i class="fab fa-windows"></i>',
         'num0': 'Num0',
         'num1': 'Num1',
         'num2': 'Num2',
@@ -1253,10 +1257,9 @@ const displayShortcut = (key) => {
         'nummult': 'Num*',
         'numdiv': 'Num/',
     };
-    const raw = shortcuts.value[key];
-    let display = raw.replace('Meta', '⌘');
-    Object.keys(numkeys).forEach(k => {
-        display = display.replace(k, numkeys[k]);
+    let display = shortcuts.value[key];
+    Object.keys(keys).forEach(k => {
+        display = display.replace(k, keys[k]);
     });
     return display;
 };

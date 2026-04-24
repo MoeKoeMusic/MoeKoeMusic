@@ -930,25 +930,20 @@ const selectOption = async (option) => {
             }));
         },
         log: async () => {
-            if (option.value === 'open-path') {
-                const err = await window.electronAPI.openLogPath();
-                if(err) {
-                    console.error('打开日志路径失败:', err);
-                    window.$modal.alert('打开日志路径失败，详细信息请查看控制台');
-                }
-            } else if (option.value === 'export-log') {
-                const result = await window.electronAPI.exportLog();
-                if (result.data) {
-                    const a = document.createElement('a');
-                    a.href = URL.createObjectURL(new Blob([result.data]));
-                    a.download = `MoeKoeMusic-LogExport-${new Date().toISOString()}.zip`;
-                    a.click();
-                    URL.revokeObjectURL(a.href);
-                    a.remove();
-                } else { // error
-                    console.error('导出日志失败:', result.error);
-                    window.$modal.alert('导出日志失败，详细信息请查看控制台');
-                }
+            let result;
+            switch(option.value) {
+                case 'open-path':
+                    result = await window.electronAPI.openLogPath();
+                    break;
+                case 'export-log':
+                    result = await window.electronAPI.exportLog();
+                    break;
+                default:
+                    break;
+            }
+            if(result.error) {
+                console.error(`日志操作 ${option.value} 失败:`, result.error);
+                window.$modal.alert(`日志操作失败，详细信息请查看控制台`);
             }
         }
     };

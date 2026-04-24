@@ -303,9 +303,9 @@ ipcMain.handle('open-mv-window', (e, url) => {
     })();
 });
 
-ipcMain.handle('open-log-path', (e) => {
-    try { openLogPath(); }
-    catch (err) { return err; }
+ipcMain.handle('open-log-path', async (e) => {
+    try { return { path: await openLogPath() } }
+    catch (err) { return { error: err }; }
 });
 
 ipcMain.handle('export-log', (e) => {

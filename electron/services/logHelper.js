@@ -4,9 +4,8 @@ import { app, shell } from 'electron';
 import log from 'electron-log';
 import AdmZip from 'adm-zip';
 
-const openLogPath = () => {
+const openLogPath = () =>
     shell.openPath(app.getPath('logs'));
-}
 
 /**
  * @param {string} content

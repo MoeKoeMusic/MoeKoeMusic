@@ -1628,6 +1628,9 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     animation: slideIn 0.3s ease-in-out;
     position: relative;
+    max-height: 80%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
 
     h3 {
         font-size: 20px;

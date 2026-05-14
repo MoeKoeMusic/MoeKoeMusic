@@ -16,6 +16,7 @@
             <li v-if="contextSong.mvhash" @click="playMV(contextSong.mvhash)"><i class="fa-solid fa-video"></i> 播放MV
             </li>
             <li @click="shareSong(contextSong)"><i class="fa-solid fa-share-nodes"></i> 分享</li>
+            <li @click="downloadSongWithQualitySelector(contextSong)"><i class="fa-solid fa-download"></i> 下载</li>
             <li v-if="MoeAuth.isAuthenticated && listId && contextSong.userid === MoeAuth.UserInfo.userid"
                 @click="cancel()"><i class="fa-solid fa-heart"></i> 取消收藏</li>
             <li v-if="MoeAuth.isAuthenticated" @click="addToNext(contextSong)"><i class="fa-solid fa-arrow-right"></i>
@@ -30,12 +31,13 @@ import { useRouter } from 'vue-router';
 import { get } from '../utils/request';
 import { MoeAuthStore } from '../stores/store';
 import i18n from '@/utils/i18n';
-import { share } from '@/utils/utils';
+import { share, downloadSong, getSongQualityOptions, showQualitySelector } from '@/utils/utils';
 
 const router = useRouter();
 const MoeAuth = MoeAuthStore();
 const showContextMenu = ref(false);
 const showSubMenu = ref(false);
+const showDownloadSubMenu = ref(false);
 const menuPosition = ref({ x: 0, y: 0 });
 const playlists = ref([]);
 const listId = ref(0);
@@ -114,6 +116,45 @@ const addToNext = async (song) => {
 
 const hideSubMenu = () => {
     showSubMenu.value = false;
+};
+
+const downloadSongWithQualitySelector = async (song) => {
+    if (!song) return;
+    
+    const songInfo = {
+        name: song.OriSongName?.split(' - ')[0] || song.name || '未知歌曲',
+        author: song.OriSongName?.split(' - ')[1] || song.author || '未知歌手',
+        hash: song.FileHash || song.hash
+    };
+
+    hideContextMenu();
+
+    try {
+        $message.info('正在获取音质信息...');
+        
+        const qualityOptions = await getSongQualityOptions(songInfo.hash);
+        
+        if (qualityOptions.length === 0) {
+            $message.error('无法获取音质信息');
+            return;
+        }
+
+        const selected = await showQualitySelector(songInfo, qualityOptions);
+        
+        if (!selected) {
+            return;
+        }
+
+        $message.success(`开始下载: ${songInfo.name}`);
+        const result = await downloadSong({ ...songInfo, hash: selected.hash }, selected.quality);
+        if (result.success) {
+            $message.success('下载成功');
+        } else {
+            $message.error('下载失败: ' + result.error);
+        }
+    } catch (error) {
+        $message.error('下载失败: ' + error.message);
+    }
 };
 
 // 播放MV

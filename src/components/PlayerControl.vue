@@ -75,6 +75,8 @@
                         class="fas fa-add"></i></button>
                 <button class="extra-btn" :title="t('fen-xiang-ge-qu')" @click="share(currentSong.name, currentSong.hash)"><i
                         class="fas fa-share"></i></button>
+                <button class="extra-btn" :title="t('xia-zai-ge-qu')" @click="downloadCurrentSong"><i
+                        class="fas fa-download"></i></button>
                 <button class="extra-btn" @click="togglePlaybackMode">
                     <i v-if="currentPlaybackModeIndex != '2'" :class="currentPlaybackMode.icon"
                         :title="currentPlaybackMode.title"></i>
@@ -205,7 +207,7 @@ import { useI18n } from 'vue-i18n';
 import PlaylistSelectModal from './PlaylistSelectModal.vue';
 import QueueList from './QueueList.vue';
 import { useRouter } from 'vue-router';
-import { getCover, getAudioOutputDeviceSignature, share } from '../utils/utils';
+import { getCover, getAudioOutputDeviceSignature, share, downloadSong, getSongQualityOptions, showQualitySelector } from '../utils/utils';
 
 // 从统一入口导入所有模块
 import {
@@ -1164,6 +1166,47 @@ const changePlaybackSpeed = (speed) => {
     // 更新SMTC位置状态以反映新的播放速率
     if (audio.duration && currentSong.value?.hash) {
         mediaSession.updatePositionState(audio.currentTime, audio.duration, speed);
+    }
+};
+
+// 下载当前歌曲
+const downloadCurrentSong = async () => {
+    if (!currentSong.value.hash) {
+        $message.error('没有可下载的歌曲');
+        return;
+    }
+
+    const songInfo = {
+        name: currentSong.value.name || '未知歌曲',
+        author: currentSong.value.author || '未知歌手',
+        hash: currentSong.value.playHash || currentSong.value.hash
+    };
+
+    try {
+        $message.info('正在获取音质信息...');
+        
+        const qualityOptions = await getSongQualityOptions(songInfo.hash);
+        
+        if (qualityOptions.length === 0) {
+            $message.error('无法获取音质信息');
+            return;
+        }
+
+        const selected = await showQualitySelector(songInfo, qualityOptions);
+        
+        if (!selected) {
+            return;
+        }
+
+        $message.success(`开始下载: ${songInfo.name}`);
+        const result = await downloadSong({ ...songInfo, hash: selected.hash }, selected.quality);
+        if (result.success) {
+            $message.success('下载成功');
+        } else {
+            $message.error('下载失败: ' + result.error);
+        }
+    } catch (error) {
+        $message.error('下载失败: ' + error.message);
     }
 };
 

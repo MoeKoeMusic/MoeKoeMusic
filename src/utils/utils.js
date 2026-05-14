@@ -195,3 +195,162 @@ export const share = (songName, id, type = 0, songDesc = '') => {
         i18n.global.t('kou-ling-yi-fu-zhi,kuai-ba-ge-qu-fen-xiang-gei-peng-you-ba')
     );
 };
+
+const QUALITY_LEVELS = ['128', '320', 'flac', 'high', 'viper_atmos', 'viper_clear', 'viper_tape'];
+const QUALITY_LABELS = {
+    '128': '标准品质',
+    '320': '高品质',
+    flac: '无损 FLAC',
+    high: 'Hi-Res',
+    viper_atmos: '全景声',
+    viper_clear: '超清',
+    viper_tape: '母带'
+};
+
+const getQualityLabel = (quality) => QUALITY_LABELS[quality] || quality;
+
+const getPrivilegeVariants = (response) => {
+    const variants = [];
+    for (const item of response?.data || []) {
+        for (const variant of [item, ...(item?.relate_goods || [])]) {
+            if (!variant?.hash || variant?.level === 0 || !QUALITY_LEVELS.includes(variant?.quality)) continue;
+            variants.push(variant);
+        }
+    }
+    return variants;
+};
+
+const getQualityOptions = (response) => {
+    const qualityOptions = new Map();
+    for (const variant of getPrivilegeVariants(response)) {
+        if (qualityOptions.has(variant.quality)) continue;
+        qualityOptions.set(variant.quality, {
+            value: variant.quality,
+            hash: variant.hash,
+            label: getQualityLabel(variant.quality)
+        });
+    }
+    return [...qualityOptions.values()].sort((a, b) => QUALITY_LEVELS.indexOf(b.value) - QUALITY_LEVELS.indexOf(a.value));
+};
+
+export const downloadSong = async (song, quality = '320') => {
+    try {
+        const { get } = await import('../utils/request');
+        
+        const response = await get('/song/url', {
+            hash: song.hash,
+            quality: quality,
+            ppage_id: '356753938'
+        });
+
+        if (response.status !== 1 || !response.url || !response.url[0]) {
+            throw new Error('获取下载链接失败');
+        }
+
+        const downloadUrl = response.url[0];
+        const ext = response.extName || 'mp3';
+        const filename = `${song.name} - ${song.author}.${ext}`;
+
+        const blob = await fetch(downloadUrl).then(res => res.blob());
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+
+        return { success: true };
+    } catch (error) {
+        console.error('下载歌曲失败:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+export const getSongQualityOptions = async (hash) => {
+    try {
+        const { get } = await import('../utils/request');
+        const MoeAuthStore = (await import('../stores/store')).MoeAuthStore;
+        const MoeAuth = MoeAuthStore();
+        
+        if (!MoeAuth.isAuthenticated) {
+            return [{ value: '128', label: '标准品质', hash: hash }];
+        }
+
+        const privilegeResponse = await get('/privilege/lite', { hash: hash });
+        const qualityOptions = getQualityOptions(privilegeResponse);
+        
+        if (qualityOptions.length === 0) {
+            return [{ value: '128', label: '标准品质', hash: hash }];
+        }
+
+        return qualityOptions;
+    } catch (error) {
+        console.error('获取音质选项失败:', error);
+        return [{ value: '128', label: '标准品质', hash: hash }];
+    }
+};
+
+export const showQualitySelector = async (song, qualityOptions) => {
+    return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.style.position = 'fixed';
+        modal.style.top = '0';
+        modal.style.left = '0';
+        modal.style.width = '100%';
+        modal.style.height = '100%';
+        modal.style.background = 'rgba(0,0,0,0.5)';
+        modal.style.display = 'flex';
+        modal.style.justifyContent = 'center';
+        modal.style.alignItems = 'center';
+        modal.style.zIndex = '9999';
+        modal.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+
+        const modalContent = document.createElement('div');
+        modalContent.style.padding = '24px';
+        modalContent.style.maxWidth = '360px';
+        modalContent.style.width = '90%';
+        modalContent.style.background = '#fff';
+        modalContent.style.borderRadius = '12px';
+        modalContent.style.boxShadow = '0 10px 40px rgba(0,0,0,0.2)';
+
+        modalContent.innerHTML = `
+            <div style="margin-bottom: 20px;">
+                <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">选择音质下载</div>
+                <div style="font-size: 14px; color: #666; line-height: 1.4;">歌曲: ${escapeHtml(song.name)}</div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto;">
+                ${qualityOptions.map((q, i) => `
+                    <button 
+                        style="padding: 12px 16px; text-align: left; border: 1px solid #e0e0e0; border-radius: 8px; cursor: pointer; transition: all 0.2s; background: #fff; font-size: 14px; color: #333;"
+                        onclick="this.style.background='#f5f5f5'; window.__downloadQualityResolve({ quality: '${q.value}', hash: '${q.hash}' });"
+                    >
+                        ${q.label}
+                    </button>
+                `).join('')}
+            </div>
+        `;
+
+        window.__downloadQualityResolve = (result) => {
+            resolve(result);
+            document.body.removeChild(modal);
+        };
+
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                resolve(null);
+                document.body.removeChild(modal);
+            }
+        };
+
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+    });
+};
+
+const escapeHtml = (text) => {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+};

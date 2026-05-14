@@ -160,7 +160,6 @@
   },
   "dependencies": {
     "adm-zip": "^0.5.16",
-    "electron": "^42.0.1",
     "electron-is-dev": "^3.0.1",
     "electron-log": "^5.2.0",
     "electron-store": "^10.0.0",

@@ -1,6 +1,6 @@
 {
   "name": "moekoemusic",
-  "version": "1.6.3",
+  "version": "1.6.4",
   "homepage": "https://github.com/iAJue/MoeKoeMusic",
   "main": "electron/main.js",
   "scripts": {
@@ -142,7 +142,7 @@
     "email": "MoeJue@qq.com"
   },
   "blog": "MoeJue.cn",
-  "license": "MIT",
+  "license": "GPL-2.0-only",
   "description": "MoeKoe Music",
   "devDependencies": {
     "@types/node": "^24.10.1",

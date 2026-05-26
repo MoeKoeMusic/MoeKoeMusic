@@ -9,6 +9,7 @@ import { initializeExtensions, cleanupExtensions } from './extensions/extensions
 import { setupAutoUpdater, startUpdateDownload } from './services/updater.js';
 import apiService from './services/apiService.js';
 import statusBarLyricsService from './services/statusBarLyricsService.js';
+import customTrayMenuService from './services/customTrayMenuService.js';
 import { setupDesktopShortcutIcon } from './services/desktopShortcutIcon.js';
 import { openLogPath, exportLog } from './services/logHelper.js';
 import Store from 'electron-store';
@@ -45,6 +46,7 @@ app.on('ready', () => {
         try {
             mainWindow = createWindow();
             createTray(mainWindow);
+            customTrayMenuService.init(() => mainWindow, getTray);
 
             // 初始化状态栏歌词服务
             statusBarLyricsService.init(mainWindow, store, getTray, createTray);
@@ -123,6 +125,7 @@ app.on('before-quit', () => {
 
     // 清理状态栏歌词服务
     statusBarLyricsService.cleanup();
+    customTrayMenuService.cleanup();
 
     stopApiServer();
     apiService.stop();
@@ -274,6 +277,7 @@ ipcMain.on('play-pause-action', (event, playing, currentTime) => {
     }
     apiService.updatePlayerState({ isPlaying: playing, currentTime: currentTime });
     setThumbarButtons(mainWindow, playing);
+    customTrayMenuService.updatePlaybackState(playing, currentTime);
 })
 
 ipcMain.on('open-url', (event, url) => {
@@ -283,6 +287,7 @@ ipcMain.on('open-url', (event, url) => {
 ipcMain.on('set-tray-title', (event, title) => {
     createTray(mainWindow, t('now-playing') + title);
     mainWindow.setTitle(title);
+    void customTrayMenuService.refresh();
 })
 
 

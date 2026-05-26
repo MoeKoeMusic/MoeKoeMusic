@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MoeKoe Tray Menu</title>
+    <style>
+        :root {
+            color-scheme: light dark;
+            --window-bg: rgba(6, 7, 10, 0.12);
+            --card-bg: linear-gradient(180deg, #ffffff 0%, #f6f7fb 100%);
+            --card-border: rgba(255, 255, 255, 0.8);
+            --text-primary: #111827;
+            --text-secondary: #697586;
+            --text-muted: #8a93a3;
+            --track-bg: rgba(17, 24, 39, 0.08);
+            --button-bg: #eef1f6;
+            --button-bg-hover: #e5e9f1;
+            --button-strong: linear-gradient(135deg, #17d8d1 0%, #10b7f5 100%);
+            --button-strong-shadow: rgba(16, 185, 214, 0.35);
+            --badge-bg: rgba(17, 24, 39, 0.06);
+            --badge-border: rgba(17, 24, 39, 0.08);
+            --divider: rgba(17, 24, 39, 0.08);
+            --danger: #ff5b66;
+            --danger-bg: rgba(255, 91, 102, 0.1);
+            --danger-bg-hover: rgba(255, 91, 102, 0.16);
+            --accent: #18d5d2;
+            --shadow: 0 20px 48px rgba(0, 0, 0, 0.24);
+        }
+
+        html[data-theme="dark"] {
+            --window-bg: rgba(4, 5, 8, 0.16);
+            --card-bg: linear-gradient(180deg, #1a1c22 0%, #13151a 100%);
+            --card-border: rgba(255, 255, 255, 0.06);
+            --text-primary: #f4f7fb;
+            --text-secondary: #a1a9b8;
+            --text-muted: #7f8796;
+            --track-bg: rgba(255, 255, 255, 0.12);
+            --button-bg: #23262d;
+            --button-bg-hover: #2a2f38;
+            --button-strong: linear-gradient(135deg, #18dbd5 0%, #11b7f6 100%);
+            --button-strong-shadow: rgba(16, 185, 214, 0.28);
+            --badge-bg: rgba(255, 255, 255, 0.06);
+            --badge-border: rgba(255, 255, 255, 0.08);
+            --divider: rgba(255, 255, 255, 0.08);
+            --danger: #ff6e77;
+            --danger-bg: rgba(255, 110, 119, 0.1);
+            --danger-bg-hover: rgba(255, 110, 119, 0.16);
+            --accent: #1edbd4;
+            --shadow: 0 24px 56px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: transparent;
+            font-family: "Segoe UI", "Microsoft YaHei UI", sans-serif;
+        }
+
+        button {
+            border: 0;
+            margin: 0;
+            padding: 0;
+            font: inherit;
+            color: inherit;
+            background: none;
+            cursor: pointer;
+        }
+
+        .menu-shell {
+            width: 100%;
+            height: 100%;
+            border-radius: 24px;
+            background: rgb(255 255 255 / 0%);
+        }
+
+        .menu-card {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            border-radius: 20px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            box-shadow: var(--shadow);
+            color: var(--text-primary);
+            backdrop-filter: blur(24px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .song-section {
+            padding: 16px 16px 10px;
+            display: grid;
+            grid-template-columns: 60px minmax(0, 1fr);
+            gap: 12px;
+            align-items: center;
+        }
+
+        .cover {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(24, 213, 210, 0.22), rgba(17, 183, 246, 0.22));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .song-meta {
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .song-title {
+            display: block;
+            max-width: 100%;
+            margin: 0;
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.3;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            word-break: keep-all;
+        }
+
+        .song-artist {
+            display: block;
+            max-width: 100%;
+            margin-top: 3px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            word-break: keep-all;
+        }
+
+        .progress-track {
+            margin-top: 8px;
+            height: 6px;
+            border-radius: 999px;
+            background: var(--track-bg);
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0;
+            border-radius: inherit;
+            background: var(--button-strong);
+            transition: width 0.18s ease;
+        }
+
+        .progress-time {
+            margin-top: 6px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .control-row {
+            padding: 0 16px 12px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .control-btn {
+            height: 54px;
+            border-radius: 16px;
+            background: var(--button-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease;
+        }
+
+        .control-btn:hover {
+            background: var(--button-bg-hover);
+            transform: translateY(-1px);
+        }
+
+        .control-btn.primary {
+            background: var(--button-strong);
+            color: #ffffff;
+            box-shadow: 0 10px 22px var(--button-strong-shadow);
+        }
+
+        .control-btn.primary:hover {
+            filter: brightness(1.03);
+        }
+
+        .divider {
+            height: 1px;
+            margin: 0 16px;
+            background: var(--divider);
+            flex-shrink: 0;
+        }
+
+        .action-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 10px 10px;
+        }
+
+        .action-list::-webkit-scrollbar {
+            display: none;
+        }
+
+        .action-item {
+            width: 100%;
+            min-height: 42px;
+            border-radius: 14px;
+            padding: 7px 8px;
+            display: grid;
+            grid-template-columns: 34px minmax(0, 1fr) auto;
+            gap: 9px;
+            align-items: center;
+            transition: background-color 0.16s ease;
+            text-align: left;
+        }
+
+        .action-item.no-shortcut {
+            grid-template-columns: 34px minmax(0, 1fr);
+        }
+
+        .action-item:hover {
+            background: rgba(127, 135, 150, 0.08);
+        }
+
+        .action-item.danger {
+            color: var(--danger);
+        }
+
+        .action-item.danger:hover {
+            background: var(--danger-bg-hover);
+        }
+
+        .action-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            background: var(--button-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-item.danger .action-icon {
+            background: var(--danger-bg);
+        }
+
+        .action-label {
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .action-shortcut {
+            min-width: 74px;
+            height: 24px;
+            padding: 0 8px;
+            border-radius: 10px;
+            border: 1px solid var(--badge-border);
+            background: var(--badge-bg);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .icon {
+            width: 18px;
+            height: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .control-btn .icon {
+            width: 40px;
+            height: 40px;
+        }
+
+        .control-btn.primary .icon {
+            width: 40px;
+            height: 40px;
+        }
+
+        .icon svg {
+            width: 100%;
+            height: 100%;
+            fill: currentColor;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-shell">
+        <div class="menu-card">
+            <section class="song-section">
+                <div class="cover" id="cover"></div>
+                <div class="song-meta">
+                    <h1 class="song-title" id="songTitle">MoeKoe Music</h1>
+                    <div class="song-artist" id="songArtist">-</div>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-time">
+                        <span id="currentTime">00:00</span>
+                        <span id="durationTime">00:00</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="control-row">
+                <button class="control-btn" type="button" data-action="prev-track" id="prevControl"></button>
+                <button class="control-btn primary" type="button" data-action="toggle-play-pause" id="playControl"></button>
+                <button class="control-btn" type="button" data-action="next-track" id="nextControl"></button>
+            </section>
+
+            <div class="divider"></div>
+
+            <div class="action-list" id="actionList"></div>
+        </div>
+    </div>
+
+    <script>
+        const actionOrder = [
+            'project-home',
+            'report-bug',
+            'check-updates',
+            'restart-app',
+            'show-hide',
+            'quit'
+        ];
+
+        const shortcutMap = {
+            'prev-track': 'prevTrack',
+            'toggle-play-pause': 'playPause',
+            'next-track': 'nextTrack',
+            'show-hide': 'showHide',
+            'quit': 'quit'
+        };
+
+        const labelMap = {
+            'project-home': 'projectHome',
+            'report-bug': 'reportBug',
+            'prev-track': 'prevTrack',
+            'toggle-play-pause': 'playPause',
+            'next-track': 'nextTrack',
+            'check-updates': 'checkUpdates',
+            'restart-app': 'restartApp',
+            'show-hide': 'showHide',
+            'quit': 'quit'
+        };
+
+        const iconMap = {
+            'project-home': 'house',
+            'report-bug': 'bug',
+            'prev-track': 'backward',
+            'toggle-play-pause': 'play-circle',
+            'next-track': 'forward',
+            'check-updates': 'rotate',
+            'restart-app': 'power',
+            'show-hide': 'window',
+            'quit': 'arrow-right'
+        };
+
+        const dangerActions = new Set(['quit']);
+        let currentState = null;
+
+        const iconSvg = (name) => {
+            const icons = {
+                house: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.25 3.75 10v10.75h6.5v-6h3.5v6h6.5V10L12 3.25Zm0 2.58 6 4.91v8.51h-2.5v-6h-8v6H5V10.74l7-5.91Z"/></svg>',
+                bug: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7.5A3 3 0 0 1 12 4.5a3 3 0 0 1 3 3V8h2.25a.75.75 0 0 1 0 1.5h-1.62l1.12 1.12a.75.75 0 0 1-1.06 1.06L14.5 10.5v2.13l1.19 1.18a.75.75 0 1 1-1.06 1.06L13.5 13.74v5.01a1.75 1.75 0 0 1-3.5 0v-5.01l-1.13 1.13a.75.75 0 0 1-1.06-1.06L9 12.63V10.5l-1.19 1.18a.75.75 0 1 1-1.06-1.06L7.87 9.5H6.25a.75.75 0 0 1 0-1.5H8.5v-.5Zm1.5 0V8h3v-.5A1.5 1.5 0 0 0 12 6a1.5 1.5 0 0 0-1.5 1.5Zm0 1.99v2.39l.75-.75v-1.64h1.5v1.64l.75.75V9.49h-3Z"/></svg>',
+                backward: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 6.75a.75.75 0 0 1 1.2.6v9.3a.75.75 0 0 1-1.2.6l-6.11-4.65a.75.75 0 0 1 0-1.2L19 6.75Zm-8 0a.75.75 0 0 1 1.2.6v9.3a.75.75 0 0 1-1.2.6l-6.11-4.65a.75.75 0 0 1 0-1.2L11 6.75Z"/></svg>',
+                forward: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6.75a.75.75 0 0 0-1.2.6v9.3a.75.75 0 0 0 1.2.6l6.11-4.65a.75.75 0 0 0 0-1.2L5 6.75Zm8 0a.75.75 0 0 0-1.2.6v9.3a.75.75 0 0 0 1.2.6l6.11-4.65a.75.75 0 0 0 0-1.2L13 6.75Z"/></svg>',
+                play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.25 5.18a.75.75 0 0 1 1.12-.65l8.5 5a.75.75 0 0 1 0 1.3l-8.5 5a.75.75 0 0 1-1.12-.65V5.18Z"/></svg>',
+                pause: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.25 5A1.25 1.25 0 0 1 9.5 6.25v11.5A1.25 1.25 0 0 1 8.25 19h-.5A1.25 1.25 0 0 1 6.5 17.75V6.25A1.25 1.25 0 0 1 7.75 5h.5Zm8 0a1.25 1.25 0 0 1 1.25 1.25v11.5A1.25 1.25 0 0 1 16.25 19h-.5a1.25 1.25 0 0 1-1.25-1.25V6.25A1.25 1.25 0 0 1 15.75 5h.5Z"/></svg>',
+                'play-circle': '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.75A9.25 9.25 0 1 0 21.25 12 9.26 9.26 0 0 0 12 2.75Zm-1.9 5.84a.75.75 0 0 1 1.14-.64l5.06 3.28a.75.75 0 0 1 0 1.26l-5.06 3.28a.75.75 0 0 1-1.14-.63V8.59Z"/></svg>',
+                rotate: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a7.98 7.98 0 0 1 6.16 2.9V5.75a.75.75 0 0 1 1.5 0V9a.75.75 0 0 1-.75.75h-3.25a.75.75 0 0 1 0-1.5h1.54A6.5 6.5 0 1 0 18.5 12a.75.75 0 0 1 1.5 0A8 8 0 1 1 12 4Z"/></svg>',
+                power: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.75a.75.75 0 0 1 .75.75v7a.75.75 0 0 1-1.5 0v-7a.75.75 0 0 1 .75-.75Zm4.95 2.57a.75.75 0 0 1 1.06 1.06 7 7 0 1 1-12.02 4.95 6.96 6.96 0 0 1 2.05-4.95A.75.75 0 0 1 9.1 7.44a5.5 5.5 0 1 0 7.85 0Z"/></svg>',
+                window: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.25A2.25 2.25 0 0 1 6.25 3h11.5A2.25 2.25 0 0 1 20 5.25v13.5A2.25 2.25 0 0 1 17.75 21H6.25A2.25 2.25 0 0 1 4 18.75V5.25Zm1.5 2.25h13v-2.25a.75.75 0 0 0-.75-.75H6.25a.75.75 0 0 0-.75.75V7.5Zm13 1.5h-13v9.75c0 .41.34.75.75.75h11.5a.75.75 0 0 0 .75-.75V9Z"/></svg>',
+                'arrow-right': '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.97 5.97a.75.75 0 0 1 1.06 0l5.5 5.5a.75.75 0 0 1 0 1.06l-5.5 5.5a.75.75 0 1 1-1.06-1.06l4.22-4.22H4.75a.75.75 0 0 1 0-1.5h13.44l-4.22-4.22a.75.75 0 0 1 0-1.06Z"/></svg>',
+                music: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.25 3.5a.75.75 0 0 1 .75.75v9.69A3.75 3.75 0 1 1 15.5 11V7.12l-6 1.5v7.32A3.75 3.75 0 1 1 8 13V6.75c0-.34.23-.63.56-.71l7.5-1.88a.75.75 0 0 1 .19-.02Z"/></svg>'
+            };
+
+            return `<span class="icon">${icons[name] || icons.music}</span>`;
+        };
+
+        const escapeHtml = (value) => String(value ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#39;');
+
+        const setTheme = (theme) => {
+            document.documentElement.dataset.theme = theme === 'dark' ? 'dark' : 'light';
+        };
+
+        const getPlayIconName = () => currentState?.isPlaying ? 'pause' : 'play';
+
+        const renderControls = () => {
+            document.getElementById('prevControl').innerHTML = iconSvg('backward');
+            document.getElementById('playControl').innerHTML = iconSvg(getPlayIconName());
+            document.getElementById('nextControl').innerHTML = iconSvg('forward');
+        };
+
+        const renderSong = () => {
+            const song = currentState?.song;
+            const labels = currentState?.labels || {};
+            const coverEl = document.getElementById('cover');
+
+            if (!song) {
+                coverEl.innerHTML = iconSvg('music');
+                document.getElementById('songTitle').textContent = labels.noSong || 'MoeKoe Music';
+                document.getElementById('songArtist').textContent = 'MoeKoe Music';
+                document.getElementById('progressFill').style.width = '0%';
+                document.getElementById('currentTime').textContent = '00:00';
+                document.getElementById('durationTime').textContent = '00:00';
+                return;
+            }
+
+            if (song.cover) {
+                coverEl.innerHTML = `<img src="${escapeHtml(song.cover)}" alt="">`;
+            } else {
+                coverEl.innerHTML = iconSvg('music');
+            }
+
+            document.getElementById('songTitle').textContent = song.title || 'MoeKoe Music';
+            document.getElementById('songArtist').textContent = song.artist || 'MoeJue';
+            document.getElementById('progressFill').style.width = `${song.progressPercent || 0}%`;
+            document.getElementById('currentTime').textContent = song.currentTimeText || '00:00';
+            document.getElementById('durationTime').textContent = song.durationText || '00:00';
+        };
+
+        const renderActions = () => {
+            const labels = currentState?.labels || {};
+            const shortcuts = currentState?.shortcuts || {};
+            const actionList = document.getElementById('actionList');
+
+            actionList.innerHTML = actionOrder.map((action) => {
+                const shortcutKey = shortcutMap[action];
+                const shortcut = shortcutKey ? shortcuts[shortcutKey] : '';
+                const hasShortcut = !!shortcut;
+                const isDanger = dangerActions.has(action);
+                const iconName = action === 'toggle-play-pause' ? getPlayIconName() : iconMap[action];
+                const label = labels[labelMap[action]] || action;
+
+                return `
+                    <button class="action-item${isDanger ? ' danger' : ''}${hasShortcut ? '' : ' no-shortcut'}" type="button" data-action="${action}">
+                        <span class="action-icon">${iconSvg(iconName)}</span>
+                        <span class="action-label">${escapeHtml(label)}</span>
+                        ${hasShortcut ? `<span class="action-shortcut">${escapeHtml(shortcut)}</span>` : ''}
+                    </button>
+                `;
+            }).join('');
+        };
+
+        const render = () => {
+            setTheme(currentState?.theme);
+            renderControls();
+            renderSong();
+            renderActions();
+        };
+
+        const sendAction = (action) => {
+            window.electron?.ipcRenderer.send('tray-menu-action', action);
+        };
+
+        document.addEventListener('click', (event) => {
+            const actionButton = event.target.closest('[data-action]');
+            if (!actionButton) return;
+            sendAction(actionButton.dataset.action);
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                window.electron?.ipcRenderer.send('tray-menu-hide');
+            }
+        });
+
+        window.electron?.ipcRenderer.on('tray-menu-state', (_event, state) => {
+            currentState = state;
+            render();
+            if (state?.renderToken) {
+                requestAnimationFrame(() => {
+                    window.electron?.ipcRenderer.send('tray-menu-rendered', state.renderToken);
+                });
+            }
+        });
+
+        window.electron?.ipcRenderer.on('tray-menu-theme-updated', (_event, theme) => {
+            setTheme(theme);
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            render();
+            window.electron?.ipcRenderer.send('tray-menu-ready');
+        });
+    </script>
+</body>
+</html>

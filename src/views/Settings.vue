@@ -208,6 +208,7 @@ const selectedSettings = ref({
     greetings: { displayText: t('kai-qi'), value: 'on' },
     gpuAcceleration: { displayText: t('guan-bi'), value: 'off' },
     minimizeToTray: { displayText: t('da-kai'), value: 'on' },
+    customTrayMenu: { displayText: t('da-kai'), value: 'on' },
     highDpi: { displayText: t('guan-bi'), value: 'off' },
     dpiScale: { displayText: '1.0', value: '1.0' },
     apiMode: { displayText: t('guan-bi'), value: 'off' },
@@ -265,6 +266,10 @@ const settingSections = computed(() => [
             {
                 key: 'startupPage',
                 label: '启动页'
+            },
+            {
+                key: 'customTrayMenu',
+                label: '高级托盘菜单'
             }
         ]
     },
@@ -471,6 +476,7 @@ const getItemIcon = (key) => {
         'gpuAcceleration': 'fas fa-microchip',
         'highDpi': 'fas fa-expand',
         'minimizeToTray': 'fas fa-window-minimize',
+        'customTrayMenu': 'fas fa-window-restore',
         'autoStart': 'fas fa-power-off',
         'startMinimized': 'fas fa-compress',
         'preventAppSuspension': 'fas fa-clock',
@@ -593,6 +599,13 @@ const selectionTypeMap = {
     },
     minimizeToTray: {
         title: t('guan-bi-shi-minimize-to-tray'),
+        options: [
+            { displayText: t('da-kai'), value: 'on' },
+            { displayText: t('guan-bi'), value: 'off' }
+        ]
+    },
+    customTrayMenu: {
+        title: '高级托盘菜单',
         options: [
             { displayText: t('da-kai'), value: 'on' },
             { displayText: t('guan-bi'), value: 'off' }
@@ -856,7 +869,7 @@ const openHelpLink = () => {
 };
 
 const selectOption = async (option) => {
-    const electronFeatures = ['desktopLyrics', 'statusBarLyrics', 'gpuAcceleration', 'minimizeToTray', 'highDpi', 'nativeTitleBar', 'touchBar', 'autoStart', 'startMinimized', 'preventAppSuspension', 'networkMode', 'poxySettings', 'apiMode', 'dataSource', 'statusBarLyrics', 'log'];
+    const electronFeatures = ['desktopLyrics', 'statusBarLyrics', 'gpuAcceleration', 'minimizeToTray', 'customTrayMenu', 'highDpi', 'nativeTitleBar', 'touchBar', 'autoStart', 'startMinimized', 'preventAppSuspension', 'networkMode', 'poxySettings', 'apiMode', 'dataSource', 'statusBarLyrics', 'log'];
     if (!isElectron() && electronFeatures.includes(selectionType.value)) {
         window.$modal.alert(t('fei-ke-hu-duan-huan-jing-wu-fa-qi-yong'));
         return;

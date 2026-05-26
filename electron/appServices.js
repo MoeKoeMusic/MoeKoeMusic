@@ -12,6 +12,7 @@ import { Notification } from 'electron';
 import extensionManager from './extensions/extensionManager.js';
 import { t } from './language/i18n.js';
 import { bindExternalLinkHandler } from './services/externalLinkHandler.js';
+import customTrayMenuService from './services/customTrayMenuService.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const store = new Store();
 const { TouchBarLabel, TouchBarButton, TouchBarGroup, TouchBarSpacer } = TouchBar;
@@ -355,16 +356,28 @@ export function createTray(mainWindow, title = '') {
         }
     ]);
 
+    const useCustomTrayMenu = !!mainWindow && store.get('settings')?.customTrayMenu !== 'off';
     switch (process.platform) {
         case 'linux':
+            if (useCustomTrayMenu) {
+                void customTrayMenuService.toggle();
+                return;
+            }
+            customTrayMenuService.hide();
             tray.setContextMenu(contextMenu);
             break;
         default:
             tray.on('right-click', () => {
+                if (useCustomTrayMenu) {
+                    void customTrayMenuService.toggle();
+                    return;
+                }
+                customTrayMenuService.hide();
                 tray.popUpContextMenu(contextMenu);
             });
     }
     tray.on('click', () => {
+        customTrayMenuService.hide();
         if (!mainWindow.isVisible()) {
             mainWindow.show();
         } else if (!mainWindow.isFocused()) {
@@ -375,6 +388,7 @@ export function createTray(mainWindow, title = '') {
         }
     });
     tray.on('double-click', () => {
+        customTrayMenuService.hide();
         mainWindow.show();
     });
     return tray;

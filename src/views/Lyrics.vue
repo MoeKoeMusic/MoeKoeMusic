@@ -242,7 +242,17 @@ const handleColorChange = (color, type) => {
     }
 }
 
+const persistDesktopLyricsSetting = (value) => {
+    const savedSettings = JSON.parse(localStorage.getItem('settings') || '{}')
+    savedSettings.desktopLyrics = value
+    localStorage.setItem('settings', JSON.stringify(savedSettings))
+    window.electron.ipcRenderer.send('save-settings', JSON.parse(JSON.stringify(savedSettings)))
+}
+
 const sendAction = (action) => {
+    if (action === 'close-lyrics' || action === 'display-lyrics') {
+        persistDesktopLyricsSetting(action === 'display-lyrics' ? 'on' : 'off')
+    }
     window.electron.ipcRenderer.send('desktop-lyrics-action', action)
 }
 

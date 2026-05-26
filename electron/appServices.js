@@ -658,11 +658,12 @@ export function registerShortcut() {
                 mainWindow.lyricsWindow = null;
                 new Notification({
                     title: t('desktop-lyrics-closed'),
-                    body: t('this-time-only'),
                     icon: getIconPath('logo.png')
                 }).show();
+                syncDesktopLyricsSetting('off');
             } else {
                 createLyricsWindow();
+                syncDesktopLyricsSetting('on');
             }
         }
         if (settings?.shortcuts?.toggleDesktopLyrics) {
@@ -679,6 +680,14 @@ export function registerShortcut() {
         });
     }
 }
+
+const syncDesktopLyricsSetting = (value) => {
+    const settings = store.get('settings') || {};
+    store.set('settings', {
+        ...settings,
+        desktopLyrics: value
+    });
+};
 
 // 播放启动问候语
 export function playStartupSound() {

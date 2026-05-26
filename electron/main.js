@@ -244,17 +244,26 @@ ipcMain.on('desktop-lyrics-action', (event, action) => {
                 lyricsWindow.close();
                 new Notification({
                     title: t('desktop-lyrics-closed'),
-                    body: t('this-time-only'),
                     icon: path.join(__dirname, '../build/icons/logo.png')
                 }).show();
                 mainWindow.lyricsWindow = null;
             }
+            syncDesktopLyricsSetting('off');
             break;
         case 'display-lyrics':
             if (!mainWindow.lyricsWindow) createLyricsWindow();
+            syncDesktopLyricsSetting('on');
             break;
     }
 });
+
+const syncDesktopLyricsSetting = (value) => {
+    const settings = store.get('settings') || {};
+    store.set('settings', {
+        ...settings,
+        desktopLyrics: value
+    });
+};
 
 ipcMain.on('set-ignore-mouse-events', (event, ignore) => {
     const lyricsWindow = mainWindow.lyricsWindow;

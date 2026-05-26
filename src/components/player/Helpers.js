@@ -57,6 +57,7 @@ export function useHelpers(t) {
     window.electron.ipcRenderer.send('desktop-lyrics-action', action);
     savedConfig.desktopLyrics = action === 'display-lyrics' ? 'on' : 'off';
     localStorage.setItem('settings', JSON.stringify(savedConfig));
+    window.electron.ipcRenderer.send('save-settings', JSON.parse(JSON.stringify(savedConfig)));
   };
   
   // 节流函数
@@ -107,4 +108,4 @@ export function useHelpers(t) {
     throttle,
     getVip
   };
-} 
+}

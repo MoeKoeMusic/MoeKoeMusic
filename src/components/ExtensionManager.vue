@@ -720,8 +720,6 @@ $danger-hover: #b91c1c;
 $text-muted: #666;
 $border-light: #e5e7eb;
 $border-dark: #232527;
-$gradient-pink-blue: linear-gradient(135deg, #fb7185, #2563eb);
-$gradient-orange: linear-gradient(135deg, #f59e0b, #f97316);
 
 .extensions-toolbar {
     display: flex;
@@ -901,13 +899,8 @@ $gradient-orange: linear-gradient(135deg, #f59e0b, #f97316);
     color: white;
     border-radius: 12px;
     font-size: 22px;
-    background: $gradient-pink-blue;
     overflow: hidden;
     flex-shrink: 0;
-
-    &.market-icon {
-        background: $gradient-orange;
-    }
 
     img {
         width: 100%;

@@ -9,7 +9,6 @@ import fs from 'fs';
 import { exec } from 'child_process';
 import { checkForUpdates } from './services/updater.js';
 import { Notification } from 'electron';
-import extensionManager from './extensions/extensionManager.js';
 import { t } from './language/i18n.js';
 import { bindExternalLinkHandler } from './services/externalLinkHandler.js';
 import customTrayMenuService from './services/customTrayMenuService.js';
@@ -87,10 +86,6 @@ export function createWindow() {
             mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
         }
     }
-
-    mainWindow.webContents.once('dom-ready', () => {
-        extensionManager.loadChromeExtensions();
-    });
 
     mainWindow.webContents.on('dom-ready', () => {
         console.log('DOM Ready');

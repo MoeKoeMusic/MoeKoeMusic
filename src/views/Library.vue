@@ -780,16 +780,59 @@ const addAllSongsToQueue = () => {
     margin-bottom: 20px;
 
     button {
+        position: relative;
+        overflow: hidden;
         padding: 10px 15px;
         border: none;
         background-color: #f5f5f5;
         border-radius: 20px;
         cursor: pointer;
+        transition: background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+
+        &::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.45) 45%, transparent 70%);
+            transform: translateX(-120%);
+            pointer-events: none;
+        }
+
+        &:hover {
+            transform: translateY(-2px);
+        }
 
         &.active {
             background-color: var(--primary-color);
             color: white;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+            animation: categoryActivePop 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+
+            &::after {
+                animation: categoryShine 0.55s ease;
+            }
         }
+    }
+}
+
+@keyframes categoryActivePop {
+    0% {
+        transform: translateY(0) scale(0.96);
+    }
+
+    100% {
+        transform: translateY(-2px) scale(1);
+    }
+}
+
+@keyframes categoryShine {
+    0% {
+        transform: translateX(-120%);
+    }
+
+    100% {
+        transform: translateX(120%);
     }
 }
 

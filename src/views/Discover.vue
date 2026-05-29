@@ -2,7 +2,7 @@
     <div class="discover-page">
         <img class="discover-floating-arona" src="/assets/images/arona.png" alt="Arona" />
 
-        <div class="discover-switch">
+        <div class="discover-switch" :style="discoverSwitchStyle">
             <button v-for="tab in discoverTabs" :key="tab.key" class="switch-item"
                 :class="{ active: activeDiscoverTab === tab.key }" @click="handleDiscoverTabClick(tab)">
                 {{ tab.label }}
@@ -47,6 +47,16 @@ const normalizeDiscoverTab = (view) => {
 
 const activeDiscoverTab = computed(() => {
     return normalizeDiscoverTab(route.query.view);
+});
+
+const activeDiscoverTabIndex = computed(() => {
+    return discoverTabs.findIndex(tab => tab.key === activeDiscoverTab.value);
+});
+
+const discoverSwitchStyle = computed(() => {
+    return {
+        '--discover-slider-x': `${activeDiscoverTabIndex.value * 100}%`
+    };
 });
 
 const handleDiscoverTabClick = (tab) => {
@@ -97,16 +107,34 @@ const handleDiscoverTabClick = (tab) => {
 }
 
 .discover-switch {
-    display: flex;
-    gap: 6px;
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     padding: 5px;
     margin-bottom: 24px;
     background: var(--discover-switch-bg);
     border: 1px solid var(--discover-switch-border);
     border-radius: 14px;
+
+    &::before {
+        content: "";
+        position: absolute;
+        top: 5px;
+        bottom: 5px;
+        left: 5px;
+        z-index: 0;
+        width: calc((100% - 10px) / 4);
+        background: var(--discover-switch-active-bg);
+        border-radius: 10px;
+        box-shadow: var(--discover-switch-active-shadow);
+        transform: translateX(var(--discover-slider-x));
+        transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.2s ease, box-shadow 0.2s ease;
+    }
 }
 
 .switch-item {
+    position: relative;
+    z-index: 1;
     flex: 1;
     min-width: 0;
     border: none;
@@ -120,16 +148,20 @@ const handleDiscoverTabClick = (tab) => {
     transition: all 0.2s ease;
 
     &.active {
-        background: var(--discover-switch-active-bg);
         color: var(--primary-color);
-        box-shadow: var(--discover-switch-active-shadow);
     }
 }
 
 @media (max-width: 768px) {
     .discover-switch {
-        gap: 4px;
         padding: 4px;
+
+        &::before {
+            top: 4px;
+            bottom: 4px;
+            left: 4px;
+            width: calc((100% - 8px) / 4);
+        }
     }
 
     .switch-item {

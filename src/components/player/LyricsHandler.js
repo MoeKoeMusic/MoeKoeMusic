@@ -71,11 +71,11 @@ export default function useLyricsHandler(t) {
     const parseLyrics = (text, parseTranslation = true) => {
         let translationLyrics = [];
         let romanizationLyrics = [];
-        const lines = text.split('\n');
+        const lines = text.split(/\r?\n/);
         try {
             const languageLine = lines.find(line => line.match(/\[language:(.*)\]/));
             if (parseTranslation && languageLine) {
-                const languageCode = languageLine.slice(10, -2);
+                const languageCode = languageLine.match(/\[language:([^\]]*)\]/)?.[1];
                 if (languageCode) {
                     try {
                         // 确保 languageCode 是有效的 Base64 编码
@@ -83,7 +83,9 @@ export default function useLyricsHandler(t) {
                         const cleanedCode = languageCode.replace(/[^A-Za-z0-9+/=]/g, '');
                         // 添加缺失的填充字符
                         const paddedCode = cleanedCode.padEnd(cleanedCode.length + (4 - cleanedCode.length % 4) % 4, '=');
-                        const decodedData = decodeURIComponent(escape(atob(paddedCode)));
+                        const decodedData = new TextDecoder().decode(
+                            Uint8Array.from(atob(paddedCode), char => char.charCodeAt(0))
+                        );
                         const languageData = JSON.parse(decodedData);
 
                         // 获取翻译歌词 (type === 1)

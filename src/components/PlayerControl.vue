@@ -311,7 +311,15 @@ const switchQuality = async (option) => {
 
 // 初始化事件回调
 const onSongEnd = () => {
-    if (currentPlaybackModeIndex.value == 2) return;
+    if (currentPlaybackModeIndex.value == 2) return; // 单曲循环
+    // 顺序播放：最后一首播放完毕后停止
+    if (currentPlaybackModeIndex.value == 3) {
+        const currentIndex = musicQueueStore.queue.findIndex(song => song.hash === currentSong.value.hash);
+        if (currentIndex === musicQueueStore.queue.length - 1) {
+            playing.value = false;
+            return;
+        }
+    }
     playSongFromQueue('next');
 };
 
@@ -747,8 +755,19 @@ const playSongFromQueue = async (direction) => {
     } else if (currentPlaybackModeIndex.value === 0) {
         // 随机播放
         targetIndex = handleRandomPlayback(direction, currentIndex);
+    } else if (currentPlaybackModeIndex.value === 3) {
+        // 顺序播放
+        if (direction === 'previous') {
+            targetIndex = currentIndex === 0 ? musicQueueStore.queue.length - 1 : currentIndex - 1;
+        } else {
+            targetIndex = currentIndex + 1;
+            if (targetIndex >= musicQueueStore.queue.length) {
+                playing.value = false;
+                return;
+            }
+        }
     } else {
-        // 顺序播放或单曲循环
+        // 列表循环或单曲循环
         targetIndex = direction === 'previous'
             ? (currentIndex === 0 ? musicQueueStore.queue.length - 1 : currentIndex - 1)
             : (currentIndex + 1) % musicQueueStore.queue.length;

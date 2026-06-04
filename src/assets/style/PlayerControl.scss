@@ -205,44 +205,82 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
     transform: translateY(-2px);
 }
 
-.quality-menu {
+.player-menu {
     position: absolute;
-    bottom: calc(100% + 8px);
-    left: 0;
-    min-width: 110px;
+    bottom: 100%;
+    left: 50%;
+    box-sizing: border-box;
+    min-width: 130px;
+    margin-bottom: 8px;
     padding: 6px;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.96);
-    box-shadow: $shadow-soft;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    z-index: 10;
+    border: 1px solid var(--background-color);
+    background: #fff;
+    border-radius: $radius-md;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transform: translateX(-50%);
+    z-index: 1000;
 
-    &:is(.dark .quality-menu) {
-        background: #121212;
+    &::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 6px solid transparent;
+        border-top-color: #fff;
     }
 }
 
-.quality-menu-item {
+.player-menu-item {
+    box-sizing: border-box;
     width: 100%;
+    display: flex;
+    align-items: center;
     border: none;
-    background: transparent;
-    text-align: left;
-    border-radius: 8px;
-    padding: 8px 10px;
+    border-radius: $radius-sm;
+    padding: 6px 10px;
     font-size: 13px;
-    color: #303133;
+    background: transparent;
+    color: var(--text-color);
     cursor: pointer;
+    white-space: nowrap;
+    text-align: left;
+    transition: background-color 0.2s;
 
-    &:hover,
+    &:hover {
+        background-color: var(--background-color);
+    }
+
     &.active {
-        background: var(--color-primary-light);
-        color: var(--color-primary);
+        background-color: var(--secondary-color);
+        color: var(--primary-text-color);
     }
 
     &.disabled {
         color: #909399;
         cursor: default;
+
+        &:hover {
+            background-color: transparent;
+        }
     }
+}
+
+.player-menu-enter-active,
+.player-menu-leave-active {
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.player-menu-enter-from,
+.player-menu-leave-to {
+    opacity: 0;
+    transform: translate(-50%, 4px);
+}
+
+.player-menu-enter-to,
+.player-menu-leave-from {
+    opacity: 1;
+    transform: translate(-50%, 0);
 }
 
 .fa-volume-up {
@@ -737,42 +775,63 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
     display: inline-block;
 }
 
-.speed-menu {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--background-color);
-    border: 1px solid var(--background-color);
-    border-radius: $radius-sm;
-    margin-bottom: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
+.speed-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 
-    &::after {
-        content: '';
-        position: absolute;
-        top: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        border: 6px solid transparent;
-        border-top-color: var(--background-color);
+    i {
+        line-height: 1;
+        transform: translateY(-2px);
     }
 }
 
+.playback-mode {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+
+    &:hover .playback-mode-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translate(-50%, 0);
+        pointer-events: auto;
+        transition-delay: 0s;
+    }
+}
+
+.playback-mode-menu {
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, 4px);
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s, visibility 0s 0.2s;
+}
+
+.playback-mode-option {
+    gap: 8px;
+
+    i,
+    .loop-icon {
+        width: 16px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+}
+
+.speed-menu {
+    min-width: 70px;
+}
+
 .speed-option {
-    padding: 6px 16px;
-    cursor: pointer;
-    white-space: nowrap;
-    color: var(--text-color);
-    transition: background-color 0.2s;
+    justify-content: center;
 
     &:hover {
-        background-color: var(--secondary-color);
+        background-color: var(--background-color);
     }
 
     &.active {
-        background-color: var(--primary-color);
+        background-color: var(--secondary-color);
         color: var(--primary-text-color);
     }
 }

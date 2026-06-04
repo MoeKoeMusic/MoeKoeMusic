@@ -27,19 +27,21 @@
                         >
                             {{ currentSong.qualityLabel }}
                         </button>
-                        <div v-if="qualityMenuOpen && canSwitchQuality" class="quality-menu">
-                            <div v-if="!currentSong?.qualityOptions?.length" class="quality-menu-item disabled">暂无可选音质</div>
-                            <button
-                                v-for="option in currentSong.qualityOptions"
-                                :key="`${option.value}-${option.hash}`"
-                                type="button"
-                                class="quality-menu-item"
-                                :class="{ active: isCurrentQualityOption(option) }"
-                                @click.stop="switchQuality(option)"
-                            >
-                                {{ option.label }}
-                            </button>
-                        </div>
+                        <transition name="player-menu">
+                            <div v-if="qualityMenuOpen && canSwitchQuality" class="player-menu quality-menu">
+                                <div v-if="!currentSong?.qualityOptions?.length" class="player-menu-item disabled">暂无可选音质</div>
+                                <button
+                                    v-for="option in currentSong.qualityOptions"
+                                    :key="`${option.value}-${option.hash}`"
+                                    type="button"
+                                    class="player-menu-item"
+                                    :class="{ active: isCurrentQualityOption(option) }"
+                                    @click.stop="switchQuality(option)"
+                                >
+                                    {{ option.label }}
+                                </button>
+                            </div>
+                        </transition>
                     </div>
                 </div>
                 <div class="artist" @click.stop="searchSong(currentSong.author)">{{ currentSong?.author || "MoeJue" }}</div>
@@ -59,15 +61,17 @@
                 <button class="extra-btn" :title="t('zhuo-mian-ge-ci')" v-if="isElectron()" @click="desktopLyrics"><i
                         class="fas">词</i></button>
                 <div class="playback-speed">
-                    <button class="extra-btn" @click="toggleSpeedMenu" :title="t('bo-fang-su-du')">
+                    <button class="extra-btn speed-btn" @click="toggleSpeedMenu" :title="t('bo-fang-su-du')">
                         <i class="fas fa-tachometer-alt"></i>
                     </button>
-                    <div v-if="showSpeedMenu" class="speed-menu">
-                        <div v-for="speed in playbackSpeeds" :key="speed" class="speed-option"
-                            :class="{ active: currentSpeed === speed }" @click="changePlaybackSpeed(speed)">
-                            {{ speed }}x
+                    <transition name="player-menu">
+                        <div v-if="showSpeedMenu" class="player-menu speed-menu">
+                            <div v-for="speed in playbackSpeeds" :key="speed" class="player-menu-item speed-option"
+                                :class="{ active: currentSpeed === speed }" @click="changePlaybackSpeed(speed)">
+                                {{ speed }}x
+                            </div>
                         </div>
-                    </div>
+                    </transition>
                 </div>
                 <button class="extra-btn" :title="t('wo-xi-huan')" @click="playlistSelect.toLike()"><i
                         class="fas fa-heart"></i></button>
@@ -75,14 +79,34 @@
                         class="fas fa-add"></i></button>
                 <button class="extra-btn" :title="t('fen-xiang-ge-qu')" @click="share(currentSong.name, currentSong.hash)"><i
                         class="fas fa-share"></i></button>
-                <button class="extra-btn" @click="togglePlaybackMode">
-                    <i v-if="currentPlaybackModeIndex != '2'" :class="currentPlaybackMode.icon"
-                        :title="currentPlaybackMode.title"></i>
-                    <span v-else class="loop-icon" :title="currentPlaybackMode.title">
-                        <i class="fas fa-repeat"></i>
-                        <sup>1</sup>
-                    </span>
-                </button>
+                <div class="playback-mode">
+                    <button class="extra-btn" @click="togglePlaybackMode">
+                        <i v-if="currentPlaybackModeIndex != '2'" :class="currentPlaybackMode.icon"
+                            :title="currentPlaybackMode.title"></i>
+                        <span v-else class="loop-icon" :title="currentPlaybackMode.title">
+                            <i class="fas fa-repeat"></i>
+                            <sup>1</sup>
+                        </span>
+                    </button>
+                    <div class="player-menu playback-mode-menu">
+                        <button
+                            v-for="(mode, index) in playbackModes"
+                            :key="mode.title"
+                            type="button"
+                            class="player-menu-item playback-mode-option"
+                            :class="{ active: currentPlaybackModeIndex === index }"
+                            :title="mode.title"
+                            @click.stop="setPlaybackMode(index)"
+                        >
+                            <i v-if="index !== 2" :class="mode.icon"></i>
+                            <span v-else class="loop-icon">
+                                <i class="fas fa-repeat"></i>
+                                <sup>1</sup>
+                            </span>
+                            <span>{{ mode.title }}</span>
+                        </button>
+                    </div>
+                </div>
                 <button class="extra-btn" :title="t('bo-fang-lie-biao')" @click="queueList.openQueue()"><i class="fas fa-list"></i></button>
                 <!-- 音量控制 -->
                 <div class="volume-control" @wheel="handleVolumeScroll">
@@ -103,7 +127,7 @@
     <!-- 全屏歌词界面 -->
     <transition name="slide-up">
         <div v-if="showLyrics" class="lyrics-bg"
-            :style="(lyricsBackground == 'on' ? ({ backgroundImage: `url(${currentSong?.img || 'https://random.MoeJue.cn/randbg.php'})` }) : ({ background: 'var(--secondary-color)' }))">
+            :style="(lyricsBackground == 'on' ? ({ backgroundImage: `url(${currentSong?.img || 'https://random.MoeJue.cn/randbg'})` }) : ({ background: 'var(--secondary-color)' }))">
             <div class="lyrics-screen">
                 <div class="close-btn">
                     <i class="fas fa-chevron-down" @click="toggleLyrics(currentSong.hash, currentTime)"></i>
@@ -164,13 +188,33 @@
                         <button class="control-btn" :title="t('xia-yi-shou')" @click="playSongFromQueue('next')">
                             <i class="fas fa-step-forward"></i>
                         </button>
-                        <button class="control-btn" :title="t('qie-huan-bo-fang-mo-shi')" @click="togglePlaybackMode">
-                            <i v-if="currentPlaybackModeIndex != '2'" :class="currentPlaybackMode.icon" :title="currentPlaybackMode.title"></i>
-                            <span v-else class="loop-icon" :title="currentPlaybackMode.title">
-                                <i class="fas fa-repeat"></i>
-                                <sup>1</sup>
-                            </span>
-                        </button>
+                        <div class="playback-mode">
+                            <button class="control-btn" :title="t('qie-huan-bo-fang-mo-shi')" @click="togglePlaybackMode">
+                                <i v-if="currentPlaybackModeIndex != '2'" :class="currentPlaybackMode.icon" :title="currentPlaybackMode.title"></i>
+                                <span v-else class="loop-icon" :title="currentPlaybackMode.title">
+                                    <i class="fas fa-repeat"></i>
+                                    <sup>1</sup>
+                                </span>
+                            </button>
+                            <div class="player-menu playback-mode-menu">
+                                <button
+                                    v-for="(mode, index) in playbackModes"
+                                    :key="mode.title"
+                                    type="button"
+                                    class="player-menu-item playback-mode-option"
+                                    :class="{ active: currentPlaybackModeIndex === index }"
+                                    :title="mode.title"
+                                    @click.stop="setPlaybackMode(index)"
+                                >
+                                    <i v-if="index !== 2" :class="mode.icon"></i>
+                                    <span v-else class="loop-icon">
+                                        <i class="fas fa-repeat"></i>
+                                        <sup>1</sup>
+                                    </span>
+                                    <span>{{ mode.title }}</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div id="lyrics-container" @wheel="handleLyricsWheel">
@@ -437,7 +481,7 @@ const progressBar = useProgressBar(audio, resetLyricsHighlight);
 const { progressWidth, isProgressDragging, showTimeTooltip, tooltipPosition, tooltipTime, climaxPoints, formatTime, getMusicHighlights, onProgressDragStart, updateProgressFromEvent, updateTimeTooltip, hideTimeTooltip } = progressBar;
 
 const playbackMode = usePlaybackMode(t, audio);
-const { currentPlaybackModeIndex, currentPlaybackMode, playedSongsStack, currentStackIndex, togglePlaybackMode } = playbackMode;
+const { playbackModes, currentPlaybackModeIndex, currentPlaybackMode, playedSongsStack, currentStackIndex, togglePlaybackMode, setPlaybackMode } = playbackMode;
 
 const mediaSession = useMediaSession();
 
@@ -1186,6 +1230,18 @@ const changePlaybackSpeed = (speed) => {
     }
 };
 
+const handleDocumentClick = (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    
+    if (!target.closest('.quality-menu-wrapper')) {
+        qualityMenuOpen.value = false;
+    }
+    if (!target.closest('.playback-speed')) {
+        showSpeedMenu.value = false;
+    }
+};
+
 // 跳转到搜索页面搜索歌曲
 const searchSong = (songName) => {
     // 关闭全屏歌词
@@ -1309,6 +1365,7 @@ onMounted(() => {
 
     // 添加事件监听
     document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('click', handleDocumentClick);
 
     // 设置特定于PlayerControl的监听器
     audio.addEventListener('pause', () => {
@@ -1394,6 +1451,7 @@ onUnmounted(() => {
 
     // 清理键盘事件
     document.removeEventListener('keydown', handleKeyDown);
+    document.removeEventListener('click', handleDocumentClick);
 });
 
 // 对外暴露接口

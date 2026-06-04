@@ -4,7 +4,8 @@ export default function usePlaybackMode(t, audio) {
   const playbackModes = ref([
     { icon: 'fas fa-random', title: t('sui-ji-bo-fang') },
     { icon: 'fas fa-refresh', title: t('lie-biao-xun-huan') },
-    { icon: '', title: t('dan-qu-xun-huan') }
+    { icon: '', title: t('dan-qu-xun-huan') },
+    { icon: 'fas fa-bars-staggered', title: t('shun-xu-bo-fang') }
   ]);
   
   const currentPlaybackModeIndex = ref(1); 

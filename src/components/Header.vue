@@ -110,6 +110,9 @@ onMounted(() => {
             platform.value = window.electron.platform;
             localStorage.setItem('version', version);
         });
+    } else {
+        appVersion.value = __VERSION__ || '';
+        platform.value = 'Web';
     }
     document.addEventListener('click', handleClickOutside);
 });

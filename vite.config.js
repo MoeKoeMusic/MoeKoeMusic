@@ -83,6 +83,9 @@ export default defineConfig({
       }
     })
   ],
+  define: {
+    __VERSION__: JSON.stringify(process.env.npm_package_version)
+  },
   base: '',
   server: {
     host: true,

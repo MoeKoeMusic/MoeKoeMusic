@@ -1071,6 +1071,9 @@ onMounted(() => {
     if (isElectron()) {
         appVersion.value = localStorage.getItem('version');
         platform.value = window.electron.platform;
+    } else {
+        appVersion.value = __VERSION__ || '';
+        platform.value = 'Web';
     }
 
     if (savedSettings?.audioOutputDevice !== undefined) {

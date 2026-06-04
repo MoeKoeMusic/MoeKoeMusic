@@ -19,6 +19,24 @@
                     <button class="upload-btn" @click="selectFolder" :disabled="loading">
                         <i class="fas fa-folder-open"></i> {{ currentFolder ? '重新选择文件夹' : '选择音乐文件夹' }}
                     </button>
+                    <div class="folder-history-container" v-if="folderHistory.length > 0">
+                        <button class="upload-btn" @click="toggleFolderHistory" :disabled="loading">
+                            <i class="fas fa-history"></i> 快速切换
+                        </button>
+                        <div class="folder-history-menu" v-if="isFolderHistoryVisible">
+                            <div v-for="folder in folderHistory" :key="folder.id" class="folder-history-item"
+                                :class="{ active: currentFolder?.name === folder.name }">
+                                <button class="folder-history-name" @click="switchFolder(folder)" :title="folder.name">
+                                    <i class="fas fa-folder"></i>
+                                    <span>{{ folder.name }}</span>
+                                </button>
+                                <button class="folder-history-delete" @click.stop="removeFolderHistory(folder.id)"
+                                    title="移除记录">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     <button v-if="currentFolder" class="upload-btn" @click="refreshFolder" :disabled="refreshing">
                         <i class="fas fa-sync-alt"></i> 刷新
                     </button>
@@ -152,7 +170,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
+import { ref, shallowRef, onMounted, onBeforeUnmount, computed, toRaw } from 'vue';
 import { RecycleScroller } from 'vue3-virtual-scroller';
 import { parseBlob } from 'music-metadata';
 
@@ -162,7 +180,7 @@ const props = defineProps({
 });
 
 // 通用状态
-const currentFolder = ref(null);
+const currentFolder = shallowRef(null);
 const musicFiles = ref([]);
 const filteredTracks = ref([]);
 const searchQuery = ref('');
@@ -170,6 +188,8 @@ const recycleScrollerRef = ref(null);
 const loading = ref(false);
 const refreshing = ref(false);
 const flyingNotes = ref([]);
+const folderHistory = shallowRef([]);
+const isFolderHistoryVisible = ref(false);
 let noteId = 0;
 
 // 批量选择相关状态
@@ -192,6 +212,9 @@ const supportedFormats = ['.mp3', '.flac', '.wav', '.aac', '.ogg', '.m4a', '.wma
 const DB_NAME = 'LocalMusicDB';
 const DB_VERSION = 1;
 const STORE_NAME = 'folderHandles';
+const LAST_FOLDER_ID = 'lastSelectedFolder';
+const FOLDER_HISTORY_ID = 'folderHistory';
+const MAX_FOLDER_HISTORY = 10;
 
 // 判断是否全选
 const isAllSelected = computed(() => {
@@ -225,23 +248,132 @@ const initDB = () => {
     });
 };
 
+const getStoreItem = (store, key) => {
+    return new Promise((resolve, reject) => {
+        const request = store.get(key);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+};
+
+const normalizeFolder = (folder) => {
+    const handle = toRaw(folder?.handle);
+    if (!handle) return null;
+    return {
+        id: folder.id,
+        handle,
+        name: folder.name || handle.name,
+        timestamp: folder.timestamp || Date.now()
+    };
+};
+
+const normalizeFolderHistory = (folders) => {
+    return folders.map(normalizeFolder).filter(Boolean);
+};
+
+const findSameFolderIndex = async (folders, handle) => {
+    const rawHandle = toRaw(handle);
+    for (let i = 0; i < folders.length; i++) {
+        const folderHandle = toRaw(folders[i].handle);
+        if (!folderHandle) continue;
+        if (typeof folderHandle.isSameEntry === 'function' && await folderHandle.isSameEntry(rawHandle)) return i;
+        if (folderHandle.name === rawHandle.name) return i;
+    }
+    return -1;
+};
+
 // 保存文件夹句柄到 IndexedDB
 const saveFolderHandle = async (handle) => {
     try {
+        const rawHandle = toRaw(handle);
+        const folders = await getFolderHistory();
+        const sameFolderIndex = await findSameFolderIndex(folders, rawHandle);
+        const now = Date.now();
+        const nextFolder = {
+            id: sameFolderIndex > -1 ? folders[sameFolderIndex].id : `${now}-${Math.random().toString(36).slice(2)}`,
+            handle: rawHandle,
+            name: rawHandle.name,
+            timestamp: now
+        };
+        const nextFolders = normalizeFolderHistory([
+            nextFolder,
+            ...folders.filter((_, index) => index !== sameFolderIndex)
+        ]).slice(0, MAX_FOLDER_HISTORY);
+
         const db = await initDB();
         const transaction = db.transaction([STORE_NAME], 'readwrite');
         const store = transaction.objectStore(STORE_NAME);
-
         await store.put({
-            id: 'lastSelectedFolder',
-            handle: handle,
-            name: handle.name,
-            timestamp: Date.now()
+            id: LAST_FOLDER_ID,
+            handle: rawHandle,
+            name: rawHandle.name,
+            timestamp: now
         });
+        await store.put({
+            id: FOLDER_HISTORY_ID,
+            folders: nextFolders,
+            timestamp: now
+        });
+        folderHistory.value = nextFolders;
 
         console.log('文件夹句柄已保存');
     } catch (error) {
         console.error('保存文件夹句柄失败:', error);
+    }
+};
+
+const getFolderHistory = async () => {
+    const db = await initDB();
+    const transaction = db.transaction([STORE_NAME], 'readonly');
+    const store = transaction.objectStore(STORE_NAME);
+    const history = await getStoreItem(store, FOLDER_HISTORY_ID);
+    return history?.folders || [];
+};
+
+const loadFolderHistory = async () => {
+    try {
+        folderHistory.value = await getFolderHistory();
+    } catch (error) {
+        console.error('读取文件夹历史失败:', error);
+        folderHistory.value = [];
+    }
+};
+
+const saveFolderHistory = async (folders) => {
+    try {
+        const nextFolders = normalizeFolderHistory(folders);
+        const db = await initDB();
+        const transaction = db.transaction([STORE_NAME], 'readwrite');
+        const store = transaction.objectStore(STORE_NAME);
+        await store.put({
+            id: FOLDER_HISTORY_ID,
+            folders: nextFolders,
+            timestamp: Date.now()
+        });
+        folderHistory.value = nextFolders;
+    } catch (error) {
+        console.error('保存文件夹历史失败:', error);
+    }
+};
+
+const saveLastFolderHandle = async (handle) => {
+    try {
+        const rawHandle = toRaw(handle);
+        const db = await initDB();
+        const transaction = db.transaction([STORE_NAME], 'readwrite');
+        const store = transaction.objectStore(STORE_NAME);
+        if (rawHandle) {
+            await store.put({
+                id: LAST_FOLDER_ID,
+                handle: rawHandle,
+                name: rawHandle.name,
+                timestamp: Date.now()
+            });
+        } else {
+            await store.delete(LAST_FOLDER_ID);
+        }
+    } catch (error) {
+        console.error('保存最近文件夹失败:', error);
     }
 };
 
@@ -253,7 +385,7 @@ const loadFolderHandle = async () => {
         const store = transaction.objectStore(STORE_NAME);
 
         return new Promise((resolve, reject) => {
-            const request = store.get('lastSelectedFolder');
+            const request = store.get(LAST_FOLDER_ID);
             request.onsuccess = () => {
                 const result = request.result;
                 if (result && result.handle) {
@@ -285,12 +417,14 @@ const loadLastFolder = async () => {
 
     try {
         loading.value = true;
+        await loadFolderHistory();
         const savedHandle = await loadFolderHandle();
         if (savedHandle) {
             // 验证句柄是否仍然有效
             const permission = await savedHandle.queryPermission({ mode: 'read' });
             if (permission === 'granted') {
                 currentFolder.value = savedHandle;
+                await saveFolderHandle(savedHandle);
                 await scanMusicFiles(savedHandle);
                 console.log('已自动加载上次选择的文件夹:', savedHandle.name);
             } else {
@@ -298,6 +432,7 @@ const loadLastFolder = async () => {
                 const newPermission = await savedHandle.requestPermission({ mode: 'read' });
                 if (newPermission === 'granted') {
                     currentFolder.value = savedHandle;
+                    await saveFolderHandle(savedHandle);
                     await scanMusicFiles(savedHandle);
                     console.log('已重新获取权限并加载文件夹:', savedHandle.name);
                 }
@@ -307,6 +442,47 @@ const loadLastFolder = async () => {
         console.error('自动加载文件夹失败:', error);
     }
     loading.value = false;
+};
+
+const toggleFolderHistory = () => {
+    isFolderHistoryVisible.value = !isFolderHistoryVisible.value;
+};
+
+const switchFolder = async (folder) => {
+    if (!folder?.handle || !checkFileSystemSupport()) return;
+
+    try {
+        const handle = toRaw(folder.handle);
+        loading.value = true;
+        isFolderHistoryVisible.value = false;
+        const permission = await handle.queryPermission({ mode: 'read' });
+        const nextPermission = permission === 'granted'
+            ? permission
+            : await handle.requestPermission({ mode: 'read' });
+
+        if (nextPermission !== 'granted') {
+            window.$modal?.alert('没有该文件夹的读取权限，请重新授权');
+            return;
+        }
+
+        currentFolder.value = handle;
+        await saveFolderHandle(handle);
+        await scanMusicFiles(handle);
+        console.log('已切换文件夹:', folder.name);
+    } catch (error) {
+        console.error('切换文件夹失败:', error);
+    } finally {
+        loading.value = false;
+    }
+};
+
+const removeFolderHistory = async (folderId) => {
+    const folders = normalizeFolderHistory(folderHistory.value.filter(folder => folder.id !== folderId));
+    await saveFolderHistory(folders);
+    await saveLastFolderHandle(folders[0]?.handle || null);
+    if (folders.length === 0) {
+        isFolderHistoryVisible.value = false;
+    }
 };
 
 // 选择文件夹
@@ -586,6 +762,11 @@ const handleClickOutside = (event) => {
     if (batchActionsMenu && !batchActionsMenu.contains(event.target) && !batchActionBtn.contains(event.target)) {
         isBatchMenuVisible.value = false;
     }
+
+    const folderHistoryContainer = document.querySelector('.folder-history-container');
+    if (folderHistoryContainer && !folderHistoryContainer.contains(event.target)) {
+        isFolderHistoryVisible.value = false;
+    }
 };
 
 // 切换批量选择模式
@@ -774,6 +955,76 @@ const getSortIconClass = (field) => {
 .actions {
     display: flex;
     gap: 10px;
+}
+
+.folder-history-container {
+    position: relative;
+}
+
+.folder-history-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 220px;
+    max-height: 320px;
+    overflow-y: auto;
+    margin-top: 6px;
+    padding: 6px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+    z-index: 50;
+}
+
+.folder-history-item {
+    display: flex;
+    align-items: center;
+    border-radius: 5px;
+
+    &:hover,
+    &.active {
+        background: rgba(var(--primary-color-rgb), 0.1);
+    }
+}
+
+.folder-history-name,
+.folder-history-delete {
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+    cursor: pointer;
+}
+
+.folder-history-name {
+    flex: 1;
+    min-width: 0;
+    padding: 9px 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    i {
+        color: var(--primary-color);
+        flex-shrink: 0;
+    }
+}
+
+.folder-history-delete {
+    width: 30px;
+    height: 30px;
+    border-radius: 4px;
+    flex-shrink: 0;
+
+    &:hover {
+        color: #f56c6c;
+    }
 }
 
 .primary-btn,

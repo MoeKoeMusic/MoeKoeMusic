@@ -486,7 +486,7 @@ const { playbackModes, currentPlaybackModeIndex, currentPlaybackMode, playedSong
 const mediaSession = useMediaSession();
 
 const songQueue = useSongQueue(t, musicQueueStore, queueList);
-const { currentSong, NextSong, addSongToQueue, addCloudMusicToQueue, addLocalMusicToQueue, addLocalPlaylistToQueue, addToNext, getPlaylistAllSongs, addPlaylistToQueue, addCloudPlaylistToQueue } = songQueue;
+const { currentSong, NextSong, addSongToQueue, addCloudMusicToQueue, addLocalMusicToQueue, addLocalPlaylistToQueue, addToNext, getPlaylistAllSongs, addPlaylistToQueue, addCloudPlaylistToQueue, restoreLocalSongCover } = songQueue;
 
 // 添加自动切换定时器引用
 let autoSwitchTimer = null;
@@ -543,6 +543,10 @@ let lastLyricsRetryAt = 0;
 const getCurrentLyrics = async () => {
     const hash = currentSong.value.hash;
     if (!hash) return false;
+    if (String(hash).startsWith('local_')) {
+        SongTips.value = t('zan-wu-ge-ci');
+        return false;
+    }
 
     if (pendingLyricsHash === hash && pendingLyricsPromise) {
         return pendingLyricsPromise;
@@ -600,6 +604,16 @@ const toggleCoverMode = () => {
     localStorage.setItem('lyrics-cover-mode', coverMode.value);
 };
 
+const isBlobUrl = (url) => typeof url === 'string' && url.startsWith('blob:');
+
+const isLocalSong = (song) => !!song?.isLocal || String(song?.hash || '').startsWith('local_');
+
+const toPlayerSong = (song) => {
+    if (!isLocalSong(song)) return song;
+    const { file, handle, ...playerSong } = song;
+    return playerSong;
+};
+
 // 播放歌曲
 const playSong = async (song) => {
     clearAutoSwitchTimer();
@@ -615,7 +629,7 @@ const playSong = async (song) => {
             return;
         }
 
-        currentSong.value = structuredClone(song);
+        currentSong.value = structuredClone(toPlayerSong(song));
 
         // 应用响度规格化（如果已启用 Web Audio）
         if (song.loudnessNormalization) {
@@ -678,7 +692,14 @@ const playSong = async (song) => {
         originalLyrics.value = '';
         isLyrics = undefined;
         lastLyricsRetryAt = 0;
-        if(song?.isLocal) return;
+        if(isLocalSong(song)) {
+            const { file, handle, ...savedLocalSong } = currentSong.value;
+            localStorage.setItem('current_song', JSON.stringify({
+                ...savedLocalSong,
+                url: ''
+            }));
+            return;
+        }
         // 保存当前歌曲到本地存储
         localStorage.setItem('current_song', JSON.stringify(currentSong.value));
 
@@ -701,7 +722,7 @@ const togglePlayPause = async () => {
         return;
     } else if (!audio.src) {
         console.log('[PlayerControl] 音频源为空，尝试重新设置');
-        if (currentSong.value.url) {
+        if (currentSong.value.url && !isLocalSong(currentSong.value)) {
             console.log('[PlayerControl] 从当前歌曲获取URL:', currentSong.value.url);
             audio.src = currentSong.value.url;
         } else {
@@ -709,7 +730,17 @@ const togglePlayPause = async () => {
             const songIndex = musicQueueStore.queue.findIndex(song => song.hash === currentSong.value.hash);
             if (songIndex !== -1) {
                 const song = musicQueueStore.queue[songIndex];
-                if (song.url) {
+                if (isLocalSong(song)) {
+                    console.log('[PlayerControl] 本地音乐重新获取播放地址');
+                    const result = await addLocalMusicToQueue({
+                        ...song,
+                        isLocal: true
+                    });
+                    if (result && result.song) {
+                        await playSong(result.song);
+                    }
+                    return;
+                } else if (song.url) {
                     console.log('[PlayerControl] 从队列中的歌曲获取URL:', song.url);
                     currentSong.value.url = song.url;
                     audio.src = song.url;
@@ -717,9 +748,6 @@ const togglePlayPause = async () => {
                     console.log('[PlayerControl] 云音乐没有URL，重新获取');
                     addCloudMusicToQueue(song.hash, song.name, song.author, song.timeLength, song.img);
                     return;
-                }else if(song.isLocal){
-                    console.log('[PlayerControl] 本地音乐没有URL，重新获取');
-                    addLocalMusicToQueue(song);
                 } else {
                     console.log('[PlayerControl] 歌曲没有URL，重新获取');
                     const result = await addSongToQueue(song.hash, song.name, song.img, song.author);
@@ -834,8 +862,11 @@ const playSongFromQueue = async (direction) => {
                 targetSong.img,
                 false // 不重置播放位置，只获取URL
             );
-        } else if (targetSong.isLocal) {
-            result = await addLocalMusicToQueue(targetSong, false);
+        } else if (isLocalSong(targetSong)) {
+            result = await addLocalMusicToQueue({
+                ...targetSong,
+                isLocal: true
+            }, false);
         } else {
             result = await addSongToQueue(
                 targetSong.hash,
@@ -1291,13 +1322,33 @@ onMounted(() => {
     if (current_song) {
         try {
             const savedSong = JSON.parse(current_song);
+            if (isLocalSong(savedSong)) {
+                savedSong.isLocal = true;
+                savedSong.url = '';
+                if (isBlobUrl(savedSong.img)) {
+                    savedSong.img = './assets/images/ico.png';
+                }
+            }
             currentSong.value = savedSong;
+
+            if (isLocalSong(savedSong)) {
+                void restoreLocalSongCover(savedSong).then((cover) => {
+                    if (!cover || currentSong.value.hash !== savedSong.hash) return;
+                    currentSong.value.img = cover;
+                    const { file, handle, ...savedLocalSong } = currentSong.value;
+                    localStorage.setItem('current_song', JSON.stringify({
+                        ...savedLocalSong,
+                        url: ''
+                    }));
+                });
+            }
 
             // 如果有URL，恢复播放源
             if (savedSong.url) {
-                if(savedSong.isLocal) return;
-                console.log('[PlayerControl] 从缓存恢复音频源:', savedSong.url);
-                audio.src = savedSong.url;
+                if (!isLocalSong(savedSong)) {
+                    console.log('[PlayerControl] 从缓存恢复音频源:', savedSong.url);
+                    audio.src = savedSong.url;
+                }
             } else {
                 console.log('[PlayerControl] 缓存的歌曲没有URL');
             }

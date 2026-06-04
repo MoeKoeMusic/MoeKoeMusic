@@ -222,7 +222,6 @@ const isAllSelected = computed(() => {
 });
 
 onMounted(() => {
-    $message.warning('该页面处于测试阶段，功能还未完善')
     loadLastFolder();
     document.addEventListener('click', handleClickOutside);
 });
@@ -677,7 +676,6 @@ const playSong = async (item) => {
 
 // 添加整个播放列表到队列
 const addPlaylistToQueue = async (event, append = false) => {
-    $message.warning('建设中'); return;
     const playButton = event.currentTarget;
     const rect = playButton.getBoundingClientRect();
     const note = {
@@ -818,7 +816,6 @@ const selectTrack = (index, event) => {
 
 // 将选中歌曲添加到播放队列
 const appendSelectedToQueue = async () => {
-    $message.warning('还未完善'); return;
     if (selectedTracks.value.length === 0) return;
     const selectedSongs = selectedTracks.value.map(index => filteredTracks.value[index]);
     if (props.playerControl) {

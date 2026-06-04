@@ -10,10 +10,16 @@ export default function useLyricsHandler(t) {
     const lyricsMode = ref('translation'); // 'translation' 翻译模式 或 'romanization' 音译模式
     let currentLineIndex = 0;
     let activeLyricsRequestId = 0;
+    const isLocalHash = (hash) => String(hash || '').startsWith('local_');
 
     // 显示/隐藏歌词
     const toggleLyrics = (hash, currentTime) => {
         showLyrics.value = !showLyrics.value;
+        if (isLocalHash(hash)) {
+            SongTips.value = t('zan-wu-ge-ci');
+            return showLyrics.value;
+        }
+
         SongTips.value = t('huo-qu-ge-ci-zhong');
         // 如果显示歌词，滚动到当前播放行
         if (!lyricsData.value.length && hash) getLyrics(hash);
@@ -31,6 +37,11 @@ export default function useLyricsHandler(t) {
 
     // 获取歌词
     const getLyrics = async (hash) => {
+        if (isLocalHash(hash)) {
+            SongTips.value = t('zan-wu-ge-ci');
+            return false;
+        }
+
         const requestId = ++activeLyricsRequestId;
         try {
             const settings = JSON.parse(localStorage.getItem('settings') || '{}');

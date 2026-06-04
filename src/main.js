@@ -28,7 +28,7 @@ window.addEventListener('unhandledrejection', event => {
   // window.$modal.alert('系统错误');
 });
 
-if (!window.electron) {
+if (!window.electron && !import.meta.env.DEV) {
   registerSW({
     onNeedRefresh() {
       console.log('有新内容可用，请刷新页面')

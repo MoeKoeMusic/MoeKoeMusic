@@ -51,6 +51,8 @@ const musicQueueStore = useMusicQueueStore();
 const queueScroller = ref(null);
 const showQueue = ref(false);
 
+const isLocalSong = (song) => !!song?.isLocal || String(song?.hash || '').startsWith('local_');
+
 // 从队列中删除歌曲
 const removeSongFromQueue = (index) => {
     const updatedQueue = [...musicQueueStore.queue];
@@ -67,8 +69,11 @@ const playQueueItem = (item) => {
     showQueue.value = false; // 点击后关闭播放队列面板
     if (item.isCloud) {
         emit('addCloudMusicToQueue', item.hash, item.name, item.author, item.timeLength, item.img);
-    } else if (item.isLocal) {
-        emit('addLocalMusicToQueue', item);
+    } else if (isLocalSong(item)) {
+        emit('addLocalMusicToQueue', {
+            ...item,
+            isLocal: true
+        });
     } else {
         emit('addSongToQueue', item.hash, item.name, item.img, item.author);
     }

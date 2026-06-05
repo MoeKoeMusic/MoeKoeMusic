@@ -113,7 +113,7 @@
         "zip"
       ],
       "identity": null,
-      "artifactName": "${productName}-${arch}.${ext}",
+      "artifactName": "MoeKoe_Music-${arch}.${ext}",
       "protocols": [
         {
           "name": "MoeKoe Music Protocol",
@@ -133,7 +133,7 @@
         "deb"
       ],
       "category": "Utility",
-      "artifactName": "${productName}-${arch}.${ext}"
+      "artifactName": "MoeKoe_Music-${arch}.${ext}"
     }
   },
   "type": "module",

@@ -181,6 +181,7 @@ import ExtensionManager from '@/components/ExtensionManager.vue';
 import { requestMicrophonePermission } from '../utils/utils';
 import { DEFAULT_API_BASE_URL, validateApiBaseUrl, testApiBaseUrl as testApiBaseUrlRequest } from '@/utils/apiBaseUrl';
 import { ELECTRON_FEATURES, REFRESH_HINT_TYPES, SETTINGS_SAVE_IGNORE_KEYS, createRefreshHintState, useSettingsConfig } from '@/config/settings';
+import { ONBOARDING_GUIDE_EVENT } from '@/config/onboardingGuide';
 
 const MoeAuth = MoeAuthStore();
 const { t } = useI18n();
@@ -199,7 +200,8 @@ const {
     getItemIcon
 } = useSettingsConfig(t, {
     openShortcutSettings: () => openShortcutSettings(),
-    installPWA: () => installPWA()
+    installPWA: () => installPWA(),
+    openOnboardingGuide: () => openOnboardingGuide()
 });
 
 const isSelectionOpen = ref(false);
@@ -675,6 +677,12 @@ const saveProxy = () => {
 
     saveSettings();
     closeSelection();
+};
+
+const openOnboardingGuide = () => {
+    window.dispatchEvent(new CustomEvent(ONBOARDING_GUIDE_EVENT, {
+        detail: { reset: true }
+    }));
 };
 
 const openShortcutSettings = () => {

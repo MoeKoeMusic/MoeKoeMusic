@@ -7,28 +7,36 @@
         <router-view :playerControl="playerControl"></router-view>
     </main>
     <PlayerControl ref="playerControl" />
+    <OnboardingGuide />
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import Header from "@/components/Header.vue";
 import PlayerControl from "@/components/PlayerControl.vue";
+import OnboardingGuide from "@/components/OnboardingGuide.vue";
 import { setTheme, applyColorTheme } from '../utils/utils';
+
 const playerControl = ref(null);
 const isOnline = ref(navigator.onLine);
 
 // 监听网络状态变化
 const handleNetworkChange = (online) => {
     isOnline.value = online;
-    
+
     const title = online ? '网络已连接' : '网络已断开';
     const body = online ? '您已恢复网络连接' : '请检查网络设置';
-    
+
+    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+
     new Notification(title, {
         body,
         icon: './assets/images/logo.png'
     });
 };
+
+const handleOnline = () => handleNetworkChange(true);
+const handleOffline = () => handleNetworkChange(false);
 
 onMounted(() => {
     const savedConfig = JSON.parse(localStorage.getItem('settings'));
@@ -41,9 +49,9 @@ onMounted(() => {
     }
 
     // 添加网络状态监听
-    window.addEventListener('online', () => handleNetworkChange(true));
-    window.addEventListener('offline', () => handleNetworkChange(false));
-    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
     if (Notification.permission !== 'granted') {
         Notification.requestPermission();
     }
@@ -51,8 +59,8 @@ onMounted(() => {
 
 // 组件卸载时移除事件监听
 onUnmounted(() => {
-    window.removeEventListener('online', () => handleNetworkChange(true));
-    window.removeEventListener('offline', () => handleNetworkChange(false));
+    window.removeEventListener('online', handleOnline);
+    window.removeEventListener('offline', handleOffline);
 });
 </script>
 

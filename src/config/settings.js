@@ -136,6 +136,12 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
                 label: '启动页'
             },
             {
+                key: 'onboardingGuide',
+                label: '新手引导',
+                customText: '重新查看',
+                action: actions.openOnboardingGuide
+            },
+            {
                 key: 'customTrayMenu',
                 label: '高级托盘菜单'
             }
@@ -351,6 +357,7 @@ export const getItemIcon = (key) => {
         'apiMode': 'fas fa-code',
         'apiBaseUrlMode': 'fas fa-link',
         'touchBar': 'fas fa-tablet-alt',
+        'onboardingGuide': 'fas fa-map',
         'shortcuts': 'fas fa-keyboard',
         'pwa': 'fas fa-mobile-alt',
         'proxy': 'fas fa-random',

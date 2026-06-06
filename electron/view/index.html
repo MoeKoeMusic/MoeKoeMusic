@@ -391,6 +391,7 @@
 
         const dangerActions = new Set(['quit']);
         let currentState = null;
+        let progressTimer = null;
 
         const iconSvg = (name) => {
             const icons = {
@@ -423,6 +424,46 @@
         };
 
         const getPlayIconName = () => currentState?.isPlaying ? 'pause' : 'play';
+
+        const formatTime = (seconds) => {
+            const safeSeconds = Math.max(0, Math.floor(Number(seconds) || 0));
+            const minutes = Math.floor(safeSeconds / 60).toString().padStart(2, '0');
+            const restSeconds = (safeSeconds % 60).toString().padStart(2, '0');
+            return `${minutes}:${restSeconds}`;
+        };
+
+        const stopProgressTimer = () => {
+            if (!progressTimer) return;
+            clearInterval(progressTimer);
+            progressTimer = null;
+        };
+
+        const tickProgress = () => {
+            const song = currentState?.song;
+            if (!currentState?.isPlaying || !song) {
+                stopProgressTimer();
+                return;
+            }
+
+            const duration = Number(song.duration) || 0;
+            const currentTime = Number(song.currentTime) || 0;
+            const nextTime = duration > 0 ? Math.min(currentTime + 1, duration) : currentTime + 1;
+
+            song.currentTime = nextTime;
+            song.currentTimeText = formatTime(nextTime);
+            song.progressPercent = duration > 0 ? Math.max(0, Math.min((nextTime / duration) * 100, 100)) : 0;
+            renderSong();
+
+            if (duration > 0 && nextTime >= duration) {
+                stopProgressTimer();
+            }
+        };
+
+        const syncProgressTimer = () => {
+            stopProgressTimer();
+            if (!currentState?.isPlaying || !currentState?.song) return;
+            progressTimer = setInterval(tickProgress, 1000);
+        };
 
         const renderControls = () => {
             document.getElementById('prevControl').innerHTML = iconSvg('backward');
@@ -507,6 +548,7 @@
         window.electron?.ipcRenderer.on('tray-menu-state', (_event, state) => {
             currentState = state;
             render();
+            syncProgressTimer();
             if (state?.renderToken) {
                 requestAnimationFrame(() => {
                     window.electron?.ipcRenderer.send('tray-menu-rendered', state.renderToken);
@@ -522,6 +564,8 @@
             render();
             window.electron?.ipcRenderer.send('tray-menu-ready');
         });
+
+        window.addEventListener('beforeunload', stopProgressTimer);
     </script>
 </body>
 </html>

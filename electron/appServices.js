@@ -351,12 +351,15 @@ export function createTray(mainWindow, title = '') {
         }
     ]);
 
-    const useCustomTrayMenu = !!mainWindow && store.get('settings')?.customTrayMenu !== 'off';
+    const useCustomTrayMenu = !!mainWindow && store.get('settings')?.customTrayMenu === 'custom';
+    const useLinuxCustomTrayMenu = process.platform === 'linux' && useCustomTrayMenu;
     switch (process.platform) {
         case 'linux':
-            if (useCustomTrayMenu) {
-                void customTrayMenuService.toggle();
-                return;
+            if (useLinuxCustomTrayMenu) {
+                tray.on('click', () => {
+                    void customTrayMenuService.toggle();
+                });
+                break;
             }
             customTrayMenuService.hide();
             tray.setContextMenu(contextMenu);
@@ -371,21 +374,23 @@ export function createTray(mainWindow, title = '') {
                 tray.popUpContextMenu(contextMenu);
             });
     }
-    tray.on('click', () => {
-        customTrayMenuService.hide();
-        if (!mainWindow.isVisible()) {
+    if (!useLinuxCustomTrayMenu) {
+        tray.on('click', () => {
+            customTrayMenuService.hide();
+            if (!mainWindow.isVisible()) {
+                mainWindow.show();
+            } else if (!mainWindow.isFocused()) {
+                mainWindow.show();
+                mainWindow.focus();
+            } else {
+                mainWindow.hide(); //大概率永远不会执行
+            }
+        });
+        tray.on('double-click', () => {
+            customTrayMenuService.hide();
             mainWindow.show();
-        } else if (!mainWindow.isFocused()) {
-            mainWindow.show();
-            mainWindow.focus();
-        } else {
-            mainWindow.hide(); //大概率永远不会执行
-        }
-    });
-    tray.on('double-click', () => {
-        customTrayMenuService.hide();
-        mainWindow.show();
-    });
+        });
+    }
     return tray;
 }
 

@@ -77,7 +77,7 @@ export const createSelectedSettings = (t) => ({
     greetings: { displayText: t('kai-qi'), value: 'on' },
     gpuAcceleration: { displayText: t('guan-bi'), value: 'off' },
     minimizeToTray: { displayText: t('da-kai'), value: 'on' },
-    customTrayMenu: { displayText: t('da-kai'), value: 'on' },
+    customTrayMenu: { displayText: '原生', value: 'native' },
     highDpi: { displayText: t('guan-bi'), value: 'off' },
     dpiScale: { displayText: '1.0', value: '1.0' },
     apiMode: { displayText: t('guan-bi'), value: 'off' },
@@ -143,7 +143,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             },
             {
                 key: 'customTrayMenu',
-                label: '高级托盘菜单'
+                label: '托盘菜单'
             }
         ]
     },
@@ -473,10 +473,10 @@ export const createSelectionTypeMap = (t) => ({
         ]
     },
     customTrayMenu: {
-        title: '高级托盘菜单',
+        title: '托盘菜单',
         options: [
-            { displayText: t('da-kai'), value: 'on' },
-            { displayText: t('guan-bi'), value: 'off' }
+            { displayText: '原生', value: 'native' },
+            { displayText: '高级', value: 'custom' }
         ]
     },
     highDpi: {

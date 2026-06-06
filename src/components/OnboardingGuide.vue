@@ -51,6 +51,8 @@ const viewportSize = ref({
 let onboardingGuideTimer = null;
 let mutationObserver = null;
 let lastCompletedAt = 0;
+let scrollingToTarget = false;
+let scrollTargetTimer = null;
 
 const currentSteps = computed(() => currentGuide.value?.steps || []);
 const currentStep = computed(() => currentSteps.value[currentIndex.value] || {});
@@ -170,9 +172,41 @@ const updateViewportSize = () => {
     };
 };
 
+const isTargetInViewport = (rect) => {
+    const margin = 16;
+    const fitsVertically = rect.height <= viewportSize.value.height - margin * 2;
+    const fitsHorizontally = rect.width <= viewportSize.value.width - margin * 2;
+    const visibleVertically = fitsVertically
+        ? rect.top >= margin && rect.bottom <= viewportSize.value.height - margin
+        : rect.bottom > margin && rect.top < viewportSize.value.height - margin;
+    const visibleHorizontally = fitsHorizontally
+        ? rect.left >= margin && rect.right <= viewportSize.value.width - margin
+        : rect.right > margin && rect.left < viewportSize.value.width - margin;
+
+    return visibleVertically && visibleHorizontally;
+};
+
+const scrollTargetIntoView = (target) => {
+    if (scrollingToTarget) return;
+    scrollingToTarget = true;
+    targetRect.value = null;
+    target.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'nearest'
+    });
+
+    if (scrollTargetTimer) clearTimeout(scrollTargetTimer);
+    scrollTargetTimer = setTimeout(() => {
+        scrollingToTarget = false;
+        refreshTarget();
+    }, 500);
+};
+
 const refreshTarget = () => {
     if (!showOnboardingGuide.value) return;
     updateViewportSize();
+    if (scrollingToTarget) return;
     if (isIntroStep.value) {
         targetRect.value = null;
         return;
@@ -188,6 +222,11 @@ const refreshTarget = () => {
     const rect = target.getBoundingClientRect();
     if (!rect.width && !rect.height) {
         skipCurrentStep();
+        return;
+    }
+
+    if (!isTargetInViewport(rect)) {
+        scrollTargetIntoView(target);
         return;
     }
 
@@ -390,6 +429,7 @@ onUnmounted(() => {
     window.removeEventListener(ONBOARDING_GUIDE_EVENT, handleOpenGuideEvent);
     mutationObserver?.disconnect();
     if (onboardingGuideTimer) clearTimeout(onboardingGuideTimer);
+    if (scrollTargetTimer) clearTimeout(scrollTargetTimer);
 });
 </script>
 

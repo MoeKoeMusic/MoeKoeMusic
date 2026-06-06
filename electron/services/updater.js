@@ -35,7 +35,7 @@ async function checkForUpdatesSilently() {
 export function setupAutoUpdater(mainWindow) {
     autoUpdater.setFeedURL({
         provider: 'github',
-        owner: 'iAJue',
+        owner: 'MoeKoeMusic',
         repo: 'MoeKoeMusic',
         releaseType: 'release'
     });
@@ -48,10 +48,10 @@ export function setupAutoUpdater(mainWindow) {
             message: error.message
         });
         dialog.showMessageBox({
-        type: 'error',
-        message: error.message.includes('ETIMEDOUT')
-            ? t('update-timeout')
-            : t('update-failed')
+            type: 'error',
+            message: error.message.includes('ETIMEDOUT')
+                ? t('update-timeout')
+                : (error.message || t('update-failed'))
         });
     });
     // 检查到新版本

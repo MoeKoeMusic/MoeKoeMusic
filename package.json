@@ -1,7 +1,7 @@
 {
   "name": "moekoemusic",
   "version": "1.6.5",
-  "homepage": "https://github.com/iAJue/MoeKoeMusic",
+  "homepage": "https://music.moekoe.cn/",
   "main": "electron/main.js",
   "scripts": {
     "install-all": "npm install && cd api && npm install",
@@ -31,7 +31,7 @@
   "build": {
     "publish": {
       "provider": "github",
-      "owner": "iAJue",
+      "owner": "MoeKoeMusic",
       "repo": "MoeKoeMusic"
     },
     "compression": "normal",
@@ -88,7 +88,7 @@
           ]
         }
       ],
-      "artifactName": "MoeKoe_Music_Setup_v${version}.${ext}"
+      "artifactName": "MoeKoe_Music_Setup_v${version}-${arch}.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -113,7 +113,7 @@
         "zip"
       ],
       "identity": null,
-      "artifactName": "MoeKoe_Music-${arch}.${ext}",
+      "artifactName": "MoeKoe_Music_v${version}-${arch}.${ext}",
       "protocols": [
         {
           "name": "MoeKoe Music Protocol",
@@ -133,7 +133,7 @@
         "deb"
       ],
       "category": "Utility",
-      "artifactName": "MoeKoe_Music-${arch}.${ext}"
+      "artifactName": "MoeKoe_Music_v${version}-${arch}.${ext}"
     }
   },
   "type": "module",

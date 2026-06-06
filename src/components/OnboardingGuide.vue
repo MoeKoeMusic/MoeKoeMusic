@@ -174,16 +174,28 @@ const updateViewportSize = () => {
 
 const isTargetInViewport = (rect) => {
     const margin = 16;
-    const fitsVertically = rect.height <= viewportSize.value.height - margin * 2;
-    const fitsHorizontally = rect.width <= viewportSize.value.width - margin * 2;
-    const visibleVertically = fitsVertically
-        ? rect.top >= margin && rect.bottom <= viewportSize.value.height - margin
-        : rect.bottom > margin && rect.top < viewportSize.value.height - margin;
-    const visibleHorizontally = fitsHorizontally
-        ? rect.left >= margin && rect.right <= viewportSize.value.width - margin
-        : rect.right > margin && rect.left < viewportSize.value.width - margin;
+    const visibleTop = Math.max(rect.top, margin);
+    const visibleLeft = Math.max(rect.left, margin);
+    const visibleBottom = Math.min(rect.bottom, viewportSize.value.height - margin);
+    const visibleRight = Math.min(rect.right, viewportSize.value.width - margin);
+    const visibleWidth = Math.max(0, visibleRight - visibleLeft);
+    const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+    if (!visibleWidth || !visibleHeight) return false;
 
-    return visibleVertically && visibleHorizontally;
+    const viewportWidth = viewportSize.value.width - margin * 2;
+    const viewportHeight = viewportSize.value.height - margin * 2;
+    if (rect.width >= viewportWidth || rect.height >= viewportHeight) return true;
+
+    const visibleArea = visibleWidth * visibleHeight;
+    const targetArea = Math.max(1, rect.width * rect.height);
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const centerVisible = centerX >= margin &&
+        centerX <= viewportSize.value.width - margin &&
+        centerY >= margin &&
+        centerY <= viewportSize.value.height - margin;
+
+    return centerVisible || visibleArea / targetArea >= 0.6;
 };
 
 const scrollTargetIntoView = (target) => {

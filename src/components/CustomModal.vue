@@ -3,18 +3,18 @@
         <!-- Alert 模态框 -->
         <div v-if="showAlert" class="modal-overlay">
             <div class="modal">
-                <h3>{{ alertMessage }}</h3>
-                <button @click="confirmAlert" class="btn">{{ i18n.global.t('que-ding') }}</button>
+                <h3 :class="modalMessageClass">{{ alertMessage }}</h3>
+                <button @click="confirmAlert" class="btn" :class="modalButtonClass">{{ i18n.global.t('que-ding') }}</button>
             </div>
         </div>
 
         <!-- Confirm 模态框 -->
         <div v-if="showConfirm" class="modal-overlay">
             <div class="modal">
-                <h3>{{ confirmMessage }}</h3>
+                <h3 :class="modalMessageClass">{{ confirmMessage }}</h3>
                 <div class="buttons">
-                    <button @click="confirmAction(true)" class="btn">{{ i18n.global.t('que-ding') }}</button>
-                    <button @click="confirmAction(false)" class="btn">{{ i18n.global.t('qu-xiao') }}</button>
+                    <button @click="confirmAction(true)" class="btn" :class="modalButtonClass">{{ confirmButtonText }}</button>
+                    <button @click="confirmAction(false)" class="btn" :class="modalButtonClass">{{ cancelButtonText }}</button>
                 </div>
             </div>
         </div>
@@ -22,11 +22,11 @@
         <!-- Prompt 模态框 -->
         <div v-if="showPrompt" class="modal-overlay">
             <div class="modal">
-                <h3>{{ promptMessage }}</h3>
+                <h3 :class="modalMessageClass">{{ promptMessage }}</h3>
                 <input type="text" v-model="promptInput" class="prompt-input" />
                 <div class="buttons">
-                    <button @click="submitPrompt" class="btn">{{ i18n.global.t('que-ding') }}</button>
-                    <button @click="closePrompt" class="btn">{{ i18n.global.t('qu-xiao') }}</button>
+                    <button @click="submitPrompt" class="btn" :class="modalButtonClass">{{ i18n.global.t('que-ding') }}</button>
+                    <button @click="closePrompt" class="btn" :class="modalButtonClass">{{ i18n.global.t('qu-xiao') }}</button>
                 </div>
             </div>
         </div>
@@ -58,13 +58,31 @@ const showLoading = ref(false);
 // 消息内容
 const alertMessage = ref('');
 const confirmMessage = ref('');
+const modalMessageClass = ref('');
+const modalButtonClass = ref('');
+const confirmButtonText = ref(i18n.global.t('que-ding'));
+const cancelButtonText = ref(i18n.global.t('qu-xiao'));
 const promptMessage = ref('');
 const promptInput = ref('');
 
+const normalizeModalConfig = (message, options = {}) => {
+    return message && typeof message === 'object'
+        ? message
+        : { message, ...options };
+};
+
+const applyModalSize = (config) => {
+    const isSmall = config.messageSize === 'small';
+    modalMessageClass.value = isSmall ? 'small-message' : '';
+    modalButtonClass.value = isSmall ? 'small-button' : '';
+};
+
 // Alert 方法
 let alertResolve;
-const customAlert = (message) => {
-    alertMessage.value = message;
+const customAlert = (message, options = {}) => {
+    const config = normalizeModalConfig(message, options);
+    alertMessage.value = String(config.message || '');
+    applyModalSize(config);
     showAlert.value = true;
     return new Promise((resolve) => {
         alertResolve = resolve;
@@ -78,8 +96,13 @@ const confirmAlert = () => {
 
 // Confirm 方法
 let confirmResolve;
-const customConfirm = (message) => {
-    confirmMessage.value = message;
+const customConfirm = (message, options = {}) => {
+    const config = normalizeModalConfig(message, options);
+
+    confirmMessage.value = String(config.message || '');
+    applyModalSize(config);
+    confirmButtonText.value = config.confirmText || i18n.global.t('que-ding');
+    cancelButtonText.value = config.cancelText || i18n.global.t('qu-xiao');
     showConfirm.value = true;
     return new Promise((resolve) => {
         confirmResolve = resolve;
@@ -93,9 +116,15 @@ const confirmAction = (confirmed) => {
 
 // Prompt 方法
 let promptResolve;
-const customPrompt = (message, defaultValue = '') => {
-    promptMessage.value = message;
-    promptInput.value = defaultValue;
+const customPrompt = (message, defaultValue = '', options = {}) => {
+    const config = normalizeModalConfig(message, typeof defaultValue === 'object' ? defaultValue : options);
+    const inputValue = message && typeof message === 'object'
+        ? config.defaultValue
+        : (typeof defaultValue === 'object' ? config.defaultValue : defaultValue);
+
+    promptMessage.value = String(config.message || '');
+    promptInput.value = String(inputValue || '');
+    applyModalSize(config);
     showPrompt.value = true;
     return new Promise((resolve) => {
         promptResolve = resolve;
@@ -155,6 +184,13 @@ defineExpose({
     h3 {
         overflow-wrap: anywhere;
         color: var(--primary-color);
+        white-space: pre-line;
+
+        &.small-message {
+            font-size: 14px;
+            line-height: 1.6;
+            text-align: left;
+        }
     }
 }
 
@@ -183,6 +219,12 @@ defineExpose({
     margin-top: 10px;
     font-size: 20px;
     width: auto;
+
+    &.small-button {
+        padding: 7px 14px;
+        border-radius: 18px;
+        font-size: 14px;
+    }
 }
 
 .loading-overlay {

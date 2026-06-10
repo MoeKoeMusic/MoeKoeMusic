@@ -14,19 +14,19 @@ export default {
             }
         };
 
-        const customAlert = (message) => {
+        const customAlert = (message, options) => {
             mountModal();
-            return modal.value.customAlert(message);
+            return modal.value.customAlert(message, options);
         };
 
-        const customConfirm = (message) => {
+        const customConfirm = (message, options) => {
             mountModal();
-            return modal.value.customConfirm(message);
+            return modal.value.customConfirm(message, options);
         };
 
-        const customPrompt = (message, defaultValue = '') => {
+        const customPrompt = (message, defaultValue = '', options) => {
             mountModal();
-            return modal.value.customPrompt(message, defaultValue);
+            return modal.value.customPrompt(message, defaultValue, options);
         };
 
         const showLoading = () => {

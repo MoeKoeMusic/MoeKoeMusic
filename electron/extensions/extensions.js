@@ -1,7 +1,23 @@
 // 插件系统统一入口文件
 import extensionManager from './extensionManager.js';
 import { registerExtensionIPC, unregisterExtensionIPC } from './extensionIPC.js';
+import nativeHostManager from './nativeHostManager.js';
 import log from 'electron-log';
+
+function syncNativeHosts(delay = 500) {
+    // 扩展加载完成后，把 Chrome 扩展信息和扫描到的 manifest 信息合并给 Native Host 管理器。
+    setTimeout(() => {
+        try {
+            nativeHostManager.syncExtensions(
+                extensionManager.getLoadedExtensions(),
+                extensionManager.scanExtensions()
+            );
+            nativeHostManager.startAuthorizedAutoHosts();
+        } catch (error) {
+            log.error('同步本地程序索引失败:', error);
+        }
+    }, delay);
+}
 
 /**
  * 初始化插件系统
@@ -16,6 +32,7 @@ export function initializeExtensions() {
         
         // 加载插件
         extensionManager.loadChromeExtensions();
+        syncNativeHosts();
         
         return { success: true };
     } catch (error) {
@@ -30,6 +47,7 @@ export function initializeExtensions() {
 export function cleanupExtensions() {
     try {
         // 卸载所有插件
+        nativeHostManager.stopAll();
         extensionManager.unloadChromeExtensions();
         
         // 注销 IPC 处理程序

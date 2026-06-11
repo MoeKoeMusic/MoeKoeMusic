@@ -30,6 +30,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
         extensionId,
         extensionDir,
     }),
+    setNativeHostAuthorization: (extensionId, hostId, authorized) => ipcRenderer.invoke('set-native-host-authorization', extensionId, hostId, authorized),
+    nativeHost: {
+        getStatus: (hostId) => ipcRenderer.invoke('native-host-get-status', hostId),
+        send: (hostId, payload) => ipcRenderer.invoke('native-host-send', hostId, payload),
+        onMessage: (listener) => {
+            const wrapped = (_event, payload) => listener(payload);
+            ipcRenderer.on('native-host-message', wrapped);
+            return () => ipcRenderer.removeListener('native-host-message', wrapped);
+        }
+    },
     startUpdateDownload: () => ipcRenderer.invoke('start-update-download'),
     showOpenDialog: (options) => ipcRenderer.invoke('show-open-dialog', options),
     openMvWindow: (url) => ipcRenderer.invoke('open-mv-window', url),

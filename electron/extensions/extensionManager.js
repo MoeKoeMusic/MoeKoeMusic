@@ -5,6 +5,7 @@ import log from 'electron-log';
 import { fileURLToPath } from 'url';
 import isDev from 'electron-is-dev';
 import AdmZip from 'adm-zip';
+import { validateNativeHostManifest } from './nativeHostManager.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -201,6 +202,12 @@ export function validateManifest(manifestPath) {
             return { valid: false, error: '仅支持 Manifest V3 格式' };
         }
 
+        // Native Host 是本地进程能力，必须在 manifest 校验阶段先拦截不安全声明。
+        const nativeHostError = validateNativeHostManifest(manifest);
+        if (nativeHostError) {
+            return { valid: false, error: nativeHostError };
+        }
+
         return { valid: true, manifest };
     } catch (error) {
         return { valid: false, error: `解析 manifest.json 失败: ${error.message}` };
@@ -323,6 +330,11 @@ export async function installPluginFromZip(zipPath) {
             }
             if (manifest.manifest_version !== 3) {
                 return { success: false, message: '仅支持 Manifest V3 格式' };
+            }
+            // zip 安装也走同一套 Native Host 校验，避免远程插件绕过权限声明。
+            const nativeHostError = validateNativeHostManifest(manifest);
+            if (nativeHostError) {
+                return { success: false, message: nativeHostError };
             }
         } catch (error) {
             return { success: false, message: `manifest.json 解析失败: ${error.message}` };

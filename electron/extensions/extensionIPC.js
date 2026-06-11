@@ -4,9 +4,33 @@ import fs from 'fs';
 import log from 'electron-log';
 import { fileURLToPath } from 'url';
 import extensionManager from './extensionManager.js';
+import nativeHostManager from './nativeHostManager.js';
 import { bindExternalLinkHandler } from '../services/externalLinkHandler.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+function syncNativeHosts(delay = 300) {
+    // loadExtension 是异步完成的，安装/刷新后稍等片刻再同步 Native Host 索引。
+    setTimeout(() => {
+        nativeHostManager.syncExtensions(
+            extensionManager.getLoadedExtensions(),
+            extensionManager.scanExtensions()
+        );
+        nativeHostManager.startAuthorizedAutoHosts();
+    }, delay);
+}
+
+function getSenderExtensionId(event) {
+    // 插件调用 native-host-send/status 时，必须来自 chrome-extension:// 页面。
+    // 这里从 senderFrame.url 解析扩展 ID，避免插件伪造其他插件的 extensionId。
+    const senderUrl = event.senderFrame?.url || event.sender?.getURL?.() || '';
+    try {
+        const url = new URL(senderUrl);
+        return url.protocol === 'chrome-extension:' ? url.hostname : '';
+    } catch {
+        return '';
+    }
+}
 
 // 获取插件图标数据
 function getExtensionIconData(extension, extensionPath) {
@@ -40,11 +64,58 @@ function getExtensionIconData(extension, extensionPath) {
  * 注册插件相关的 IPC 处理程序
  */
 export function registerExtensionIPC() {
+    // 管理页调用：用户授权或取消授权某个插件声明的本地程序。
+    ipcMain.handle('set-native-host-authorization', (event, extensionId, hostId, authorized) => {
+        try {
+            // 插件页面也能看到 preload 暴露的 electronAPI，所以授权接口必须在主进程校验来源。
+            // 只要请求来自 chrome-extension://，就视为插件自调用，不能修改授权记录。
+            if (getSenderExtensionId(event)) {
+                return { success: false, message: '本地程序授权只能在萌音插件管理页操作' };
+            }
+
+            return nativeHostManager.setAuthorization(extensionId, hostId, authorized === true);
+        } catch (error) {
+            log.error('设置本地程序授权失败:', error);
+            return { success: false, message: error.message };
+        }
+    });
+
+    // 插件 bridge/popup 调用：查询自己的本地程序状态。
+    ipcMain.handle('native-host-get-status', (event, hostId) => {
+        try {
+            const extensionId = getSenderExtensionId(event);
+            if (!extensionId) {
+                return { success: false, message: '本地程序状态查询必须来自插件页面' };
+            }
+
+            return nativeHostManager.getStatusFromSender(extensionId, hostId);
+        } catch (error) {
+            log.error('获取本地程序状态失败:', error);
+            return { success: false, message: error.message };
+        }
+    });
+
+    // 插件 bridge/popup 调用：发送业务消息到本地程序 stdin。
+    ipcMain.handle('native-host-send', (event, hostId, payload) => {
+        try {
+            const extensionId = getSenderExtensionId(event);
+            if (!extensionId) {
+                return { success: false, message: '本地程序消息发送必须来自插件页面' };
+            }
+
+            return nativeHostManager.sendFromSender(extensionId, hostId, payload);
+        } catch (error) {
+            log.error('发送本地程序消息失败:', error);
+            return { success: false, message: error.message };
+        }
+    });
     // 获取插件列表
     ipcMain.handle('get-extensions', () => {
         try {
             const loadedExtensions = extensionManager.getLoadedExtensions();
             const scannedExtensions = extensionManager.scanExtensions();
+            // 每次读取插件列表时同步一次，保证授权按钮能立即找到对应插件记录。
+            nativeHostManager.syncExtensions(loadedExtensions, scannedExtensions);
             
             const extensions = loadedExtensions.map(ext => {
                 const scannedExt = scannedExtensions.find(scanned => scanned.name === ext.name);
@@ -76,7 +147,13 @@ export function registerExtensionIPC() {
                     moeKoeAdapted: ext.manifest?.moekoe === true || scannedExt?.manifest?.moekoe === true,
                     minversion: ext.manifest?.minversion || scannedExt?.manifest?.minversion || '',
                     popupPath: scannedExt?.popupPath || '',
-                    hasPopup: scannedExt?.hasPopup === true
+                    hasPopup: scannedExt?.hasPopup === true,
+                    nativeHosts: nativeHostManager.describeHosts(
+                        ext.id,
+                        ext.manifest || scannedExt?.manifest || {},
+                        scannedExt?.path || '',
+                        scannedExt?.directory || ''
+                    )
                 };
             });
             
@@ -107,7 +184,9 @@ export function registerExtensionIPC() {
     // 重新加载插件
     ipcMain.handle('reload-extensions', () => {
         try {
+            nativeHostManager.stopAll();
             const result = extensionManager.reloadExtensions();
+            syncNativeHosts();
             return result;
         } catch (error) {
             log.error('重新加载插件失败:', error);
@@ -194,6 +273,7 @@ export function registerExtensionIPC() {
     // 卸载插件
     ipcMain.handle('uninstall-extension', (event, extensionId, extensionDir) => {
         try {
+            nativeHostManager.stopExtension(extensionId, true);
             const result = extensionManager.uninstallExtension(extensionId, extensionDir);
             return result;
         } catch (error) {
@@ -231,6 +311,9 @@ export function registerExtensionIPC() {
     ipcMain.handle('install-plugin-from-zip', async (event, zipPath) => {
         try {
             const result = await extensionManager.installPluginFromZip(zipPath);
+            if (result?.success) {
+                syncNativeHosts();
+            }
             return result;
         } catch (error) {
             log.error('安装插件失败:', error);
@@ -246,6 +329,9 @@ export function registerExtensionIPC() {
                 payload.extensionId,
                 payload.extensionDir
             );
+            if (result?.success) {
+                syncNativeHosts();
+            }
             return result;
         } catch (error) {
             log.error('Failed to install remote plugin:', error);
@@ -303,7 +389,10 @@ export function unregisterExtensionIPC() {
         'ensure-extensions-directory',
         'install-plugin-from-zip',
         'install-plugin-from-url',
-        'show-open-dialog'
+        'show-open-dialog',
+        'set-native-host-authorization',
+        'native-host-get-status',
+        'native-host-send'
     ];
 
     channels.forEach(channel => {

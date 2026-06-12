@@ -132,6 +132,8 @@
                 <div class="close-btn">
                     <i class="fas fa-chevron-down" @click="toggleLyrics(currentSong.hash, currentTime)"></i>
                 </div>
+                <FullscreenLyricsSettings v-model="fullscreenLyricsSettings" @change="handleFullscreenLyricsSettingsChange" />
+
                 <div class="lyrics-mode-btn" v-if="hasMultiLyricsMode" @click="switchLyricsMode" :title="lyricsMode === 'translation' ? t('qie-huan-dao-yin-yi') : t('qie-huan-dao-fan-yi')">
                     <i class="fas fa-language"></i>
                 </div>
@@ -248,6 +250,7 @@ import { useMusicQueueStore } from '../stores/musicQueue';
 import { useI18n } from 'vue-i18n';
 import PlaylistSelectModal from './PlaylistSelectModal.vue';
 import QueueList from './QueueList.vue';
+import FullscreenLyricsSettings from './player/FullscreenLyricsSettings.vue';
 import { useRouter } from 'vue-router';
 import { getCover, getAudioOutputDeviceSignature, share } from '../utils/utils';
 
@@ -271,9 +274,15 @@ const router = useRouter();
 const musicQueueStore = useMusicQueueStore();
 const playlists = ref([]);
 const currentTime = ref(0);
-const lyricsFontSize = ref('24px');
-const lyricsAlign = ref('center');
-const lyricsBackground = ref('on');
+const fullscreenLyricsDefaultSettings = {
+    background: 'on',
+    fontSize: '24px',
+    align: 'center'
+};
+const fullscreenLyricsSettings = ref({ ...fullscreenLyricsDefaultSettings });
+const lyricsFontSize = computed(() => fullscreenLyricsSettings.value.fontSize);
+const lyricsAlign = computed(() => fullscreenLyricsSettings.value.align);
+const lyricsBackground = computed(() => fullscreenLyricsSettings.value.background);
 const sliderElement = ref(null);
 const coverMode = ref(localStorage.getItem('lyrics-cover-mode') || 'square');
 
@@ -390,8 +399,6 @@ const updateCurrentTime = throttle(() => {
     const desktopLyricsEnabled = savedConfig?.desktopLyrics === 'on';
 
     if (audio) {
-        if (savedConfig?.lyricsAlign != lyricsAlign.value) lyricsAlign.value = savedConfig.lyricsAlign;
-
         if (hasLyricsData) {
             highlightCurrentChar(audio.currentTime, !lyricsFlag.value);
         }
@@ -592,6 +599,15 @@ const hasMultiLyricsMode = computed(() => {
     // 检查是否至少有一行同时包含翻译和音译
     return lyricsData.value.some(line => line.translated && line.romanized);
 });
+
+const handleFullscreenLyricsSettingsChange = () => {
+    if (typeof requestAnimationFrame === 'function') {
+        requestAnimationFrame(() => {
+            const currentLineIndex = getCurrentLineIndex(audio.currentTime);
+            if (currentLineIndex >= 0) scrollToCurrentLine(currentLineIndex);
+        });
+    }
+};
 
 // 切换歌词显示模式（翻译/音译）
 const switchLyricsMode = () => {
@@ -1359,13 +1375,6 @@ onMounted(() => {
 
     // 初始化播放模式
     playbackMode.initPlaybackMode();
-
-    // 初始化设置
-    const settings = JSON.parse(localStorage.getItem('settings') || '{}');
-    if (settings) {
-        lyricsBackground.value = settings?.lyricsBackground || 'on';
-        lyricsFontSize.value = settings?.lyricsFontSize || '24px';
-    }
 
     // 设置媒体会话
     mediaSession.initMediaSession({

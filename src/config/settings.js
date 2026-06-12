@@ -224,33 +224,6 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
         icon: 'fas fa-music',
         items: [
             {
-                key: 'lyricsBackground',
-                defaultValue: 'on',
-                itemIcon: 'fas fa-image',
-                selectionTitle: t('xian-shi-ge-ci-bei-jing'),
-                options: [
-                    { displayText: t('da-kai'), value: 'on' },
-                    { displayText: t('guan-bi'), value: 'off' }
-                ],
-                label: t('xian-shi-ge-ci-bei-jing'),
-                showRefreshHint: true,
-                refreshHintText: t('shua-xin-hou-sheng-xiao')
-            },
-            {
-                key: 'lyricsFontSize',
-                defaultValue: '24px',
-                itemIcon: 'fas fa-text-height',
-                selectionTitle: t('ge-ci-zi-ti-da-xiao'),
-                options: [
-                    { displayText: t('xiao'), value: '20px' },
-                    { displayText: t('zhong'), value: '24px' },
-                    { displayText: t('da'), value: '32px' }
-                ],
-                label: t('ge-ci-zi-ti-da-xiao'),
-                showRefreshHint: true,
-                refreshHintText: t('shua-xin-hou-sheng-xiao')
-            },
-            {
                 key: 'desktopLyrics',
                 selectAction: 'toggleDesktopLyrics',
                 defaultValue: 'off',
@@ -290,17 +263,6 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
                 label: t('ge-ci-fan-yi'),
                 showRefreshHint: true,
                 refreshHintText: t('shua-xin-hou-sheng-xiao')
-            },
-            {
-                key: 'lyricsAlign',
-                defaultValue: 'center',
-                itemIcon: 'fas fa-align-center',
-                selectionTitle: t('dui-qi-fang-shi'),
-                options: [
-                    { displayText: t('ju-zuo'), value: 'left' },
-                    { displayText: t('ju-zhong'), value: 'center' },
-                ],
-                label: t('dui-qi-fang-shi'),
             }
         ]
     },

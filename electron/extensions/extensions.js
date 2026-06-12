@@ -4,25 +4,10 @@ import { registerExtensionIPC, unregisterExtensionIPC } from './extensionIPC.js'
 import nativeHostManager from './nativeHostManager.js';
 import log from 'electron-log';
 
-function syncNativeHosts(delay = 500) {
-    // 扩展加载完成后，把 Chrome 扩展信息和扫描到的 manifest 信息合并给 Native Host 管理器。
-    setTimeout(() => {
-        try {
-            nativeHostManager.syncExtensions(
-                extensionManager.getLoadedExtensions(),
-                extensionManager.scanExtensions()
-            );
-            nativeHostManager.startAuthorizedAutoHosts();
-        } catch (error) {
-            log.error('同步本地程序索引失败:', error);
-        }
-    }, delay);
-}
-
 /**
  * 初始化插件系统
  */
-export function initializeExtensions() {
+export async function initializeExtensions() {
     try {
         // 确保插件目录存在
         extensionManager.ensureExtensionsDirectory();
@@ -31,7 +16,9 @@ export function initializeExtensions() {
         registerExtensionIPC();
         
         // 加载插件
-        extensionManager.loadChromeExtensions();
+        await extensionManager.loadChromeExtensions();
+
+        // 同步本地程序索引
         syncNativeHosts();
         
         return { success: true };
@@ -63,18 +50,30 @@ export function cleanupExtensions() {
 /**
  * 重启插件系统
  */
-export function restartExtensions() {
+export async function restartExtensions() {
     try {
         const cleanupResult = cleanupExtensions();
         if (!cleanupResult.success) {
             return cleanupResult;
         }
         
-        const initResult = initializeExtensions();
+        const initResult = await initializeExtensions();
         return initResult;
     } catch (error) {
         log.error('重启插件系统失败:', error);
         return { success: false, error: error.message };
+    }
+}
+
+function syncNativeHosts() {
+    try {
+        nativeHostManager.syncExtensions(
+            extensionManager.getLoadedExtensions(),
+            extensionManager.scanExtensions()
+        );
+        nativeHostManager.startAuthorizedAutoHosts();
+    } catch (error) {
+        log.error('同步本地程序索引失败:', error);
     }
 }
 

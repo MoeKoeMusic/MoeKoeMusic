@@ -58,7 +58,7 @@ app.on('ready', () => {
             apiService.init(mainWindow);
             registerProtocolHandler(mainWindow);
             sendHashAfterLoad(mainWindow);
-            initializeExtensions();
+            void initializeExtensions();
             setupDesktopShortcutIcon();
         } catch (error) {
             console.log('初始化应用时发生错误:', error);

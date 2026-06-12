@@ -9,15 +9,12 @@ import { bindExternalLinkHandler } from '../services/externalLinkHandler.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-function syncNativeHosts(delay = 300) {
-    // loadExtension 是异步完成的，安装/刷新后稍等片刻再同步 Native Host 索引。
-    setTimeout(() => {
-        nativeHostManager.syncExtensions(
-            extensionManager.getLoadedExtensions(),
-            extensionManager.scanExtensions()
-        );
-        nativeHostManager.startAuthorizedAutoHosts();
-    }, delay);
+function syncNativeHosts() {
+    nativeHostManager.syncExtensions(
+        extensionManager.getLoadedExtensions(),
+        extensionManager.scanExtensions()
+    );
+    nativeHostManager.startAuthorizedAutoHosts();
 }
 
 function getSenderExtensionId(event) {
@@ -182,10 +179,10 @@ export function registerExtensionIPC() {
     });
 
     // 重新加载插件
-    ipcMain.handle('reload-extensions', () => {
+    ipcMain.handle('reload-extensions', async () => {
         try {
             nativeHostManager.stopAll();
-            const result = extensionManager.reloadExtensions();
+            const result = await extensionManager.reloadExtensions();
             syncNativeHosts();
             return result;
         } catch (error) {
@@ -263,6 +260,9 @@ export function registerExtensionIPC() {
     ipcMain.handle('install-extension', async (event, extensionPath) => {
         try {
             const result = await extensionManager.installExtension(extensionPath);
+            if (result?.success) {
+                syncNativeHosts();
+            }
             return result;
         } catch (error) {
             log.error('手动安装插件失败:', error);

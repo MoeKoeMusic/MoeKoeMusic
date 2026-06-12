@@ -17,7 +17,7 @@ const EXTENSIONS_DIR = !isDev
 /**
  * 加载 Chrome 插件
  */
-export function loadChromeExtensions() {
+export async function loadChromeExtensions() {
     if (!fs.existsSync(EXTENSIONS_DIR)) {
         fs.mkdirSync(EXTENSIONS_DIR, { recursive: true });
         log.info('创建插件目录:', EXTENSIONS_DIR);
@@ -27,6 +27,8 @@ export function loadChromeExtensions() {
         const extensionDirs = fs.readdirSync(EXTENSIONS_DIR, { withFileTypes: true })
             .filter(dirent => dirent.isDirectory())
             .map(dirent => dirent.name);
+
+        const loadTasks = [];
 
         for (const extensionDir of extensionDirs) {
             const extensionPath = path.join(EXTENSIONS_DIR, extensionDir);
@@ -38,13 +40,15 @@ export function loadChromeExtensions() {
                     
                     // 验证 manifest 格式
                     if (manifest.manifest_version && manifest.name && manifest.version) {
-                        session.defaultSession.loadExtension(extensionPath, {
-                            allowFileAccess: true
-                        }).then((extension) => {
-                            log.info(`成功加载插件: ${manifest.name} (${extension.id})`);
-                        }).catch((error) => {
-                            log.error(`加载插件失败 ${extensionDir}:`, error);
-                        });
+                        loadTasks.push(
+                            session.defaultSession.loadExtension(extensionPath, {
+                                allowFileAccess: true
+                            }).then((extension) => {
+                                log.info(`成功加载插件: ${manifest.name} (${extension.id})`);
+                            }).catch((error) => {
+                                log.error(`加载插件失败 ${extensionDir}:`, error);
+                            })
+                        );
                     } else {
                         log.warn(`插件 ${extensionDir} 的 manifest.json 格式不正确`);
                     }
@@ -55,6 +59,8 @@ export function loadChromeExtensions() {
                 log.warn(`插件目录 ${extensionDir} 缺少 manifest.json 文件`);
             }
         }
+
+        await Promise.allSettled(loadTasks);
     } catch (error) {
         log.error('扫描插件目录失败:', error);
     }
@@ -148,10 +154,10 @@ export function uninstallExtension(extensionId, extensionDir = '') {
 /**
  * 重新加载所有插件
  */
-export function reloadExtensions() {
+export async function reloadExtensions() {
     try {
         unloadChromeExtensions();
-        loadChromeExtensions();
+        await loadChromeExtensions();
         return { success: true, message: '插件重新加载成功' };
     } catch (error) {
         log.error('重新加载插件失败:', error);

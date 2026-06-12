@@ -180,7 +180,7 @@ export const onboardingGuideGroups = [
     },
     {
         key: 'playerLyrics',
-        version: '1',
+        version: '2',
         triggerSelector: '.lyrics-bg .lyrics-screen',
         steps: [
             {
@@ -192,6 +192,11 @@ export const onboardingGuideGroups = [
                 selector: '.lyrics-bg .album-art-container',
                 title: '切换唱片模式',
                 description: '点击左侧封面可以在普通封面和唱片播放器模式之间切换，播放时唱片会跟随状态旋转。'
+            },
+            {
+                selector: '.fullscreen-lyrics-settings .settings-guide-anchor',
+                title: '全屏歌词快捷设置',
+                description: '鼠标移到右侧小箭头上可以滑出设置面板，快速调整歌词背景、字号和对齐方式。'
             },
             {
                 selector: '.lyrics-mode-btn',

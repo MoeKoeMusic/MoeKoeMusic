@@ -5,6 +5,7 @@
         @mouseleave="closePanel"
         @focusout="handleFocusOut"
     >
+        <span class="settings-guide-anchor" aria-hidden="true"></span>
         <button type="button" class="settings-handle" :title="t('she-zhi')" :aria-label="t('she-zhi')" @mouseenter="openPanel" @focus="openPanel"></button>
         <div class="settings-panel">
             <div class="settings-row">
@@ -195,6 +196,16 @@ onMounted(() => {
         background: rgba(255, 255, 255, 0.28);
         outline: none;
     }
+}
+
+.settings-guide-anchor {
+    position: absolute;
+    top: 50%;
+    left: -30px;
+    width: 44px;
+    height: 76px;
+    transform: translateY(-50%);
+    pointer-events: none;
 }
 
 .settings-panel {

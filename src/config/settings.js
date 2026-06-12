@@ -287,7 +287,9 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
                     { displayText: t('da-kai'), value: 'on' },
                     { displayText: t('guan-bi'), value: 'off' }
                 ],
-                label: t('ge-ci-fan-yi')
+                label: t('ge-ci-fan-yi'),
+                showRefreshHint: true,
+                refreshHintText: t('shua-xin-hou-sheng-xiao')
             },
             {
                 key: 'lyricsAlign',
@@ -429,6 +431,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             },
             {
                 key: 'apiBaseUrlMode',
+                available: 'client',
                 selectAction: 'resetApiBaseUrl',
                 defaultValue: 'default',
                 itemIcon: 'fas fa-link',
@@ -466,6 +469,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             },
             {
                 key: 'shortcuts',
+                available: 'client',
                 itemIcon: 'fas fa-keyboard',
                 label: t('quan-ju-kuai-jie-jian'),
                 customText: t('zi-ding-yi-kuai-jie-jian'),
@@ -480,6 +484,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             },
             {
                 key: 'proxy',
+                available: 'client',
                 defaultValue: 'off',
                 itemIcon: 'fas fa-random',
                 selectionTitle: t('wang-luo-dai-li'),

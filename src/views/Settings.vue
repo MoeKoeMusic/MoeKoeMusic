@@ -331,7 +331,7 @@ const getSettingItem = (key) => {
     return null;
 };
 
-const getVisibleItems = (section) => section.items.filter(item => !item.hidden);
+const getVisibleItems = (section) => section.items.filter(item => !item.hidden && !getUnavailableSettingText(item));
 
 const markRefreshHint = (key) => {
     if (getSettingItem(key)?.showRefreshHint) {

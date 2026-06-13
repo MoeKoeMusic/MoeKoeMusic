@@ -167,7 +167,15 @@
                             </div>
                             <div class="market-title-text">
                                 <h4>
-                                    {{ plugin.name }}
+                                    <a
+                                        class="market-title-link"
+                                        :href="plugin.snapshotUrl"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        :title="`查看 ${plugin.name} 的项目地址`"
+                                    >
+                                        {{ plugin.name }}
+                                    </a>
                                     <span v-if="isCurrentAppVersionLowerThanMin(plugin.minversion)" class="market-min-version-inline">
                                         需V{{ plugin.minversion }}+
                                     </span>
@@ -194,12 +202,16 @@
 
                     <div class="market-meta">
                         <span>版本 {{ plugin.version || '未知' }}</span>
-                        <span class="author-meta">作者 <span>{{ plugin.author || '未知' }}</span></span>
-                        <span v-if="plugin.repositoryUrl">
-                            <a :href="plugin.repositoryUrl" target="_blank" rel="noopener noreferrer">项目地址</a>
-                        </span>
-                        <span v-if="plugin.approvedIssueUrl">
-                            <a :href="plugin.approvedIssueUrl" target="_blank" rel="noopener noreferrer">上架报告</a>
+                        <span class="author-meta">
+                            作者
+                            <a
+                                :href="plugin.approvedIssueUrl"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                :title="`查看 ${plugin.name} 的上架报告`"
+                            >
+                                {{ plugin.author || '未知' }}
+                            </a>
                         </span>
                     </div>
 
@@ -389,6 +401,7 @@ const normalizeMarketPlugin = (item, index) => {
         return null
     }
 
+    const snapshot = item.snapshot && typeof item.snapshot === 'object' ? item.snapshot : {}
     const repositoryValue = item.repositoryUrl || ''
     const downloadUrl = normalizeUrl(item.downloadUrl)
 
@@ -404,13 +417,15 @@ const normalizeMarketPlugin = (item, index) => {
         icon: normalizeUrl(item.iconUrl),
         tags: Array.isArray(item.tags) ? item.tags.map(tag => String(tag).trim()).filter(Boolean) : [],
         repositoryUrl: normalizeUrl(repositoryValue),
-        approvedIssueUrl: item.approvedIssueUrl,
+        snapshotUrl: normalizeUrl(snapshot.snapshotUrl || item.snapshotUrl || ''),
+        approvedIssueUrl: normalizeUrl(item.approvedIssueUrl || ''),
         downloadUrl,
         minversion: item.minversion,
         permissions: {
             networkAccess: item.networkAccess === true,
             fileAccess: item.fileAccess === true,
-            binaryContent: item.binaryContent === true
+            binaryContent: item.binaryContent === true,
+            storageAccess: item.storageAccess === true
         }
     }
 
@@ -532,6 +547,12 @@ const resolveMarketPermissions = plugin => {
             label: '含二进制',
             icon: 'fas fa-microchip',
             enabled: permissions.binaryContent === true
+        },
+        {
+            key: 'storageAccess',
+            label: '存储权限',
+            icon: 'fas fa-database',
+            enabled: permissions.storageAccess === true
         }
     ].filter(permission => permission.enabled)
 }
@@ -989,6 +1010,15 @@ $border-dark: #232527;
         margin: 0 0 6px 0;
         font-size: 16px;
         color: var(--text-color, #222);
+
+        .market-title-link {
+            color: inherit;
+            text-decoration: none;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
 
     }
 

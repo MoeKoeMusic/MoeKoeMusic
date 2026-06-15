@@ -32,6 +32,39 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
     transition: transform 0.6s ease;
 }
 
+.single-lyrics {
+    align-self: center;
+    position: relative;
+    width: 100%;
+    transform: translateY(18vh);
+
+    .line-group {
+        margin-bottom: 0;
+    }
+}
+
+.single-lyric-fade-enter-active,
+.single-lyric-fade-leave-active {
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.single-lyric-fade-leave-active {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+}
+
+.single-lyric-fade-enter-from {
+    opacity: 0;
+    transform: translateY(8px);
+}
+
+.single-lyric-fade-leave-to {
+    opacity: 0;
+    transform: translateY(-8px);
+}
+
 .line-group {
     margin-bottom: 12px;
 }

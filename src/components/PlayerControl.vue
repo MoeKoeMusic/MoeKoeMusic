@@ -220,19 +220,36 @@
                     </div>
                 </div>
                 <div id="lyrics-container" @wheel="handleLyricsWheel">
-                    <div v-if="lyricsData.length > 0" id="lyrics" :class="{ 'line-highlight-mode': lyricsHighlightMode === 'line' }"
-                        :style="{ fontSize: lyricsFontSize, transform: `translateY(${scrollAmount ? scrollAmount + 'px' : '50%'})` }">
-                        <div class="line-group" v-for="(lineData, lineIndex) in lyricsData" :key="lineIndex">
-                            <div class="line" @click="handleLyricsClick(lineIndex)" :class="{ click: lyricsFlag, 'line-highlight': isCurrentLyricsLine(lineIndex), [lyricsAlign]: true }">
-                                <span v-for="(charData, charIndex) in lineData.characters" :key="charIndex" class="char"
-                                    :class="{ highlight: lyricsHighlightMode === 'char' && charData.highlighted }">
-                                    {{ charData.char }}
-                                </span>
-                            </div>
-                            <div class="line translated" :class="{ 'line-highlight': isCurrentLyricsLine(lineIndex), [lyricsAlign]: true }" v-show="lineData.translated && lyricsMode === 'translation'">{{ lineData.translated }}</div>
-                            <div class="line romanized" :class="{ 'line-highlight': isCurrentLyricsLine(lineIndex), [lyricsAlign]: true }" v-show="lineData.romanized && lyricsMode === 'romanization'">{{ lineData.romanized }}</div>
+                    <template v-if="lyricsData.length > 0">
+                        <div v-if="lyricsDisplayMode === 'single'" id="lyrics" class="single-lyrics" :class="{ 'line-highlight-mode': lyricsHighlightMode === 'line' }"
+                            :style="{ fontSize: lyricsFontSize }">
+                            <transition name="single-lyric-fade">
+                                <div class="line-group" v-if="currentSingleLyricsLine" :key="singleLyricsLineIndex">
+                                    <div class="line" @click="handleLyricsClick(singleLyricsLineIndex)" :class="{ click: lyricsFlag, 'line-highlight': isCurrentLyricsLine(singleLyricsLineIndex), [lyricsAlign]: true }">
+                                        <span v-for="(charData, charIndex) in currentSingleLyricsLine.characters" :key="charIndex" class="char"
+                                            :class="{ highlight: lyricsHighlightMode === 'char' && charData.highlighted }">
+                                            {{ charData.char }}
+                                        </span>
+                                    </div>
+                                    <div class="line translated" :class="{ 'line-highlight': isCurrentLyricsLine(singleLyricsLineIndex), [lyricsAlign]: true }" v-show="currentSingleLyricsLine.translated && lyricsMode === 'translation'">{{ currentSingleLyricsLine.translated }}</div>
+                                    <div class="line romanized" :class="{ 'line-highlight': isCurrentLyricsLine(singleLyricsLineIndex), [lyricsAlign]: true }" v-show="currentSingleLyricsLine.romanized && lyricsMode === 'romanization'">{{ currentSingleLyricsLine.romanized }}</div>
+                                </div>
+                            </transition>
                         </div>
-                    </div>
+                        <div v-else id="lyrics" :class="{ 'line-highlight-mode': lyricsHighlightMode === 'line' }"
+                            :style="{ fontSize: lyricsFontSize, transform: `translateY(${scrollAmount ? scrollAmount + 'px' : '50%'})` }">
+                            <div class="line-group" v-for="(lineData, lineIndex) in lyricsData" :key="lineIndex">
+                                <div class="line" @click="handleLyricsClick(lineIndex)" :class="{ click: lyricsFlag, 'line-highlight': isCurrentLyricsLine(lineIndex), [lyricsAlign]: true }">
+                                    <span v-for="(charData, charIndex) in lineData.characters" :key="charIndex" class="char"
+                                        :class="{ highlight: lyricsHighlightMode === 'char' && charData.highlighted }">
+                                        {{ charData.char }}
+                                    </span>
+                                </div>
+                                <div class="line translated" :class="{ 'line-highlight': isCurrentLyricsLine(lineIndex), [lyricsAlign]: true }" v-show="lineData.translated && lyricsMode === 'translation'">{{ lineData.translated }}</div>
+                                <div class="line romanized" :class="{ 'line-highlight': isCurrentLyricsLine(lineIndex), [lyricsAlign]: true }" v-show="lineData.romanized && lyricsMode === 'romanization'">{{ lineData.romanized }}</div>
+                            </div>
+                        </div>
+                    </template>
                     <div v-else class="no-lyrics">{{ SongTips }}</div>
                 </div>
             </div>
@@ -278,13 +295,15 @@ const fullscreenLyricsDefaultSettings = {
     background: 'on',
     fontSize: '24px',
     align: 'center',
-    highlightMode: 'char'
+    highlightMode: 'char',
+    displayMode: 'scroll'
 };
 const fullscreenLyricsSettings = ref({ ...fullscreenLyricsDefaultSettings });
 const lyricsFontSize = computed(() => fullscreenLyricsSettings.value.fontSize);
 const lyricsAlign = computed(() => fullscreenLyricsSettings.value.align);
 const lyricsBackground = computed(() => fullscreenLyricsSettings.value.background);
 const lyricsHighlightMode = computed(() => fullscreenLyricsSettings.value.highlightMode || 'char');
+const lyricsDisplayMode = computed(() => fullscreenLyricsSettings.value.displayMode || 'scroll');
 const sliderElement = ref(null);
 const coverMode = ref(localStorage.getItem('lyrics-cover-mode') || 'square');
 
@@ -487,6 +506,14 @@ const currentLyricsLineIndex = computed(() => {
     return -1;
 });
 
+const singleLyricsLineIndex = computed(() => {
+    if (!lyricsData.value || lyricsData.value.length === 0) return -1;
+    return currentLyricsLineIndex.value >= 0 ? currentLyricsLineIndex.value : 0;
+});
+const currentSingleLyricsLine = computed(() => {
+    if (singleLyricsLineIndex.value < 0) return null;
+    return lyricsData.value[singleLyricsLineIndex.value] || null;
+});
 const isCurrentLyricsLine = (lineIndex) => lyricsHighlightMode.value === 'line' && currentLyricsLineIndex.value === lineIndex;
 
 // 获取当前播放时间的歌词行索引
@@ -623,6 +650,7 @@ const hasMultiLyricsMode = computed(() => {
 const handleFullscreenLyricsSettingsChange = () => {
     currentTime.value = audio.currentTime || 0;
     resetLyricsHighlight(currentTime.value);
+    if (lyricsDisplayMode.value !== 'scroll') return;
 
     if (typeof requestAnimationFrame === 'function') {
         requestAnimationFrame(() => {

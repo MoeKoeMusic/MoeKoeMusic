@@ -39,6 +39,21 @@
                 </div>
             </div>
             <div class="settings-row">
+                <span class="settings-label">{{ t('ge-ci') }}</span>
+                <div class="setting-options">
+                    <button
+                        v-for="option in displayModeOptions"
+                        :key="option.value"
+                        type="button"
+                        :class="{ active: currentSettings.displayMode === option.value }"
+                        :title="t(option.labelKey)"
+                        @click="updateSetting({ displayMode: option.value })"
+                    >
+                        {{ t(option.labelKey) }}
+                    </button>
+                </div>
+            </div>
+            <div class="settings-row">
                 <span class="settings-label">{{ t('ge-ci-gao-liang-fang-shi') }}</span>
                 <div class="setting-options">
                     <button
@@ -83,7 +98,8 @@ const props = defineProps({
             background: 'on',
             fontSize: '24px',
             align: 'center',
-            highlightMode: 'char'
+            highlightMode: 'char',
+            displayMode: 'scroll'
         })
     }
 });
@@ -97,7 +113,8 @@ const defaultSettings = {
     background: 'on',
     fontSize: '24px',
     align: 'center',
-    highlightMode: 'char'
+    highlightMode: 'char',
+    displayMode: 'scroll'
 };
 
 const backgroundOptions = [
@@ -117,12 +134,17 @@ const highlightModeOptions = [
     { labelKey: 'zhu-zi', value: 'char' },
     { labelKey: 'zhu-hang', value: 'line' }
 ];
+const displayModeOptions = [
+    { labelKey: 'gun-dong', value: 'scroll' },
+    { labelKey: 'dan-hang', value: 'single' }
+];
 
 const normalizeSettings = (settings = {}) => ({
     background: settings.background === 'off' ? 'off' : defaultSettings.background,
     fontSize: fontSizeOptions.some(option => option.value === settings.fontSize) ? settings.fontSize : defaultSettings.fontSize,
     align: settings.align === 'left' ? 'left' : defaultSettings.align,
-    highlightMode: settings.highlightMode === 'line' ? 'line' : defaultSettings.highlightMode
+    highlightMode: settings.highlightMode === 'line' ? 'line' : defaultSettings.highlightMode,
+    displayMode: settings.displayMode === 'single' ? 'single' : defaultSettings.displayMode
 });
 
 const currentSettings = computed(() => normalizeSettings(props.modelValue));

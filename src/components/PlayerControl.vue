@@ -126,9 +126,17 @@
 
     <!-- 全屏歌词界面 -->
     <transition name="slide-up">
-        <div v-if="showLyrics" class="lyrics-bg"
-            :style="(lyricsBackground == 'on' ? ({ backgroundImage: `url(${currentSong?.img || 'https://random.MoeJue.cn/randbg'})` }) : ({ background: 'var(--secondary-color)' }))">
-            <div class="lyrics-screen">
+        <div v-if="showLyrics" class="lyrics-bg" :style="lyricsBackgroundStyle">
+            <template v-if="lyricsBackground === 'cover'">
+                <div
+                    v-for="(image, index) in lyricsBackgroundImages"
+                    :key="image"
+                    class="lyrics-bg-image"
+                    :class="{ active: index === lyricsBackgroundImageIndex }"
+                    :style="{ backgroundImage: `url(${image})` }"
+                ></div>
+            </template>
+            <div class="lyrics-screen" :class="{ 'cover-background': lyricsBackground === 'cover' }">
                 <div class="close-btn">
                     <i class="fas fa-chevron-down" @click="toggleLyrics(currentSong.hash, currentTime)"></i>
                 </div>
@@ -270,6 +278,7 @@ import QueueList from './QueueList.vue';
 import FullscreenLyricsSettings from './FullscreenLyricsSettings.vue';
 import { useRouter } from 'vue-router';
 import { getCover, getAudioOutputDeviceSignature, share } from '../utils/utils';
+import { get } from '../utils/request';
 
 // 从统一入口导入所有模块
 import {
@@ -304,6 +313,20 @@ const lyricsAlign = computed(() => fullscreenLyricsSettings.value.align);
 const lyricsBackground = computed(() => fullscreenLyricsSettings.value.background);
 const lyricsHighlightMode = computed(() => fullscreenLyricsSettings.value.highlightMode || 'char');
 const lyricsDisplayMode = computed(() => fullscreenLyricsSettings.value.displayMode || 'scroll');
+const lyricsDefaultBackgroundImage = computed(() => currentSong.value?.img || 'https://random.MoeJue.cn/randbg');
+const lyricsCoverImages = ref([]);
+const lyricsBackgroundImageIndex = ref(0);
+const lyricsBackgroundImages = computed(() => {
+    if (lyricsBackground.value !== 'cover') return [];
+    return lyricsCoverImages.value.length ? lyricsCoverImages.value : [lyricsDefaultBackgroundImage.value];
+});
+const lyricsBackgroundStyle = computed(() => {
+    if (lyricsBackground.value === 'off' || lyricsBackground.value === 'cover') {
+        return { background: 'var(--secondary-color)' };
+    }
+
+    return { backgroundImage: `url(${lyricsDefaultBackgroundImage.value})` };
+});
 const sliderElement = ref(null);
 const coverMode = ref(localStorage.getItem('lyrics-cover-mode') || 'square');
 
@@ -542,6 +565,112 @@ const mediaSession = useMediaSession();
 const songQueue = useSongQueue(t, musicQueueStore, queueList);
 const { currentSong, NextSong, addSongToQueue, addCloudMusicToQueue, addLocalMusicToQueue, addLocalPlaylistToQueue, addToNext, getPlaylistAllSongs, addPlaylistToQueue, addCloudPlaylistToQueue, restoreLocalSongCover } = songQueue;
 
+let lyricsBackgroundCarouselTimer = null;
+let lyricsCoverImagesRequestId = 0;
+
+const normalizeLyricsCoverImageUrl = (url) => {
+    if (typeof url !== 'string' || !/^https?:\/\//.test(url)) return '';
+    return url.replace(/\{size\}/g, '1080');
+};
+
+const collectLyricsCoverImageUrls = (imgs) => {
+    const urls = [];
+    const visit = (value) => {
+        if (!value) return;
+
+        if (Array.isArray(value)) {
+            value.forEach(visit);
+            return;
+        }
+
+        if (typeof value === 'object') {
+            const url = normalizeLyricsCoverImageUrl(
+                value.sizable_portrait ||
+                value.sizable_cover ||
+                value.url ||
+                value.img ||
+                value.cover ||
+                value.portrait
+            );
+            if (url) {
+                urls.push(url);
+                return;
+            }
+
+            Object.values(value).forEach(visit);
+        }
+    };
+
+    visit(imgs);
+    return urls;
+};
+
+const extractLyricsCoverImages = (response) => {
+    const images = [];
+    const groups = Array.isArray(response?.data) ? response.data : [];
+
+    groups.forEach((group) => {
+        const authors = Array.isArray(group?.author) ? group.author : [];
+        const albums = Array.isArray(group?.album) ? group.album : [];
+
+        authors.forEach((author) => {
+            images.push(...collectLyricsCoverImageUrls(author?.imgs));
+        });
+        albums.forEach((album) => {
+            images.push(...collectLyricsCoverImageUrls(album?.imgs));
+        });
+    });
+
+    return [...new Set(images)];
+};
+
+const stopLyricsBackgroundCarousel = () => {
+    if (lyricsBackgroundCarouselTimer) {
+        clearInterval(lyricsBackgroundCarouselTimer);
+        lyricsBackgroundCarouselTimer = null;
+    }
+};
+
+const startLyricsBackgroundCarousel = () => {
+    stopLyricsBackgroundCarousel();
+    lyricsBackgroundImageIndex.value = 0;
+
+    if (lyricsBackground.value !== 'cover' || !showLyrics.value || lyricsBackgroundImages.value.length <= 1) return;
+
+    lyricsBackgroundCarouselTimer = setInterval(() => {
+        const total = lyricsBackgroundImages.value.length;
+        if (total <= 1) {
+            stopLyricsBackgroundCarousel();
+            return;
+        }
+        lyricsBackgroundImageIndex.value = (lyricsBackgroundImageIndex.value + 1) % total;
+    }, 4000);
+};
+
+const loadLyricsCoverImages = async () => {
+    const hash = currentSong.value?.hash;
+    lyricsCoverImages.value = [];
+    lyricsBackgroundImageIndex.value = 0;
+
+    if (lyricsBackground.value !== 'cover' || !showLyrics.value || !hash || String(hash).startsWith('local_')) {
+        startLyricsBackgroundCarousel();
+        return;
+    }
+
+    const requestId = ++lyricsCoverImagesRequestId;
+    try {
+        const response = await get(`/images?hash=${encodeURIComponent(hash)}`);
+        if (requestId !== lyricsCoverImagesRequestId || currentSong.value?.hash !== hash || lyricsBackground.value !== 'cover') return;
+
+        lyricsCoverImages.value = extractLyricsCoverImages(response);
+    } catch (error) {
+        console.warn('[PlayerControl] 获取歌词背景封面失败:', error);
+        lyricsCoverImages.value = [];
+    } finally {
+        if (requestId === lyricsCoverImagesRequestId) startLyricsBackgroundCarousel();
+    }
+};
+
 // 添加自动切换定时器引用
 let autoSwitchTimer = null;
 // 恢复歌词正常滚动计时器
@@ -637,6 +766,19 @@ const formattedDuration = computed(() => formatTime(currentSong.value?.timeLengt
 
 watch(() => currentSong.value.hash, () => {
     qualityMenuOpen.value = false;
+    loadLyricsCoverImages();
+});
+
+watch(() => [lyricsBackground.value, showLyrics.value], () => {
+    if (lyricsBackground.value === 'cover' && showLyrics.value) {
+        loadLyricsCoverImages();
+        return;
+    }
+
+    lyricsCoverImagesRequestId++;
+    lyricsCoverImages.value = [];
+    lyricsBackgroundImageIndex.value = 0;
+    stopLyricsBackgroundCarousel();
 });
 
 // 判断是否有多种歌词模式（同时有翻译和音译）
@@ -1524,6 +1666,7 @@ watch(lyricsData, (newLyrics) => {
 onUnmounted(() => {
     // 清除自动切换定时器
     clearAutoSwitchTimer();
+    stopLyricsBackgroundCarousel();
 
     if (audioOutputDeviceWatchChangeHandler) {
         window.removeEventListener('audio-output-device-watch-change', audioOutputDeviceWatchChangeHandler);

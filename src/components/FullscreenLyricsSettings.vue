@@ -119,6 +119,7 @@ const defaultSettings = {
 
 const backgroundOptions = [
     { labelKey: 'da-kai', value: 'on', icon: 'fas fa-image' },
+    { labelKey: 'feng-mian', value: 'cover', icon: 'fas fa-images' },
     { labelKey: 'guan-bi', value: 'off', icon: 'fas fa-ban' }
 ];
 const fontSizeOptions = [
@@ -140,7 +141,7 @@ const displayModeOptions = [
 ];
 
 const normalizeSettings = (settings = {}) => ({
-    background: settings.background === 'off' ? 'off' : defaultSettings.background,
+    background: settings.background === 'off' || settings.background === 'cover' ? settings.background : defaultSettings.background,
     fontSize: fontSizeOptions.some(option => option.value === settings.fontSize) ? settings.fontSize : defaultSettings.fontSize,
     align: settings.align === 'left' ? 'left' : defaultSettings.align,
     highlightMode: settings.highlightMode === 'line' ? 'line' : defaultSettings.highlightMode,

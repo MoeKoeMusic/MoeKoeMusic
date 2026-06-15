@@ -517,6 +517,20 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
     background-size: cover;
 }
 
+.lyrics-bg-image {
+    position: absolute;
+    inset: 0;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    opacity: 0;
+    transition: opacity 1.2s ease;
+
+    &.active {
+        opacity: 1;
+    }
+}
+
 .lyrics-screen {
     position: fixed;
     bottom: 0;
@@ -529,6 +543,11 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
     justify-content: space-between;
     padding: 20px;
     background: #1616169c;
+    z-index: 1;
+
+    &.cover-background {
+        backdrop-filter: blur(1px);
+    }
 
     .progress-bar {
         flex-grow: 1;

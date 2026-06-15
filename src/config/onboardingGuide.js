@@ -196,7 +196,7 @@ export const onboardingGuideGroups = [
             {
                 selector: '.fullscreen-lyrics-settings .settings-guide-anchor',
                 title: '全屏歌词快捷设置',
-                description: '鼠标移到右侧小箭头上可以滑出设置面板，快速调整歌词背景、字号和对齐方式。'
+                description: '鼠标移到右侧小箭头上可以滑出设置面板，快速调整歌词背景、字号、高亮方式和对齐方式。'
             },
             {
                 selector: '.lyrics-mode-btn',

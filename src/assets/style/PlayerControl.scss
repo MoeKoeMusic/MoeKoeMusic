@@ -42,7 +42,7 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
     border-radius: 10px;
     padding: 0 10px;
     width: fit-content;
-    transition: background-color 0.3s ease-in;
+    transition: color 0.24s ease, background-color 0.3s ease-in;
 
     &.left {
         text-align: left;
@@ -99,6 +99,29 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
 
 .highlight {
     background-position: 0%;
+}
+
+.line-highlight {
+    &.translated,
+    &.romanized {
+        color: var(--primary-color);
+    }
+
+    .char {
+        background-position: 0%;
+    }
+}
+
+#lyrics.line-highlight-mode {
+    .char {
+        color: #e3e3e3e8;
+        background: none;
+        transition: color 0.24s ease;
+    }
+
+    .line-highlight .char {
+        color: var(--primary-color);
+    }
 }
 
 .player-container {

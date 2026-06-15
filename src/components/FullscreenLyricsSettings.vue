@@ -39,6 +39,21 @@
                 </div>
             </div>
             <div class="settings-row">
+                <span class="settings-label">{{ t('ge-ci-gao-liang-fang-shi') }}</span>
+                <div class="setting-options">
+                    <button
+                        v-for="option in highlightModeOptions"
+                        :key="option.value"
+                        type="button"
+                        :class="{ active: currentSettings.highlightMode === option.value }"
+                        :title="t(option.labelKey)"
+                        @click="updateSetting({ highlightMode: option.value })"
+                    >
+                        {{ t(option.labelKey) }}
+                    </button>
+                </div>
+            </div>
+            <div class="settings-row">
                 <span class="settings-label">{{ t('dui-qi-fang-shi') }}</span>
                 <div class="setting-options">
                     <button
@@ -67,7 +82,8 @@ const props = defineProps({
         default: () => ({
             background: 'on',
             fontSize: '24px',
-            align: 'center'
+            align: 'center',
+            highlightMode: 'char'
         })
     }
 });
@@ -80,7 +96,8 @@ const storageKey = 'fullscreen-lyrics-settings';
 const defaultSettings = {
     background: 'on',
     fontSize: '24px',
-    align: 'center'
+    align: 'center',
+    highlightMode: 'char'
 };
 
 const backgroundOptions = [
@@ -96,11 +113,16 @@ const alignOptions = [
     { labelKey: 'ju-zuo', value: 'left', icon: 'fas fa-align-left' },
     { labelKey: 'ju-zhong', value: 'center', icon: 'fas fa-align-center' }
 ];
+const highlightModeOptions = [
+    { labelKey: 'zhu-zi', value: 'char' },
+    { labelKey: 'zhu-hang', value: 'line' }
+];
 
 const normalizeSettings = (settings = {}) => ({
     background: settings.background === 'off' ? 'off' : defaultSettings.background,
     fontSize: fontSizeOptions.some(option => option.value === settings.fontSize) ? settings.fontSize : defaultSettings.fontSize,
-    align: settings.align === 'left' ? 'left' : defaultSettings.align
+    align: settings.align === 'left' ? 'left' : defaultSettings.align,
+    highlightMode: settings.highlightMode === 'line' ? 'line' : defaultSettings.highlightMode
 });
 
 const currentSettings = computed(() => normalizeSettings(props.modelValue));

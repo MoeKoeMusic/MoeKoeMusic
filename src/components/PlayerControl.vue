@@ -220,17 +220,17 @@
                     </div>
                 </div>
                 <div id="lyrics-container" @wheel="handleLyricsWheel">
-                    <div v-if="lyricsData.length > 0" id="lyrics"
+                    <div v-if="lyricsData.length > 0" id="lyrics" :class="{ 'line-highlight-mode': lyricsHighlightMode === 'line' }"
                         :style="{ fontSize: lyricsFontSize, transform: `translateY(${scrollAmount ? scrollAmount + 'px' : '50%'})` }">
                         <div class="line-group" v-for="(lineData, lineIndex) in lyricsData" :key="lineIndex">
-                            <div class="line" @click="handleLyricsClick(lineIndex)" :class="{ click: lyricsFlag, [lyricsAlign]: true }">
+                            <div class="line" @click="handleLyricsClick(lineIndex)" :class="{ click: lyricsFlag, 'line-highlight': isCurrentLyricsLine(lineIndex), [lyricsAlign]: true }">
                                 <span v-for="(charData, charIndex) in lineData.characters" :key="charIndex" class="char"
-                                    :class="{ highlight: charData.highlighted }">
+                                    :class="{ highlight: lyricsHighlightMode === 'char' && charData.highlighted }">
                                     {{ charData.char }}
                                 </span>
                             </div>
-                            <div class="line translated" :class="{ [lyricsAlign]: true }" v-show="lineData.translated && lyricsMode === 'translation'">{{ lineData.translated }}</div>
-                            <div class="line romanized" :class="{ [lyricsAlign]: true }" v-show="lineData.romanized && lyricsMode === 'romanization'">{{ lineData.romanized }}</div>
+                            <div class="line translated" :class="{ 'line-highlight': isCurrentLyricsLine(lineIndex), [lyricsAlign]: true }" v-show="lineData.translated && lyricsMode === 'translation'">{{ lineData.translated }}</div>
+                            <div class="line romanized" :class="{ 'line-highlight': isCurrentLyricsLine(lineIndex), [lyricsAlign]: true }" v-show="lineData.romanized && lyricsMode === 'romanization'">{{ lineData.romanized }}</div>
                         </div>
                     </div>
                     <div v-else class="no-lyrics">{{ SongTips }}</div>
@@ -250,7 +250,7 @@ import { useMusicQueueStore } from '../stores/musicQueue';
 import { useI18n } from 'vue-i18n';
 import PlaylistSelectModal from './PlaylistSelectModal.vue';
 import QueueList from './QueueList.vue';
-import FullscreenLyricsSettings from './player/FullscreenLyricsSettings.vue';
+import FullscreenLyricsSettings from './FullscreenLyricsSettings.vue';
 import { useRouter } from 'vue-router';
 import { getCover, getAudioOutputDeviceSignature, share } from '../utils/utils';
 
@@ -277,12 +277,14 @@ const currentTime = ref(0);
 const fullscreenLyricsDefaultSettings = {
     background: 'on',
     fontSize: '24px',
-    align: 'center'
+    align: 'center',
+    highlightMode: 'char'
 };
 const fullscreenLyricsSettings = ref({ ...fullscreenLyricsDefaultSettings });
 const lyricsFontSize = computed(() => fullscreenLyricsSettings.value.fontSize);
 const lyricsAlign = computed(() => fullscreenLyricsSettings.value.align);
 const lyricsBackground = computed(() => fullscreenLyricsSettings.value.background);
+const lyricsHighlightMode = computed(() => fullscreenLyricsSettings.value.highlightMode || 'char');
 const sliderElement = ref(null);
 const coverMode = ref(localStorage.getItem('lyrics-cover-mode') || 'square');
 
@@ -469,6 +471,24 @@ const { playing, isMuted, volume, changeVolume, audio, playbackRate, setPlayback
 const lyricsHandler = useLyricsHandler(t);
 const { lyricsData, originalLyrics, showLyrics, scrollAmount, SongTips, lyricsMode, toggleLyrics, getLyrics, highlightCurrentChar, resetLyricsHighlight, getCurrentLineText, scrollToCurrentLine, toggleLyricsMode } = lyricsHandler;
 
+const currentLyricsLineIndex = computed(() => {
+    if (!lyricsData.value || lyricsData.value.length === 0) return -1;
+
+    const currentTimeMs = currentTime.value * 1000;
+    for (let index = 0; index < lyricsData.value.length; index++) {
+        const firstChar = lyricsData.value[index]?.characters?.[0];
+        const nextFirstChar = lyricsData.value[index + 1]?.characters?.[0];
+
+        if (firstChar && currentTimeMs >= firstChar.startTime && (!nextFirstChar || currentTimeMs < nextFirstChar.startTime)) {
+            return index;
+        }
+    }
+
+    return -1;
+});
+
+const isCurrentLyricsLine = (lineIndex) => lyricsHighlightMode.value === 'line' && currentLyricsLineIndex.value === lineIndex;
+
 // 获取当前播放时间的歌词行索引
 const getCurrentLineIndex = (currentTime) => {
     if (!lyricsData.value || lyricsData.value.length === 0) return -1;
@@ -601,6 +621,9 @@ const hasMultiLyricsMode = computed(() => {
 });
 
 const handleFullscreenLyricsSettingsChange = () => {
+    currentTime.value = audio.currentTime || 0;
+    resetLyricsHighlight(currentTime.value);
+
     if (typeof requestAnimationFrame === 'function') {
         requestAnimationFrame(() => {
             const currentLineIndex = getCurrentLineIndex(audio.currentTime);

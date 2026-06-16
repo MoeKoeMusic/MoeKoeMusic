@@ -243,8 +243,11 @@ class NativeHostManager {
         // 同一个 host 已经在运行时复用进程，避免重复启动多个 exe。
         const key = this.getKey(record.extensionId, host.id);
         const existing = this.processes.get(key);
-        if (existing?.process && !existing.process.killed) {
+        if (existing?.process && !existing.process.killed && existing.process.exitCode === null) {
             return existing;
+        }
+        if (existing) {
+            this.processes.delete(key);
         }
         if (!host.executablePath || !fsExists(host.executablePath)) {
             log.error(`本地程序文件不存在 ${record.pluginId}/${host.id}: ${host.executablePath}`);
@@ -280,11 +283,15 @@ class NativeHostManager {
             });
             child.on('exit', (code, signal) => {
                 log.info(`本地程序已退出 ${record.pluginId}/${host.id}: ${code} ${signal || ''}`);
-                this.processes.delete(key);
+                if (this.processes.get(key) === processInfo) {
+                    this.processes.delete(key);
+                }
             });
             child.on('error', error => {
                 log.error(`本地程序运行错误 ${record.pluginId}/${host.id}:`, error);
-                this.processes.delete(key);
+                if (this.processes.get(key) === processInfo) {
+                    this.processes.delete(key);
+                }
             });
 
             return processInfo;
@@ -302,10 +309,14 @@ class NativeHostManager {
         }
 
         const child = processInfo.process;
+        if (this.processes.get(key) === processInfo) {
+            this.processes.delete(key);
+        }
+
         this.writeToHost(processInfo, { type: 'shutdown' }, true);
 
         setTimeout(() => {
-            if (!forceKill || child.killed || !this.processes.has(key)) {
+            if (!forceKill || child.killed || child.exitCode !== null) {
                 return;
             }
 
@@ -376,7 +387,9 @@ class NativeHostManager {
             this.closeBridge(key);
         });
         bridgeWindow.on('closed', () => {
-            this.bridgeWindows.delete(key);
+            if (this.bridgeWindows.get(key) === bridgeWindow) {
+                this.bridgeWindows.delete(key);
+            }
         });
 
         this.bridgeWindows.set(key, bridgeWindow);

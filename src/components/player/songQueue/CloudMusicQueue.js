@@ -93,17 +93,21 @@ export default function useCloudMusicQueue(t, musicQueueStore, currentSong, time
             queueSongs = [...musicQueueStore.queue];
         }
 
-        const newSongs = songs.map((song, index) => {
-            return {
-                id: queueSongs.length + index + 1,
+        const addedHashes = new Set(queueSongs.map(song => song.hash));
+        const newSongs = songs.reduce((list, song) => {
+            if (!song.hash || addedHashes.has(song.hash)) return list;
+            addedHashes.add(song.hash);
+            list.push({
+                id: queueSongs.length + list.length + 1,
                 hash: song.hash,
                 name: song.name,
                 author: song.author,
                 timeLength: song.timelen || 0,
                 url: song.url,
                 isCloud: true
-            };
-        });
+            });
+            return list;
+        }, []);
 
         if (append) {
             queueSongs = [...queueSongs, ...newSongs];

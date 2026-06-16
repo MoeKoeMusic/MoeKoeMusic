@@ -224,17 +224,19 @@ export default function useLocalMusicQueue(t, musicQueueStore, currentSong, time
                 queueSongs = [...musicQueueStore.queue];
             }
             
+            const addedHashes = new Set(queueSongs.map(song => song.hash));
             const newSongs = [];
-            for (const [index, item] of localSongs.entries()) {
+            for (const item of localSongs) {
                 const localHash = getLocalSongHash(item);
-                if (!localHash) continue;
+                if (!localHash || addedHashes.has(localHash)) continue;
+                addedHashes.add(localHash);
 
                 const localFile = await resolveLocalSongFile(item, localHash);
                 if (!localFile) continue;
                 await saveLocalSongHandle(localHash, item);
 
                 const localSong = {
-                    id: queueSongs.length + index + 1,
+                    id: queueSongs.length + newSongs.length + 1,
                     hash: localHash,
                     name: item.displayName || item.name,
                     author: item.author || '未知艺术家',

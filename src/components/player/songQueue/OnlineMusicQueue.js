@@ -301,16 +301,20 @@ export default function useOnlineMusicQueue(t, musicQueueStore, currentSong, tim
             songs = [...musicQueueStore.queue];
         }
 
-        const newSongs = info.map((song, index) => {
-            return {
-                id: songs.length + index + 1,
+        const addedHashes = new Set(songs.map(song => song.hash));
+        const newSongs = info.reduce((list, song) => {
+            if (!song.hash || addedHashes.has(song.hash)) return list;
+            addedHashes.add(song.hash);
+            list.push({
+                id: songs.length + list.length + 1,
                 hash: song.hash,
                 name: song.name,
                 img: song.cover?.replace("{size}", 480) || './assets/images/ico.png',
                 author: song.author,
                 timeLength: song.timelen
-            };
-        });
+            });
+            return list;
+        }, []);
 
         if (append) {
             songs = [...songs, ...newSongs];

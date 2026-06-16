@@ -140,7 +140,7 @@
                 :item-size="viewMode === 'list' ? 50 : 70" class="track-list" key-field="hash" @scroll="handleScroll">
                 <template #default="{ item, index }">
                     <div class="li" :key="item.hash"
-                        :class="{ 'cover-view': viewMode === 'grid', 'selected': selectedTracks.includes(index) }"
+                        :class="{ 'cover-view': viewMode === 'grid', 'selected': batchSelectionMode && selectedTracks.includes(index) }"
                         @click="batchSelectionMode ? selectTrack(index, $event) : playSong(item.hash, item.name, item.cover, item.author)"
                         @contextmenu.prevent="showContextMenu($event, item)">
 
@@ -298,6 +298,12 @@ const selectedTracks = ref([]);
 let lastSelectedIndex = -1;
 const songs = ref([]);
 
+const clearBatchSelection = () => {
+    selectedTracks.value = [];
+    lastSelectedIndex = -1;
+    isBatchMenuVisible.value = false;
+};
+
 // 排序状态
 const sortField = ref('');
 const sortOrder = ref('asc');
@@ -337,6 +343,10 @@ onBeforeUnmount(() => {
 
 watch(() => [route.query.global_collection_id, route.query.singerid, route.query.albumid], () => {
     loadData();
+});
+
+watch(batchSelectionMode, (value) => {
+    if (!value) clearBatchSelection();
 });
 
 const loadData = async () => {

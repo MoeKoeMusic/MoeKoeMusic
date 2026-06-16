@@ -103,7 +103,7 @@
                 class="track-list" key-field="name" v-if="musicFiles.length > 0">
                 <template #default="{ item, index }">
                     <div class="li" :key="item.name"
-                        :class="{ 'cover-view': listMode === 'grid', 'selected': selectedTracks.includes(index) }"
+                        :class="{ 'cover-view': listMode === 'grid', 'selected': batchSelectionMode && selectedTracks.includes(index) }"
                         @click="batchSelectionMode ? selectTrack(index, $event) : playSong(item)">
 
                         <!-- 复选框或序号 -->

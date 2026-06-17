@@ -979,6 +979,17 @@ const togglePlayPause = async () => {
         playing.value = false;
     } else {
         console.log('[PlayerControl] 开始播放');
+
+        try {
+            mediaSession.changeMediaSession(currentSong.value);
+            // 更新SMTC位置状态
+            if (audio.duration) {
+                mediaSession.updatePositionState(audio.currentTime, audio.duration, currentSpeed.value);
+            }
+        } catch(smtcErr) {
+            console.warn('[PlayerControl] 更新 SMTC 信息失败:', smtcErr);
+        }
+
         try {
             await audio.play();
             playing.value = true;

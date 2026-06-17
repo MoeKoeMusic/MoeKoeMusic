@@ -1,15 +1,17 @@
 <template>
     <div class="discover-playlist-content">
         <div class="category-container">
-            <div class="main-categories">
-                <button v-for="(category, index) in categories" :key="index" @click="selectMainCategory(index)"
+            <div class="main-categories" ref="mainCategoryRef" :style="mainCategoryIndicatorStyle">
+                <button v-for="(category, index) in categories" :key="index" class="main-category-button"
+                    @click="selectMainCategory(index)"
                     :class="{ active: selectedMainCategory === index }">
                     {{ category.tag_name }}
                 </button>
             </div>
 
             <div class="sub-categories">
-                <button v-for="(tab, index) in currentSubCategories" :key="index" @click="selectSubCategory(index)"
+                <button v-for="(tab, index) in currentSubCategories" :key="index" class="sub-category-button"
+                    @click="selectSubCategory(index)"
                     :class="{ active: selectedSubCategory === index }">
                     {{ tab.tag_name }}
                 </button>
@@ -33,7 +35,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import CommonSkeleton from '../CommonSkeleton.vue';
 import { get } from '../../utils/request';
@@ -47,6 +49,11 @@ const selectedSubCategory = ref(0);
 const tagId = ref(0);
 const playlistList = ref([]);
 const isLoading = ref(true);
+const mainCategoryRef = ref(null);
+const mainCategoryIndicatorStyle = ref({
+    '--main-indicator-x': '4px',
+    '--main-indicator-width': '0px'
+});
 
 const currentSubCategories = computed(() => {
     return categories.value[selectedMainCategory.value]?.son || [];
@@ -137,23 +144,58 @@ const selectSubCategory = (index) => {
     updatePlaylistQuery(selectedMainCategory.value, index, nextTagId);
 };
 
+const updateMainCategoryIndicator = async () => {
+    await nextTick();
+
+    const activeButton = mainCategoryRef.value?.querySelector('.main-category-button.active');
+    if (!activeButton) return;
+
+    mainCategoryIndicatorStyle.value = {
+        '--main-indicator-x': `${activeButton.offsetLeft}px`,
+        '--main-indicator-width': `${activeButton.offsetWidth}px`
+    };
+};
+
 watch(() => [route.query.main, route.query.sub], async () => {
     await ensurePlaylistData();
 }, { immediate: true });
+
+watch([selectedMainCategory, () => categories.value.length], updateMainCategoryIndicator, { flush: 'post' });
+
+onMounted(() => {
+    updateMainCategoryIndicator();
+    window.addEventListener('resize', updateMainCategoryIndicator);
+});
+
+onBeforeUnmount(() => {
+    window.removeEventListener('resize', updateMainCategoryIndicator);
+});
 </script>
 
 <style lang="scss" scoped>
 .discover-playlist-content {
-    --discover-sub-bg: #f5f5f5;
-    --discover-sub-text: var(--text-color);
+    --discover-category-bg: rgba(255, 255, 255, 0.72);
+    --discover-category-border: #eceff5;
+    --discover-category-shadow: 0 10px 28px rgba(31, 41, 55, 0.06);
+    --discover-main-bg: #f3f5f8;
+    --discover-main-text: #6b7280;
+    --discover-sub-bg: #f7f8fb;
+    --discover-sub-text: #555f6f;
+    --discover-sub-border: #edf0f5;
     --discover-card-bg: #fff;
     --discover-card-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     --discover-title-text: var(--text-color);
     --discover-meta-text: #666;
 
     &:is(.dark .discover-playlist-content) {
+        --discover-category-bg: rgba(29, 29, 29, 0.74);
+        --discover-category-border: rgba(255, 255, 255, 0.08);
+        --discover-category-shadow: 0 14px 30px rgba(0, 0, 0, 0.22);
+        --discover-main-bg: #25272e;
+        --discover-main-text: rgba(255, 255, 255, 0.6);
         --discover-sub-bg: #2a2a2a;
         --discover-sub-text: rgba(255, 255, 255, 0.82);
+        --discover-sub-border: rgba(255, 255, 255, 0.08);
         --discover-card-bg: #1d1d1d;
         --discover-card-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
         --discover-title-text: rgba(255, 255, 255, 0.86);
@@ -162,66 +204,110 @@ watch(() => [route.query.main, route.query.sub], async () => {
 }
 
 .category-container {
-    margin-bottom: 30px;
+    display: grid;
+    gap: 14px;
+    margin-bottom: 24px;
+    padding: 12px;
+    background: var(--discover-category-bg);
+    border: 1px solid var(--discover-category-border);
+    border-radius: 8px;
+    box-shadow: var(--discover-category-shadow);
 }
 
 .main-categories {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+    padding: 4px;
+    overflow: hidden;
+    background: var(--discover-main-bg);
+    border-radius: 8px;
 
-    button {
-        background-color: var(--secondary-color);
-        color: #fff;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 20px;
-        cursor: pointer;
-        font-size: 15px;
-
-        &.active {
-            background-color: var(--primary-color);
-        }
+    &::before {
+        content: "";
+        position: absolute;
+        top: 4px;
+        bottom: 4px;
+        left: 0;
+        z-index: 0;
+        width: var(--main-indicator-width);
+        background: var(--primary-color);
+        border-radius: 6px;
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+        transform: translateX(var(--main-indicator-x));
+        transition: width 0.26s cubic-bezier(0.22, 1, 0.36, 1), transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
     }
 }
 
 .sub-categories {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     flex-wrap: wrap;
-    margin-bottom: 20px;
+}
 
-    button {
-        background-color: var(--discover-sub-bg);
-        color: var(--discover-sub-text);
-        border: none;
-        padding: 8px 15px;
-        border-radius: 15px;
-        cursor: pointer;
-        font-size: 14px;
+.main-category-button,
+.sub-category-button {
+    border: none !important;
+    cursor: pointer;
+    transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
 
-        &.active {
-            background-color: var(--secondary-color);
-            color: #fff;
-        }
+.main-category-button {
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+    height: 34px;
+    padding: 0 12px;
+    background: transparent !important;
+    color: var(--discover-main-text) !important;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+
+    &:hover {
+        color: var(--primary-color) !important;
+    }
+
+    &.active {
+        color: #fff !important;
+    }
+}
+
+.sub-category-button {
+    height: 32px;
+    padding: 0 13px;
+    background-color: var(--discover-sub-bg) !important;
+    color: var(--discover-sub-text) !important;
+    border: 1px solid var(--discover-sub-border) !important;
+    border-radius: 8px;
+    font-size: 13px;
+
+    &:hover {
+        color: var(--primary-color) !important;
+        transform: translateY(-1px);
+    }
+
+    &.active {
+        color: var(--primary-color) !important;
+        background-color: rgba(var(--primary-color-rgb), 0.1) !important;
+        border-color: rgba(var(--primary-color-rgb), 0.32) !important;
     }
 }
 
 .music-grid {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-    justify-content: space-evenly;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(156px, 1fr));
+    gap: 18px;
 }
 
 .music-card {
     background-color: var(--discover-card-bg);
-    border-radius: 10px;
+    border-radius: 8px;
     box-shadow: var(--discover-card-shadow);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     padding: 10px;
     text-align: center;
-    width: 180px;
+    min-width: 0;
 
     &:hover {
         transform: translateY(-5px);
@@ -236,7 +322,9 @@ watch(() => [route.query.main, route.query.sub], async () => {
 
     img {
         width: 100%;
-        border-radius: 8px;
+        aspect-ratio: 1;
+        object-fit: cover;
+        border-radius: 6px;
     }
 }
 
@@ -257,6 +345,50 @@ watch(() => [route.query.main, route.query.sub], async () => {
         text-overflow: ellipsis;
         max-height: 50px;
         line-height: 25px;
+    }
+}
+
+@media (max-width: 768px) {
+    .category-container {
+        gap: 12px;
+        padding: 10px;
+        margin-bottom: 18px;
+    }
+
+    .main-categories {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
+
+    .main-category-button {
+        flex: 0 0 auto;
+    }
+
+    .music-grid {
+        grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+        gap: 12px;
+    }
+
+    .music-card {
+        padding: 8px;
+    }
+
+    .music-info {
+        h3 {
+            font-size: 14px;
+        }
+
+        p {
+            line-height: 20px;
+            max-height: 40px;
+        }
     }
 }
 </style>

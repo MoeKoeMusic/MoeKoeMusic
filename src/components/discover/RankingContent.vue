@@ -341,8 +341,8 @@ onBeforeUnmount(() => {
 .ranking-container {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    padding: 20px;
+    gap: 18px;
+    padding: 0;
     --ranking-surface: #ffffff;
     --ranking-surface-soft: #f5f5f5;
     --ranking-surface-muted: #f6f7fb;
@@ -379,9 +379,9 @@ onBeforeUnmount(() => {
 }
 
 .rank-selector-shell {
-    padding: 16px;
+    padding: 12px;
     background: var(--ranking-surface);
-    border-radius: 16px;
+    border-radius: 8px;
     box-shadow: var(--ranking-card-shadow);
 }
 
@@ -405,7 +405,7 @@ onBeforeUnmount(() => {
 .rank-selector {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 8px;
 
     &:is(.dark .rank-selector) {
         background: transparent !important;
@@ -413,11 +413,13 @@ onBeforeUnmount(() => {
 }
 
 .rank-chip {
-    padding: 8px 16px;
-    border-radius: 20px;
+    height: 32px;
+    padding: 0 13px;
+    border-radius: 8px;
     background: var(--ranking-surface-soft);
     color: var(--ranking-text-secondary);
-    font-size: 14px;
+    font-size: 13px;
+    line-height: 32px;
     cursor: pointer;
     transition: all 0.3s ease;
 
@@ -435,9 +437,10 @@ onBeforeUnmount(() => {
 .rank-selector-toggle {
     width: 100%;
     margin-top: 12px;
-    padding: 10px 14px;
+    height: 34px;
+    padding: 0 14px;
     border: none;
-    border-radius: 12px;
+    border-radius: 8px;
     background: var(--ranking-surface-muted);
     color: var(--ranking-text-secondary);
     font-size: 13px;
@@ -466,13 +469,13 @@ onBeforeUnmount(() => {
 .ranking-list {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-    padding: 20px;
+    gap: 18px;
+    padding: 0;
 }
 
 .ranking-item {
     background: var(--ranking-surface);
-    border-radius: 16px;
+    border-radius: 8px;
     overflow: hidden;
     box-shadow: var(--ranking-card-shadow);
     transition: all 0.3s ease;
@@ -489,7 +492,7 @@ onBeforeUnmount(() => {
 .rank-header {
     display: flex;
     align-items: center;
-    padding: 20px;
+    padding: 16px;
     position: relative;
     background: linear-gradient(to right, rgba(100, 61, 73, 0.133), transparent);
 }
@@ -497,7 +500,7 @@ onBeforeUnmount(() => {
 .rank-cover {
     width: 100px;
     height: 100px;
-    border-radius: 12px;
+    border-radius: 6px;
     overflow: hidden;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 
@@ -563,7 +566,7 @@ onBeforeUnmount(() => {
 .song-list {
     flex: 1;
     overflow-y: auto;
-    padding: 0 12px;
+    padding: 0 10px;
 
     &::-webkit-scrollbar {
         width: 6px;
@@ -583,7 +586,7 @@ onBeforeUnmount(() => {
     display: flex;
     align-items: center;
     padding: 12px 8px;
-    border-radius: 8px;
+    border-radius: 6px;
     transition: all 0.2s ease;
     cursor: pointer;
 
@@ -619,7 +622,7 @@ onBeforeUnmount(() => {
     position: relative;
     width: 48px;
     height: 48px;
-    border-radius: 8px;
+    border-radius: 6px;
     overflow: hidden;
     margin: 0 16px;
 
@@ -756,7 +759,6 @@ onBeforeUnmount(() => {
     .ranking-list {
         grid-template-columns: repeat(2, 1fr);
         gap: 15px;
-        padding: 15px;
     }
 
     .ranking-item {
@@ -784,7 +786,7 @@ onBeforeUnmount(() => {
 
 @media (max-width: 768px) {
     .ranking-container {
-        padding: 10px;
+        padding: 0;
     }
 
     .rank-selector {
@@ -807,8 +809,7 @@ onBeforeUnmount(() => {
     }
 
     .ranking-list {
-        gap: 10px;
-        padding: 10px;
+        gap: 12px;
         grid-template-columns: 1fr;
     }
 

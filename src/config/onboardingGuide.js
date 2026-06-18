@@ -43,10 +43,15 @@ export const onboardingGuideGroups = [
     },
     {
         key: 'home',
-        version: '1',
+        version: '2',
         routeNames: ['Index'],
         triggerSelector: '.recommendations',
         steps: [
+            {
+                selector: '.recommend-title',
+                title: '切换推荐卡片样式',
+                description: '点击“推荐”标题可以在图片卡片和图标卡片之间切换，如果你不喜欢胡桃的话。'
+            },
             {
                 selector: '.recommendations .radio-card',
                 title: 'MoeKoe Radio',

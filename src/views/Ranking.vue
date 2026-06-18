@@ -1,5 +1,7 @@
 <template>
-    <RankingContent :player-control="playerControl" />
+    <div class="ranking-page">
+        <RankingContent :player-control="playerControl" />
+    </div>
 </template>
 
 <script setup>
@@ -9,3 +11,9 @@ defineProps({
     playerControl: Object
 });
 </script>
+
+<style scoped>
+.ranking-page {
+    padding: 20px;
+}
+</style>

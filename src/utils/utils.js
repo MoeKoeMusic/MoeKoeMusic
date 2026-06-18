@@ -1,5 +1,26 @@
 import i18n from '@/utils/i18n';
 
+const appFontStyleId = 'moekoe-custom-font';
+const defaultFontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif";
+
+const escapeCssString = (value) => String(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+
+export const applyCustomFont = (fontFamily) => {
+    if (typeof document === 'undefined') return;
+
+    document.getElementById(appFontStyleId)?.remove();
+    if (!fontFamily) return;
+
+    const safeFontFamily = escapeCssString(fontFamily);
+    const style = document.createElement('style');
+    style.id = appFontStyleId;
+    style.textContent = `
+body, html, button, input, textarea, select {
+    font-family: "${safeFontFamily}", ${defaultFontFamily} !important;
+}`;
+    document.head.appendChild(style);
+};
+
 export const applyColorTheme = (theme) => {
     let colors;
     if (theme === 'blue') {

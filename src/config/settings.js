@@ -83,15 +83,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
                 selectionTitle: t('zi-ti-she-zhi'),
                 keepOpen: true,
                 label: t('zi-ti-she-zhi'),
-                showRefreshHint: true,
-                refreshHintText: t('shua-xin-hou-sheng-xiao'),
                 helpLink: 'https://music.moekoe.cn/guide/font-settings.html'
-            },
-            {
-                key: 'fontUrl',
-                hidden: true,
-                defaultValue: '',
-                defaultDisplayText: t('mo-ren-zi-ti')
             },
             {
                 key: 'startupPage',

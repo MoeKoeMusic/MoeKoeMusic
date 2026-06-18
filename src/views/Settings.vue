@@ -66,18 +66,14 @@
                     </li>
                 </ul>
 
-                <div v-if="selectionType === 'font'" class="api-settings-container" @focusout="handleFontFocusOut">
-                    <div class="api-setting-item">
-                        <label>{{ $t('zi-ti-url-di-zhi') }}</label>
-                        <input type="text" v-model="fontUrlInput" class="api-input"
-                            :placeholder="$t('qing-shu-ru-zi-ti-url-di-zhi')" />
-                    </div>
-                    <div class="api-setting-item">
-                        <label>{{ $t('zi-ti-ming-cheng') }}</label>
-                        <input type="text" v-model="fontFamilyInput" class="api-input"
-                            :placeholder="$t('qing-shu-ru-zi-ti-ming-cheng')" />
-                    </div>
-                </div>
+                <ul v-else-if="selectionType === 'font'" class="font-list">
+                    <li v-if="fontOptionsLoading">{{ $t('jia-zai-zhong') }}</li>
+                    <li v-else-if="fontOptions.length === 0">{{ $t('mo-ren-zi-ti') }}</li>
+                    <li v-else v-for="option in fontOptions" :key="option.value" :style="{ fontFamily: option.value }"
+                        @click="selectFontOption(option)">
+                        {{ option.displayText }}
+                    </li>
+                </ul>
 
                 <div v-if="selectionType === 'highDpi'" class="scale-slider-container">
                     <div class="scale-slider-label">{{ $t('suo-fang-yin-zi') }}: {{ dpiScale }} <span
@@ -178,7 +174,7 @@ import { ref, onMounted, getCurrentInstance, onUnmounted, reactive } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { MoeAuthStore } from '../stores/store';
 import ExtensionManager from '@/components/ExtensionManager.vue';
-import { requestMicrophonePermission } from '../utils/utils';
+import { applyCustomFont, requestMicrophonePermission } from '../utils/utils';
 import { DEFAULT_API_BASE_URL, validateApiBaseUrl, testApiBaseUrl as testApiBaseUrlRequest } from '@/utils/apiBaseUrl';
 import { useSettingsConfig } from '@/config/settings';
 import { ONBOARDING_GUIDE_EVENT } from '@/config/onboardingGuide';
@@ -222,8 +218,8 @@ const selectedSettings = ref(createSelectedSettings(settingSections.value));
 const isSelectionOpen = ref(false);
 const currentHelpLink = ref('');
 const selectionType = ref('');
-const fontUrlInput = ref('');
-const fontFamilyInput = ref('');
+const fontOptions = ref([]);
+const fontOptionsLoading = ref(false);
 
 const showRefreshHint = ref({});
 
@@ -284,6 +280,30 @@ const loadAudioOutputDevices = async () => {
     }
 };
 
+const loadLocalFonts = async () => {
+    fontOptionsLoading.value = true;
+
+    try {
+        if (!window.queryLocalFonts) {
+            fontOptions.value = [];
+            return;
+        }
+
+        const fonts = await window.queryLocalFonts();
+        const families = [...new Set(fonts.map(font => font.family).filter(Boolean))].sort((a, b) =>
+            a.localeCompare(b)
+        );
+        fontOptions.value = [
+            { displayText: t('mo-ren-zi-ti'), value: '' },
+            ...families.map(family => ({ displayText: family, value: family }))
+        ];
+    } catch {
+        fontOptions.value = [];
+    } finally {
+        fontOptionsLoading.value = false;
+    }
+};
+
 const openSelection = (type, helpLink) => {
     isSelectionOpen.value = true;
     selectionType.value = type;
@@ -293,10 +313,7 @@ const openSelection = (type, helpLink) => {
         dpiScale.value = parseFloat(selectedSettings.value.dpiScale?.value || '1.0');
     }
 
-    if (type === 'font') {
-        fontUrlInput.value = selectedSettings.value.fontUrl?.value || '';
-        fontFamilyInput.value = selectedSettings.value.font?.value || '';
-    }
+    if (type === 'font') void loadLocalFonts();
 
     if (type === 'proxy') {
         proxyForm.url = selectedSettings.value.proxyUrl?.value || '';
@@ -451,19 +468,15 @@ const selectOption = async (option) => {
     markRefreshHint(selectionType.value);
 };
 
-const updateFontSetting = () => {
-    const fontUrl = fontUrlInput.value || '';
-    const font = fontFamilyInput.value || '';
-    selectedSettings.value.fontUrl = { displayText: fontUrl || t('mo-ren-zi-ti'), value: fontUrl };
-    selectedSettings.value.font = { displayText: font || t('mo-ren-zi-ti'), value: font };
+const selectFontOption = (option) => {
+    selectedSettings.value.font = {
+        displayText: option.displayText,
+        value: option.value
+    };
+    applyCustomFont(option.value);
     saveSettings();
+    closeSelection();
     markRefreshHint('font');
-};
-
-const handleFontFocusOut = async (e) => {
-    const container = e.currentTarget;
-    if (container && e.relatedTarget && container.contains(e.relatedTarget)) return;
-    updateFontSetting();
 };
 
 const isElectron = () => {
@@ -517,7 +530,7 @@ onMounted(() => {
                 selectedSettings.value[key] = { displayText: value, value: value };
                 continue;
             }
-            if (key === 'font' || key === 'fontUrl') {
+            if (key === 'font') {
                 const value = savedSettings[key] || '';
                 selectedSettings.value[key] = {
                     displayText: value || t('mo-ren-zi-ti'),

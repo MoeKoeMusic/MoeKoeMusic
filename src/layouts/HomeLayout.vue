@@ -15,7 +15,7 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import Header from "@/components/Header.vue";
 import PlayerControl from "@/components/PlayerControl.vue";
 import OnboardingGuide from "@/components/OnboardingGuide.vue";
-import { setTheme, applyColorTheme } from '../utils/utils';
+import { setTheme, applyColorTheme, applyCustomFont } from '../utils/utils';
 
 const playerControl = ref(null);
 const isOnline = ref(navigator.onLine);
@@ -42,6 +42,7 @@ onMounted(() => {
     const savedConfig = JSON.parse(localStorage.getItem('settings'));
     if (savedConfig) {
         applyColorTheme(savedConfig['themeColor']);
+        applyCustomFont(savedConfig.font || '');
     }
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {

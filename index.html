@@ -33,19 +33,6 @@
         };
         const settings = JSON.parse(localStorage.getItem('settings'));
         document.documentElement.lang = settings?.language || getBrowserLocale();
-        const font = settings?.font || '';
-        const fontUrl = settings?.fontUrl || '';
-        if (fontUrl) {
-            const link = document.createElement('link');
-            link.href = fontUrl;
-            link.rel = 'stylesheet';
-            document.head.appendChild(link);
-        }
-        if (font) {
-            const style = document.createElement('style');
-            style.textContent = `* { font-family: "${font}", Arial, sans-serif; }`;
-            document.head.appendChild(style);
-        }
     </script>
 </body>
 

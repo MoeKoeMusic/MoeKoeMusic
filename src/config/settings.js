@@ -62,6 +62,17 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
                 label: '搜索模式'
             },
             {
+                key: 'navigationMode',
+                defaultValue: 'top',
+                itemIcon: 'fas fa-bars',
+                selectionTitle: '导航方式',
+                options: [
+                    { displayText: '顶部', value: 'top' },
+                    { displayText: '左侧', value: 'side' }
+                ],
+                label: '导航方式'
+            },
+            {
                 key: 'nativeTitleBar',
                 defaultValue: 'off',
                 itemIcon: 'fas fa-window-maximize',

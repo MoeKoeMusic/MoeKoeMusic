@@ -1,6 +1,7 @@
 <template>
-    <Header />
-    <main>
+    <Header v-if="navigationMode === 'top'" />
+    <SidebarNavigation v-else />
+    <main :class="{ 'side-navigation-main-content': navigationMode === 'side', collapsed: sidebarCollapsed }">
         <div v-if="!isOnline" class="network-status">
             网络连接已断开
         </div>
@@ -13,12 +14,15 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import Header from "@/components/Header.vue";
+import SidebarNavigation from "@/components/SidebarNavigation.vue";
 import PlayerControl from "@/components/PlayerControl.vue";
 import OnboardingGuide from "@/components/OnboardingGuide.vue";
 import { setTheme, applyColorTheme, applyCustomFont } from '../utils/utils';
 
 const playerControl = ref(null);
 const isOnline = ref(navigator.onLine);
+const navigationMode = ref('top');
+const sidebarCollapsed = ref(localStorage.getItem('sidebarCollapsed') === '1');
 
 // 监听网络状态变化
 const handleNetworkChange = (online) => {
@@ -37,6 +41,15 @@ const handleNetworkChange = (online) => {
 
 const handleOnline = () => handleNetworkChange(true);
 const handleOffline = () => handleNetworkChange(false);
+const loadNavigationMode = (settings = JSON.parse(localStorage.getItem('settings')) || {}) => {
+    navigationMode.value = settings.navigationMode === 'side' ? 'side' : 'top';
+};
+const handleSettingsChange = (event) => {
+    loadNavigationMode(event.detail?.settings);
+};
+const handleSidebarCollapseChange = (event) => {
+    sidebarCollapsed.value = event.detail?.collapsed === true;
+};
 
 onMounted(() => {
     const savedConfig = JSON.parse(localStorage.getItem('settings'));
@@ -44,6 +57,7 @@ onMounted(() => {
         applyColorTheme(savedConfig['themeColor']);
         applyCustomFont(savedConfig.font || '');
     }
+    loadNavigationMode(savedConfig || {});
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
         setTheme(savedTheme);
@@ -52,6 +66,8 @@ onMounted(() => {
     // 添加网络状态监听
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+    window.addEventListener('settings-change', handleSettingsChange);
+    window.addEventListener('sidebar-collapse-change', handleSidebarCollapseChange);
 
     if (Notification.permission !== 'granted') {
         Notification.requestPermission();
@@ -62,6 +78,8 @@ onMounted(() => {
 onUnmounted(() => {
     window.removeEventListener('online', handleOnline);
     window.removeEventListener('offline', handleOffline);
+    window.removeEventListener('settings-change', handleSettingsChange);
+    window.removeEventListener('sidebar-collapse-change', handleSidebarCollapseChange);
 });
 </script>
 
@@ -124,6 +142,15 @@ main {
     margin-bottom: 150px;
     padding-top: 80px;
     padding-bottom: 150px;
+}
+
+main.side-navigation-main-content {
+    margin-left: 226px;
+    padding-top: 52px;
+}
+
+main.side-navigation-main-content.collapsed {
+    margin-left: 64px;
 }
 
 a {

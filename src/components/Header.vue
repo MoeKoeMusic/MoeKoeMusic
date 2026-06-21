@@ -101,6 +101,9 @@ const platform = ref('');
 const searchMode = ref('quick');
 const showProfile = ref(false);
 const updateDialogRef = ref(null);
+const removeAfterEach = router.afterEach(() => {
+    updateNavigationStatus();
+});
 
 onMounted(() => {
     updateNavigationStatus();
@@ -119,6 +122,7 @@ onMounted(() => {
 
 onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside);
+    removeAfterEach();
 });
 
 const Disclaimer = () => {
@@ -145,10 +149,6 @@ const goForward = () => {
     }
     updateNavigationStatus();
 };
-
-router.afterEach(() => {
-    updateNavigationStatus();
-});
 
 const refreshPage = () => {
     window.location.reload();

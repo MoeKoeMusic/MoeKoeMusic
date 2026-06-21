@@ -1,6 +1,6 @@
 <template>
-  <div class="titlebar">
-    <div class="window-controls" v-if="isElectron && !isMac && $route.name !== 'VideoPlayer'">
+  <div class="titlebar" v-if="isElectron && !isMac && $route.name !== 'VideoPlayer'">
+    <div class="window-controls">
       <button class="control-button" @click="minimizeWindow" id="minBtn"></button>
       <button class="control-button" @click="maximizeWindow" id="maxBtn"></button>
       <button class="control-button" @click="closeWindow" id="closeBtn"></button>

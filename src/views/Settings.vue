@@ -488,6 +488,9 @@ const saveSettings = () => {
     );
     settingsToSave.shortcuts = shortcuts.value;
     localStorage.setItem('settings', JSON.stringify(settingsToSave));
+    window.dispatchEvent(new CustomEvent('settings-change', {
+        detail: { settings: settingsToSave }
+    }));
     isElectron() && window.electron.ipcRenderer.send('save-settings', JSON.parse(JSON.stringify(settingsToSave)));
 };
 
@@ -1089,7 +1092,7 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
     align-items: center;
     justify-content: center;
     animation: fadeIn 0.3s ease-in-out;
-    z-index: 9;
+    z-index: 99;
 }
 
 .modal-content {

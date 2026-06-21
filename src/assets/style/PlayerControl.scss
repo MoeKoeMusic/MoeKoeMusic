@@ -655,6 +655,8 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
 .album-art-large {
     position: relative;
     animation: fadeInScale 0.6s ease-out;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
 
     img {
         width: 400px;

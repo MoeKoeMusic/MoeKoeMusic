@@ -213,20 +213,20 @@
                                 {{ plugin.author || '未知' }}
                             </a>
                         </span>
+                        <span v-if="resolveMarketPermissions(plugin).length > 0" class="market-permissions">
+                            <span
+                                v-for="permission in resolveMarketPermissions(plugin)"
+                                :key="permission.key"
+                                class="permission-badge"
+                            >
+                                <i :class="permission.icon"></i>
+                                {{ permission.label }}
+                            </span>
+                        </span>
                     </div>
 
                     <div v-if="plugin.tags.length > 0" class="market-tags">
                         <span v-for="tag in plugin.tags" :key="tag" class="market-tag">{{ tag }}</span>
-                    </div>
-                    <div v-if="resolveMarketPermissions(plugin).length > 0" class="market-permissions">
-                        <span
-                            v-for="permission in resolveMarketPermissions(plugin)"
-                            :key="permission.key"
-                            class="permission-badge"
-                        >
-                            <i :class="permission.icon"></i>
-                            {{ permission.label }}
-                        </span>
                     </div>
                 </div>
 
@@ -846,6 +846,15 @@ $border-dark: #232527;
             color: #fff;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
         }
+        
+        &:is(.dark .tab-btn) {
+            color: #f3f4f6;
+
+            &.active {
+                background: var(--color-primary, #ff69b4);
+                color: #fff;
+            }
+        }
     }
 }
 
@@ -1030,7 +1039,11 @@ $border-dark: #232527;
 
     &:is(.dark .extension-details, .dark .market-title-text) {
         h4 {
-            color: rgba(255, 255, 255, 0.8);
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        p {
+            color: rgba(255, 255, 255, 0.74);
         }
     }
 }
@@ -1128,6 +1141,12 @@ $border-dark: #232527;
         font-size: 12px;
         word-break: break-all;
     }
+
+    &:is(.dark .native-host-info) {
+        strong {
+            color: rgb(112, 112, 112);
+        }
+    }
 }
 
 .extension-actions,
@@ -1215,6 +1234,7 @@ $border-dark: #232527;
     display: flex;
     gap: 16px;
     flex-wrap: wrap;
+    align-items: center;
 
     span {
         min-width: 0;
@@ -1250,7 +1270,8 @@ $border-dark: #232527;
 }
 
 .market-permissions {
-    display: flex;
+    display: inline-flex;
+    align-items: center;
     gap: 8px;
     flex-wrap: wrap;
 }
@@ -1266,10 +1287,11 @@ $border-dark: #232527;
 .permission-badge {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 4px 10px;
+    gap: 4px;
+    padding: 2px 7px;
     border-radius: 999px;
-    font-size: 12px;
+    font-size: 11px;
+    line-height: 1.25;
     background: #fef3c7;
     color: #92400e;
 }

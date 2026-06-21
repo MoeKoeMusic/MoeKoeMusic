@@ -18,26 +18,27 @@ const maximizeWindow = () => window.electron.ipcRenderer.send('window-control', 
 
 <style lang="scss" scoped>
 .titlebar {
-  -webkit-app-region: drag;
+  -webkit-app-region: no-drag;
   height: 32px;
   padding: 0 12px;
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  z-index: 10;
+  z-index: 100;
   position: fixed;
-  width: 100%;
+  top: 0;
+  right: 0;
 }
 
 .window-controls {
   -webkit-app-region: no-drag;
   display: flex;
   gap: 8px;
-  margin-right: 30px;
   margin-bottom: 8px;
 }
 
 .control-button {
+  -webkit-app-region: no-drag;
   width: 12px;
   height: 12px;
   border-radius: 50%;

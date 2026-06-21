@@ -291,9 +291,18 @@ header {
     padding: 15px 0;
     box-shadow: var(--header-shadow);
     position: fixed;
+    left: 0;
+    right: 0;
     width: 100%;
     top: 0px;
     z-index: 9;
+}
+
+header::before {
+    content: '';
+    position: absolute;
+    inset: 0 100px 0 0;
+    -webkit-app-region: drag;
 }
 
 .nav-arrow,
@@ -305,6 +314,8 @@ header {
 }
 
 .navigation {
+    position: relative;
+    z-index: 1;
     display: flex;
     justify-content: space-between;
     align-items: center;

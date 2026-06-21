@@ -156,12 +156,15 @@ main {
 }
 
 main.side-navigation-main-content {
-    margin-left: 226px;
+    width: min(1200px, calc(100% - 226px));
+    margin-left: max(226px, calc(226px + (100% - 226px - 1200px) / 2));
+    margin-right: 0;
     padding-top: 52px;
 }
 
 main.side-navigation-main-content.collapsed {
-    margin-left: 64px;
+    width: min(1200px, calc(100% - 64px));
+    margin-left: max(64px, calc(64px + (100% - 64px - 1200px) / 2));
 }
 
 a {

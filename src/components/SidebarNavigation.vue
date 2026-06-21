@@ -431,6 +431,13 @@ watch(() => MoeAuth.isAuthenticated, (isAuthenticated) => {
     transition: left 0.2s ease;
 }
 
+.side-top-actions::before {
+    content: '';
+    position: absolute;
+    inset: 0 100px 0 0;
+    -webkit-app-region: drag;
+}
+
 .side-top-actions.collapsed {
     left: 64px;
 }
@@ -440,6 +447,8 @@ watch(() => MoeAuth.isAuthenticated, (isAuthenticated) => {
     align-items: center;
     gap: 6px;
     flex-shrink: 0;
+    position: relative;
+    z-index: 1;
 }
 
 .side-action-button,
@@ -451,6 +460,7 @@ watch(() => MoeAuth.isAuthenticated, (isAuthenticated) => {
     cursor: pointer;
     border-radius: 8px;
     transition: 0.2s;
+    -webkit-app-region: no-drag;
 
     &:hover {
         background: var(--side-hover);
@@ -481,31 +491,34 @@ watch(() => MoeAuth.isAuthenticated, (isAuthenticated) => {
     align-items: center;
     justify-content: center;
     gap: 0;
-    flex: 0 0 36px;
-    height: 36px;
+    flex: 0 0 26px;
+    height: 26px;
     padding: 0;
     overflow: hidden;
     border: 1px solid transparent;
-    border-radius: 18px;
+    border-radius: 13px;
     color: var(--side-muted);
     background: transparent;
     transition: flex-basis 0.2s ease, padding 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+    -webkit-app-region: no-drag;
+    position: relative;
+    z-index: 1;
 
     > i {
         flex-shrink: 0;
         width: 16px;
         color: var(--side-action-icon);
-        font-size: 14px;
+        font-size: 12px;
         line-height: 1;
         text-align: center;
     }
 
     &:hover,
     &:focus-within {
-        flex-basis: 320px;
+        flex-basis: 190px;
         justify-content: flex-start;
-        gap: 10px;
-        padding: 0 14px;
+        gap: 6px;
+        padding: 0 8px;
         border-color: var(--border-color);
         background: var(--background-color);
     }
@@ -517,7 +530,7 @@ watch(() => MoeAuth.isAuthenticated, (isAuthenticated) => {
         outline: none;
         background: transparent;
         color: var(--side-text);
-        font-size: 14px;
+        font-size: 12px;
         opacity: 0;
         transition: width 0.2s ease, opacity 0.15s ease;
     }
@@ -536,6 +549,7 @@ watch(() => MoeAuth.isAuthenticated, (isAuthenticated) => {
     flex-direction: column;
     overflow: hidden;
     padding: 12px 10px;
+    padding-bottom: 0;
 }
 
 .side-search {

@@ -64,11 +64,12 @@
                 <ul v-else>
                     <li v-for="(song, index) in listenHistory" :key="index" class="song-item"
                         @click="playSong(song['hash'], song.name.split(' - ')[1] || song.name, $getCover(song.image, 480), song.singername)">
-                        <img :src="$getCover(song.image, 120)" class="album-cover" />
+                        <img :src="$getCover(song.image, 120)" :alt="$t('feng-mian')" class="album-cover" />
                         <div class="song-info">
                             <p class="album-name">{{ song.name.split(' - ')[1] || song.name }}</p>
                             <p class="singer-name">{{ song.singername }}</p>
                         </div>
+                        <i class="song-play-icon fas fa-play"></i>
                     </li>
                 </ul>
             </div>
@@ -89,7 +90,9 @@
                     <router-link :to="{
                         path: '/CloudDrive'
                     }">
-                        <img :src="`./assets/images/cloud-disk.png`" class="album-image" />
+                        <div class="album-image-wrap">
+                            <img :src="`./assets/images/cloud-disk.png`" class="album-image" />
+                        </div>
                         <div class="album-info">
                             <h3>我的云盘</h3>
                             <p>(*/ω＼*)</p>
@@ -100,7 +103,9 @@
                     <router-link :to="{
                         path: '/LocalMusic'
                     }">
-                        <img :src="`./assets/images/local-music.png`" class="album-image" />
+                        <div class="album-image-wrap">
+                            <img :src="`./assets/images/local-music.png`" class="album-image" />
+                        </div>
                         <div class="album-info">
                             <h3>本地音乐</h3>
                             <p>(〃'▽'〃)</p>
@@ -114,8 +119,10 @@
                         path: '/PlaylistDetail',
                         query: { global_collection_id: item.list_create_gid || item.global_collection_id, listid: item.listid }
                     }">
-                        <img :src="item.pic ? $getCover(item.pic, 480) : './assets/images/live.png'"
-                            class="album-image" />
+                        <div class="album-image-wrap">
+                            <img :src="item.pic ? $getCover(item.pic, 480) : './assets/images/live.png'"
+                                class="album-image" />
+                        </div>
                         <div class="album-info">
                             <h3>{{ item.name }}</h3>
                             <p>{{ item.count }} <span>{{ $t('shou-ge') }}</span></p>
@@ -124,7 +131,9 @@
                 </div>
                 <div v-if="selectedCategory === 0 && !isLoading" class="music-card create-playlist-button">
                     <i class="fas fa-plus"></i>
-                    <img :src="`./assets/images/ti111mg.png`" class="album-image" @click="createPlaylist" />
+                    <div class="album-image-wrap" @click="createPlaylist">
+                        <img :src="`./assets/images/ti111mg.png`" class="album-image" />
+                    </div>
                     <div class="album-info" @click="createPlaylist">
                         <h3>{{ $t('chuang-jian-ge-dan') }}</h3>
                         <p>(≧∀≦)♪</p>
@@ -134,7 +143,9 @@
             <div v-if="selectedCategory === 3 || selectedCategory === 4" class="music-card"
                 v-for="(artist, index) in (selectedCategory === 3 ? followedArtists : selectedCategory === 4 ? collectedFriends : [])"
                 :key="index" @click="goToArtistDetail(artist)">
-                <img :src="artist.pic" class="album-image" />
+                <div class="album-image-wrap">
+                    <img :src="artist.pic" class="album-image" />
+                </div>
                 <div class="album-info">
                     <h3>{{ artist.nickname }}</h3>
                 </div>
@@ -444,6 +455,17 @@ const addAllSongsToQueue = () => {
 
 .library-page {
     padding: 20px;
+    --library-favorite-card-bg: rgba(255, 255, 255, 0.9);
+    --library-favorite-card-hover-bg: rgba(var(--primary-color-rgb), 0.08);
+    --library-favorite-title: #2b2b2b;
+    --library-favorite-text: #666;
+}
+
+:global(.dark) .library-page {
+    --library-favorite-card-bg: rgba(39, 39, 39, 0.92);
+    --library-favorite-card-hover-bg: rgba(var(--primary-color-rgb), 0.14);
+    --library-favorite-title: rgba(255, 255, 255, 0.88);
+    --library-favorite-text: rgba(255, 255, 255, 0.58);
 }
 
 .user-level {
@@ -708,6 +730,8 @@ const addAllSongsToQueue = () => {
 .favorite-section {
     display: flex;
     justify-content: space-between;
+    padding-top: 15px;
+    padding-bottom: 15px;
 }
 
 .favorite-playlist {
@@ -742,35 +766,49 @@ const addAllSongsToQueue = () => {
 }
 
 .song-list {
-    flex: 1;
+    width: 100%;
+    background: transparent;
 
     ul {
         list-style: none;
         padding: 0;
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
+        margin: 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 10px;
     }
 
     li {
+        position: relative;
         display: flex;
         align-items: center;
-        margin-bottom: 10px;
-        width: 250px;
+        gap: 10px;
+        min-width: 0;
+        min-height: 64px;
         cursor: pointer;
-        border-radius: 10px;
-        padding-left: 10px;
+        border-radius: 8px;
+        padding: 7px 40px 7px 8px;
+        background-color: var(--library-favorite-card-bg);
+        transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 
         &:hover {
-            background-color: var(--background-color);
+            transform: translateY(-2px);
+            background-color: var(--library-favorite-card-hover-bg);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+
+            .song-play-icon {
+                opacity: 1;
+                transform: translateY(-50%) scale(1);
+            }
         }
     }
 
     img {
         width: 50px;
         height: 50px;
-        margin-right: 10px;
-        border-radius: 6px;
+        flex-shrink: 0;
+        border-radius: 8px;
+        object-fit: cover;
     }
 }
 
@@ -843,22 +881,64 @@ const addAllSongsToQueue = () => {
 }
 
 .music-card {
+    min-width: 0;
+    border-radius: 8px;
+    padding-bottom: 10px;
     text-align: center;
     cursor: pointer;
+    transition: transform 0.22s ease, background-color 0.22s ease, box-shadow 0.22s ease;
+
+    a {
+        display: block;
+        color: inherit;
+        text-decoration: none;
+    }
+
+    &:hover {
+        transform: translateY(-4px);
+
+        .album-image-wrap {
+            box-shadow: 0 10px 22px rgba(0, 0, 0, 0.16);
+        }
+
+        .album-image {
+            transform: scale(1.06);
+            filter: saturate(1.06);
+        }
+    }
+}
+
+:global(.dark) .music-card:hover {
+    background-color: rgba(var(--primary-color-rgb), 0.12);
 }
 
 .album-image {
+    display: block;
     width: 100%;
-    border-radius: 12px;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.28s ease, filter 0.22s ease;
+}
+
+.album-image-wrap {
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 8px;
+    transition: box-shadow 0.22s ease;
 }
 
 .album-info {
     h3 {
         margin: 10px 0 5px;
         font-size: 16px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     p {
+        margin: 0;
         color: #666;
         font-size: 14px;
     }
@@ -867,21 +947,20 @@ const addAllSongsToQueue = () => {
 .song-item {
     display: flex;
     align-items: center;
-    margin-bottom: 10px;
 }
 
 .album-cover {
     width: 50px;
     height: 50px;
-    margin-right: 10px;
-    border-radius: 5px;
+    border-radius: 8px;
 }
 
 .song-info {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    max-width: 190px;
+    min-width: 0;
+    flex: 1;
 }
 
 .album-name,
@@ -893,14 +972,33 @@ const addAllSongsToQueue = () => {
 
 .album-name {
     font-weight: bold;
-    margin-bottom: -5px;
+    margin: 0 0 4px;
     font-size: 14px;
-    color: #333;
+    color: var(--library-favorite-title);
 }
 
 .singer-name {
+    margin: 0;
     font-size: 12px;
-    color: #666;
+    color: var(--library-favorite-text);
+}
+
+.song-play-icon {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: #fff;
+    font-size: 10px;
+    opacity: 0;
+    transform: translateY(-50%) scale(0.9);
+    transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .create-playlist-button {
@@ -914,6 +1012,8 @@ const addAllSongsToQueue = () => {
         position: absolute;
         top: 32%;
         left: 29%;
+        z-index: 1;
+        pointer-events: none;
     }
 }
 

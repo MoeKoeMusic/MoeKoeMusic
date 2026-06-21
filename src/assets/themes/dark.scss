@@ -88,11 +88,12 @@ html.dark {
         }
 
         button {
-            background-color: $bg-input;
-            color: $text-primary;
+            background-color: $bg-input !important;
+            color: $text-primary !important;
+            border: 1px solid #373434 !important;
 
             &:hover {
-                background-color: $bg-hover;
+                background-color: $bg-hover !important;
             }
         }
     }
@@ -206,16 +207,6 @@ html.dark {
     .primary-btn,
     .more-btn-container .more-btn {
         border: none !important;
-    }
-
-    button {
-        background-color: $bg-input !important;
-        color: $text-primary !important;
-        border: 1px solid #373434 !important;
-
-        &:hover {
-            background-color: $bg-hover !important;
-        }
     }
 
     a {
@@ -496,6 +487,39 @@ html.dark {
         border-bottom: 1px solid $border-color;
     }
 
+    .search-page {
+        .page-number,
+        .pagination button {
+            background-color: $bg-input !important;
+            color: $text-primary !important;
+            border: 1px solid #373434 !important;
+
+            &:hover:not(:disabled) {
+                background-color: var(--primary-color) !important;
+                color: #fff !important;
+                border-color: var(--primary-color) !important;
+            }
+
+            &:disabled {
+                background-color: $bg-card !important;
+                color: $text-muted !important;
+                border-color: $border-color !important;
+            }
+
+            &.active {
+                background-color: var(--primary-color) !important;
+                color: #fff !important;
+                border-color: var(--primary-color) !important;
+            }
+
+            &.ellipsis {
+                background-color: transparent !important;
+                border: none !important;
+                color: $text-secondary !important;
+            }
+        }
+    }
+
     .playlist-card,
     .album-card,
     .artist-card {
@@ -547,8 +571,36 @@ html.dark {
         }
     }
 
+    .library-page .category-tabs button {
+        background-color: $bg-input !important;
+        color: $text-primary !important;
+        border: 1px solid #373434 !important;
+
+        &:hover {
+            background-color: $bg-hover !important;
+        }
+
+        &.active {
+            background-color: var(--primary-color) !important;
+            color: #fff !important;
+            border-color: var(--primary-color) !important;
+        }
+    }
+
     .modal {
         background-color: $bg-card;
+    }
+
+    .modal .btn,
+    .modal .close-btn-modal,
+    .modal-content .close-btn-modal {
+        background-color: $bg-input !important;
+        color: $text-primary !important;
+        border: 1px solid #373434 !important;
+
+        &:hover {
+            background-color: $bg-hover !important;
+        }
     }
 
     .settings-page .modal {
@@ -559,6 +611,22 @@ html.dark {
         .shortcut-modal-content {
             background-color: $bg-card;
             color: $text-primary;
+        }
+
+        button {
+            background-color: $bg-input !important;
+            color: $text-primary !important;
+            border: 1px solid #373434 !important;
+
+            &:hover {
+                background-color: $bg-hover !important;
+            }
+
+            &.primary {
+                background-color: var(--primary-color) !important;
+                color: #fff !important;
+                border-color: var(--primary-color) !important;
+            }
         }
 
         .shortcut-input {
@@ -577,6 +645,49 @@ html.dark {
 
     .track-list-header-row {
         color: $text-secondary;
+    }
+
+    .detail-page {
+        .folder-history-menu {
+            background-color: $bg-card !important;
+            border-color: $border-color !important;
+            color: $text-primary !important;
+        }
+
+        .folder-history-name,
+        .folder-history-delete {
+            color: $text-primary !important;
+        }
+
+        .folder-history-item:hover,
+        .folder-history-item.active {
+            background-color: $bg-input !important;
+        }
+
+        .fav-btn,
+        .more-btn,
+        .batch-action-btn,
+        .view-mode-btn,
+        .sort-btn {
+            background-color: $bg-input !important;
+            color: $text-primary !important;
+            border-color: #373434 !important;
+
+            &:hover {
+                background-color: $bg-hover !important;
+            }
+        }
+
+        .sort-btn:not(:last-child) {
+            border-right-color: #373434 !important;
+        }
+
+        .batch-action-btn.active,
+        .sort-btn.active {
+            background-color: var(--primary-color) !important;
+            color: #fff !important;
+            border-color: var(--primary-color) !important;
+        }
     }
 
     .batch-actions-menu {
@@ -651,6 +762,42 @@ html.dark {
         background-color: $bg-input;
         border-top-color: #444;
         color: #aaa;
+    }
+
+    .button-group button {
+        background-color: var(--primary-color) !important;
+        color: #fff !important;
+        border: none !important;
+    }
+
+    .update-dialog .secondary-button {
+        background-color: $bg-input !important;
+        color: $text-primary !important;
+        border: 1px solid #373434 !important;
+
+        &:hover {
+            background-color: $bg-hover !important;
+        }
+    }
+
+    .onboarding-card {
+        background-color: $bg-card !important;
+        color: $text-primary !important;
+
+        p {
+            color: $text-secondary !important;
+        }
+
+        .onboarding-progress,
+        .text-button {
+            color: $text-secondary !important;
+        }
+
+        .step-actions button:not(.primary) {
+            background-color: $bg-input !important;
+            color: $text-primary !important;
+            border: 1px solid #373434 !important;
+        }
     }
 
     .qr-login p {

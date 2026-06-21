@@ -98,7 +98,7 @@ const handleDiscoverTabClick = (tab) => {
     position: absolute;
     top: -80px;
     left: 50%;
-    z-index: 10;
+    z-index: 26;
     width: clamp(128px, 20vw, 200px);
     height: auto;
     transform: translateX(-50%);

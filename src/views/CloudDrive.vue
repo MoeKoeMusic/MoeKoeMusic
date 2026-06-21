@@ -622,7 +622,7 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 
 .primary-btn,
 .upload-btn {
-    background-color: #ff69b4;
+    background-color: $primary;
     color: $white;
     border: none;
     padding: 10px 20px;

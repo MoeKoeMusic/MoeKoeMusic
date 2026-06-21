@@ -23,6 +23,7 @@ const playerControl = ref(null);
 const isOnline = ref(navigator.onLine);
 const navigationMode = ref('top');
 const sidebarCollapsed = ref(localStorage.getItem('sidebarCollapsed') === '1');
+const playerBarLayout = ref('full');
 
 // 监听网络状态变化
 const handleNetworkChange = (online) => {
@@ -43,12 +44,20 @@ const handleOnline = () => handleNetworkChange(true);
 const handleOffline = () => handleNetworkChange(false);
 const loadNavigationMode = (settings = JSON.parse(localStorage.getItem('settings')) || {}) => {
     navigationMode.value = settings.navigationMode === 'side' ? 'side' : 'top';
+    playerBarLayout.value = settings.playerBarLayout === 'content' ? 'content' : 'full';
+    applyPlayerBarLayout();
 };
 const handleSettingsChange = (event) => {
     loadNavigationMode(event.detail?.settings);
 };
 const handleSidebarCollapseChange = (event) => {
     sidebarCollapsed.value = event.detail?.collapsed === true;
+    applyPlayerBarLayout();
+};
+const applyPlayerBarLayout = () => {
+    const enabled = navigationMode.value === 'side' && playerBarLayout.value === 'content';
+    document.body.classList.toggle('player-bar-content-layout', enabled);
+    document.documentElement.style.setProperty('--side-navigation-width', sidebarCollapsed.value ? '64px' : '226px');
 };
 
 onMounted(() => {
@@ -80,6 +89,8 @@ onUnmounted(() => {
     window.removeEventListener('offline', handleOffline);
     window.removeEventListener('settings-change', handleSettingsChange);
     window.removeEventListener('sidebar-collapse-change', handleSidebarCollapseChange);
+    document.body.classList.remove('player-bar-content-layout');
+    document.documentElement.style.removeProperty('--side-navigation-width');
 });
 </script>
 
@@ -169,5 +180,18 @@ a {
     text-align: center;
     padding: 8px;
     z-index: 1000;
+}
+
+body.player-bar-content-layout .side-navigation {
+    bottom: 0;
+}
+
+body:not(.player-bar-content-layout) .side-navigation {
+    z-index: 98;
+}
+
+body.player-bar-content-layout .player-container {
+    left: var(--side-navigation-width);
+    width: calc(100% - var(--side-navigation-width));
 }
 </style>

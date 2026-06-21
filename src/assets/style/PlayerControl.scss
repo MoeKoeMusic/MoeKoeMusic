@@ -163,14 +163,15 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
     align-items: center;
     width: 100%;
     position: fixed;
+    left: 0;
     bottom: 0px;
     background: $white;
     box-shadow: $shadow;
-    border-radius: $radius-lg;
     background: rgba(255, 255, 255, 0.7);
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     z-index: 98;
+    transition: left 0.2s ease, width 0.2s ease;
 }
 
 .player-bar {

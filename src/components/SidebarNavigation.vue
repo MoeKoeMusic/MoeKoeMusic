@@ -106,6 +106,10 @@
                     <button class="side-refresh-button" @click="getplaylist">
                         <i class="fas fa-sync-alt"></i>
                     </button>
+                    <button class="side-playlist-toggle-button" :title="activePlaylistTab === 'own' ? '收藏歌单' : '我的歌单'"
+                        @click="activePlaylistTab = activePlaylistTab === 'own' ? 'collected' : 'own'">
+                        <i class="fas fa-exchange-alt"></i>
+                    </button>
                 </div>
 
                 <div class="side-playlist-list">
@@ -378,6 +382,7 @@ watch(() => MoeAuth.isAuthenticated, (isAuthenticated) => {
     --side-border: rgba(0, 0, 0, 0.08);
     --side-muted: #777;
     --side-text: #333;
+    --side-action-icon: #666;
     --side-hover: var(--color-secondary-bg-for-transparent);
 }
 
@@ -387,6 +392,7 @@ watch(() => MoeAuth.isAuthenticated, (isAuthenticated) => {
     --side-border: rgba(255, 255, 255, 0.08);
     --side-muted: rgba(255, 255, 255, 0.56);
     --side-text: rgba(255, 255, 255, 0.86);
+    --side-action-icon: rgba(255, 255, 255, 0.68);
     --side-hover: rgba(255, 255, 255, 0.08);
 }
 
@@ -394,7 +400,7 @@ watch(() => MoeAuth.isAuthenticated, (isAuthenticated) => {
     position: fixed;
     inset: 0 auto 78px 0;
     width: 226px;
-    z-index: 30;
+    z-index: 100;
     display: flex;
     flex-direction: column;
     min-width: 0;
@@ -414,7 +420,7 @@ watch(() => MoeAuth.isAuthenticated, (isAuthenticated) => {
     top: 0;
     left: 226px;
     right: 0;
-    height: 58px;
+    height: 52px;
     z-index: 25;
     display: flex;
     align-items: center;
@@ -441,7 +447,7 @@ watch(() => MoeAuth.isAuthenticated, (isAuthenticated) => {
 .side-refresh-button {
     border: none;
     background: transparent;
-    color: var(--side-text);
+    color: var(--side-action-icon);
     cursor: pointer;
     border-radius: 8px;
     transition: 0.2s;
@@ -457,9 +463,17 @@ watch(() => MoeAuth.isAuthenticated, (isAuthenticated) => {
 }
 
 .side-action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 32px;
     height: 32px;
     padding: 0;
+
+    i {
+        font-size: 14px;
+        line-height: 1;
+    }
 }
 
 .side-top-search {
@@ -476,6 +490,15 @@ watch(() => MoeAuth.isAuthenticated, (isAuthenticated) => {
     color: var(--side-muted);
     background: transparent;
     transition: flex-basis 0.2s ease, padding 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+
+    > i {
+        flex-shrink: 0;
+        width: 16px;
+        color: var(--side-action-icon);
+        font-size: 14px;
+        line-height: 1;
+        text-align: center;
+    }
 
     &:hover,
     &:focus-within {
@@ -586,10 +609,15 @@ watch(() => MoeAuth.isAuthenticated, (isAuthenticated) => {
     }
 
     span {
+        flex: 1;
         min-width: 0;
+        max-width: 160px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        opacity: 1;
+        visibility: visible;
+        transition: max-width 0.2s ease, opacity 0.15s ease, visibility 0s;
     }
 
     &:hover,
@@ -617,12 +645,16 @@ watch(() => MoeAuth.isAuthenticated, (isAuthenticated) => {
     align-items: center;
     gap: 6px;
     flex-shrink: 0;
+    min-height: 26px;
     padding: 0 8px 8px;
     color: var(--side-muted);
     font-size: 12px;
     font-weight: 700;
 
     button {
+        max-width: 80px;
+        overflow: hidden;
+        white-space: nowrap;
         border: none;
         background: transparent;
         color: inherit;
@@ -630,14 +662,36 @@ watch(() => MoeAuth.isAuthenticated, (isAuthenticated) => {
         padding: 2px 0;
         font-size: 12px;
         font-weight: 700;
+        opacity: 1;
+        visibility: visible;
+        transition: max-width 0.2s ease, opacity 0.15s ease, visibility 0s;
 
         &.active {
             color: var(--color-primary);
         }
     }
 
+    span {
+        max-width: 8px;
+        overflow: hidden;
+        opacity: 1;
+        visibility: visible;
+        transition: max-width 0.2s ease, opacity 0.15s ease, visibility 0s;
+    }
+
     .side-refresh-button {
+        max-width: 24px;
         margin-left: auto;
+    }
+
+    .side-playlist-toggle-button {
+        width: 0;
+        height: 32px;
+        max-width: 0;
+        padding: 0;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
     }
 }
 
@@ -812,12 +866,38 @@ watch(() => MoeAuth.isAuthenticated, (isAuthenticated) => {
 
     .side-playlist-tabs {
         justify-content: center;
+        gap: 0;
         padding: 0 0 8px;
 
         button,
         span,
         .side-refresh-button {
-            display: none;
+            max-width: 0;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: max-width 0.2s ease, opacity 0.12s ease, visibility 0s 0.2s;
+        }
+
+        .side-refresh-button {
+            width: 0;
+            margin-left: 0;
+        }
+
+        .side-playlist-toggle-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            max-width: 32px;
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            color: var(--color-primary);
+            font-size: 14px;
+            border-radius: 10px;
+            transition: opacity 0.15s ease, background-color 0.2s ease;
         }
     }
 
@@ -841,7 +921,10 @@ watch(() => MoeAuth.isAuthenticated, (isAuthenticated) => {
         gap: 0;
 
         span {
-            display: none;
+            max-width: 0;
+            opacity: 0;
+            visibility: hidden;
+            transition: max-width 0.2s ease, opacity 0.12s ease, visibility 0s 0.2s;
         }
 
         i {

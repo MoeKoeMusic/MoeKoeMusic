@@ -73,6 +73,17 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
                 label: '导航方式'
             },
             {
+                key: 'playerBarLayout',
+                defaultValue: 'full',
+                itemIcon: 'fas fa-window-maximize',
+                selectionTitle: '播放栏布局',
+                options: [
+                    { displayText: '底部通栏', value: 'full' },
+                    { displayText: '右侧对齐', value: 'content' }
+                ],
+                label: '播放栏布局'
+            },
+            {
                 key: 'nativeTitleBar',
                 defaultValue: 'off',
                 itemIcon: 'fas fa-window-maximize',

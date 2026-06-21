@@ -1092,7 +1092,7 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
     align-items: center;
     justify-content: center;
     animation: fadeIn 0.3s ease-in-out;
-    z-index: 99;
+    z-index: 999;
 }
 
 .modal-content {

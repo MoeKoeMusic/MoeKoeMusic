@@ -412,7 +412,7 @@ watch(() => MoeAuth.isAuthenticated, (isAuthenticated) => {
 }
 
 .side-navigation.collapsed {
-    width: 64px;
+    width: 67px;
 }
 
 .side-top-actions {
@@ -753,7 +753,7 @@ watch(() => MoeAuth.isAuthenticated, (isAuthenticated) => {
     align-items: center;
     gap: 10px;
     min-height: 62px;
-    padding: 10px 12px;
+    padding: 15px 12px;
     border-bottom: 1px solid var(--side-border);
 }
 
@@ -859,7 +859,7 @@ watch(() => MoeAuth.isAuthenticated, (isAuthenticated) => {
 .collapsed {
     .side-profile {
         justify-content: center;
-        padding: 10px 0;
+        padding: 15px 0;
 
         .side-profile-info {
             display: none;

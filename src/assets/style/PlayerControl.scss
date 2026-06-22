@@ -614,22 +614,34 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
 
 .close-btn {
     position: absolute;
-    top: 30px;
-    right: 100px;
-    font-size: 24px;
-    cursor: pointer;
-    color: white;
-    z-index: 99;
-    text-align: right;
-    width: 100%;
-    cursor: pointer;
-    font-size: 24px;
+    top: 36px;
+    right: 45px;
+    width: 28px;
+    height: 28px;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0;
+    background: transparent;
     color: #fff;
-    opacity: 0.8;
-    transition: opacity 0.3s;
+    cursor: pointer;
+    z-index: 99;
+    opacity: 0.85;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    padding: 0;
 
     &:hover {
         opacity: 1;
+        transform: scale(1.05);
+    }
+
+    &:active {
+        transform: scale(0.96);
+    }
+
+    i {
+        font-size: 22px;
     }
 }
 

@@ -137,9 +137,9 @@
                 ></div>
             </template>
             <div class="lyrics-screen" :class="{ 'cover-background': lyricsBackground === 'cover' }">
-                <div class="close-btn">
-                    <i class="fas fa-chevron-down" @click="toggleLyrics(currentSong.hash, currentTime)"></i>
-                </div>
+                <button class="close-btn" type="button" aria-label="关闭歌词" @click="toggleLyrics(currentSong.hash, currentTime)">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
                 <FullscreenLyricsSettings v-model="fullscreenLyricsSettings" @change="handleFullscreenLyricsSettingsChange" />
 
                 <div class="lyrics-mode-btn" v-if="hasMultiLyricsMode" @click="switchLyricsMode" :title="lyricsMode === 'translation' ? t('qie-huan-dao-yin-yi') : t('qie-huan-dao-fan-yi')">

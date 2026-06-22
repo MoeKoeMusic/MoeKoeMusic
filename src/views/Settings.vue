@@ -43,7 +43,7 @@
             </div>
         </div>
 
-        <div v-if="isSelectionOpen" class="modal">
+        <div v-if="isSelectionOpen" class="modal" @click.self="closeSelection">
             <div class="modal-content">
                 <a v-if="currentHelpLink" class="help-link" @click="openHelpLink" :title="$t('bang-zhu')"
                     :aria-label="$t('bang-zhu')">
@@ -144,7 +144,7 @@
         </div>
 
         <!-- 快捷键设置弹窗 -->
-        <div v-if="showShortcutModal" class="shortcut-modal">
+        <div v-if="showShortcutModal" class="shortcut-modal" @click.self="closeShortcutSettings">
             <div class="shortcut-modal-content">
                 <h3>{{ $t('kuai-jie-jian-she-zhi') }}</h3>
                 <div class="shortcut-list">
@@ -1105,20 +1105,28 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     animation: slideIn 0.3s ease-in-out;
     position: relative;
-    max-height: 80%;
-    overflow-y: auto;
+    max-height: 80vh;
+    overflow: hidden;
     overscroll-behavior: contain;
+    display: flex;
+    flex-direction: column;
 
     h3 {
+        flex: 0 0 auto;
         font-size: 20px;
         margin-bottom: 20px;
         color: #333;
     }
 
     ul {
+        flex: 1 1 auto;
+        min-height: 0;
+        max-height: 46vh;
+        overflow-y: auto;
         list-style: none;
-        padding: 0;
+        padding: 0 4px 0 0;
         margin: 0;
+        overscroll-behavior: contain;
     }
 
     li {
@@ -1135,6 +1143,7 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
     }
 
     button {
+        flex: 0 0 auto;
         margin-top: 20px;
         padding: 10px 20px;
         background-color: $primary;
@@ -1148,6 +1157,11 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
         &:hover {
             background-color: $primary;
         }
+    }
+
+    > button {
+        align-self: center;
+        min-width: 96px;
     }
 }
 

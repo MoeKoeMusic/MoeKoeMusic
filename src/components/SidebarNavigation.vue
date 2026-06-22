@@ -23,7 +23,7 @@
 
     <aside class="side-navigation" :class="{ collapsed: isCollapsed }">
         <div class="side-profile">
-            <router-link to="/library" class="side-profile-link">
+            <router-link :to="!isCollapsed ? '/library' : '/settings'" class="side-profile-link">
                 <img :src="MoeAuth.UserInfo ? MoeAuth.UserInfo.pic : './assets/images/profile.jpg'"
                     alt="Profile Picture">
                 <div class="side-profile-info">
@@ -68,7 +68,7 @@
 
         <div class="side-navigation-main">
             <div class="side-search">
-                <i class="fas fa-search"></i>
+                <i class="fas fa-search" @click="isCollapsed && $router.push('/search/recommend')"></i>
                 <input v-model="searchQuery" type="text" :placeholder="$t('sou-suo-yin-le-ge-shou-ge-dan')"
                     :readonly="searchMode === 'recommend'" @click="getSearch" @keydown.enter="getSearch">
             </div>

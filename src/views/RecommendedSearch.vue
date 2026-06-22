@@ -1,31 +1,46 @@
 <template>
     <div class="recommended-search-page">
-        <div class="search-hero">
-            <div class="search-panel">
-                <p class="search-tag">推荐搜索</p>
+        <section class="search-hero">
+            <div class="hero-copy">
+                <span class="hero-kicker">推荐搜索</span>
+                <h1>今天想听什么？</h1>
+                <div class="hero-stats">
+                    <span><strong>{{ isLoading ? '--' : boards.length }}</strong> 榜单</span>
+                    <span><strong>{{ isLoading ? '--' : hotKeywords.length }}</strong> 热词</span>
+                </div>
+            </div>
 
+            <div class="search-dock">
                 <div ref="searchAreaRef" class="search-area">
-                    <div class="search-box">
+                    <form class="search-box" @submit.prevent="submitSearch(searchKeyword)">
                         <i class="fas fa-search"></i>
                         <input v-model.trim="searchKeyword" type="text" placeholder="搜索歌曲、歌手、专辑、歌单"
                             @focus="handleSearchFocus" autofocus @keydown.down.prevent="highlightNextSuggestion"
                             @keydown.up.prevent="highlightPrevSuggestion"
                             @keydown.enter.prevent="submitSearch(searchKeyword, true)" />
-                        <button @click="submitSearch(searchKeyword)">搜索</button>
-                    </div>
+                        <button class="search-submit" type="submit">
+                            <span>搜索</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </form>
 
                     <div v-if="showSuggestions" class="suggestion-dropdown">
                         <div v-if="isSuggestLoading" class="suggestion-state">
+                            <i class="fas fa-spinner fa-spin"></i>
                             正在获取搜索建议...
                         </div>
                         <button v-for="(item, index) in suggestions" v-else :key="`${item.keyword}-${index}`"
                             :class="index === activeSuggestionIndex ? 'suggestion-item active' : 'suggestion-item'"
                             @mouseenter="activeSuggestionIndex = index"
                             @mousedown.prevent="applySuggestion(item.keyword)">
+                            <span class="suggestion-icon">
+                                <i class="fas fa-search"></i>
+                            </span>
                             <div class="suggestion-main">
                                 <span class="suggestion-keyword">{{ item.keyword }}</span>
                                 <span v-if="shouldShowReason(item)" class="suggestion-reason">{{ item.reason }}</span>
                             </div>
+                            <i class="fas fa-arrow-right suggestion-arrow"></i>
                         </button>
                     </div>
                 </div>
@@ -37,7 +52,7 @@
                     </button>
                 </div>
             </div>
-        </div>
+        </section>
 
         <div v-if="isLoading" class="status-card">
             <i class="fas fa-spinner fa-spin"></i>
@@ -45,58 +60,72 @@
         </div>
 
         <div v-else-if="fixedBoard" class="boards-layout">
-            <div class="boards-shell">
-                <article class="board-card fixed-board">
-                    <div class="board-header">
-                        <div>
-                            <h2>{{ fixedBoard.name }}</h2>
+            <article class="board-card fixed-board">
+                <div class="board-header">
+                    <div>
+                        <span class="board-label">热度最高</span>
+                        <h2>{{ fixedBoard.name }}</h2>
+                    </div>
+                    <span class="board-count">{{ fixedBoard.keywords.length }} 项</span>
+                </div>
+
+                <div class="rank-list feature-rank-list">
+                    <button v-for="(item, index) in fixedBoardKeywords"
+                        :key="`${fixedBoard.name}-${item.keyword}-${index}`" class="rank-item"
+                        @click="selectKeyword(item.keyword)">
+                        <span :class="index < 3 ? 'rank-index top' : 'rank-index'">{{ index + 1 }}</span>
+                        <div class="rank-info">
+                            <span class="rank-keyword">{{ item.keyword }}</span>
+                            <span v-if="shouldShowReason(item)" class="rank-meta">{{ item.reason }}</span>
                         </div>
+                        <span v-if="index < 3" class="rank-badge">HOT</span>
+                        <i class="fas fa-angle-right rank-arrow"></i>
+                    </button>
+                </div>
+            </article>
+
+            <div class="switchable-board-panel">
+                <div v-if="switchableBoards.length" class="side-board-switcher">
+                    <button v-for="(board, boardIndex) in switchableBoards" :key="`${board.name}-${boardIndex}-tab`"
+                        :class="boardIndex === activeSideBoardIndex ? 'switcher-button active' : 'switcher-button'"
+                        @click="activeSideBoardIndex = boardIndex">
+                        <span>{{ board.name }}</span>
+                        <small>{{ board.keywords.length }}</small>
+                    </button>
+                </div>
+
+                <article v-if="activeBoard" class="board-card compact-board">
+                    <div class="board-header compact-header">
+                        <div>
+                            <span class="board-label">榜单切换</span>
+                            <h2>{{ activeBoard.name }}</h2>
+                        </div>
+                        <span class="board-count">{{ activeBoard.keywords.length }} 项</span>
                     </div>
 
-                    <div class="rank-list compact-rank-list">
-                        <button v-for="(item, index) in getBoardKeywords(fixedBoard, 10)"
-                            :key="`${fixedBoard.name}-${item.keyword}-${index}`" class="rank-item compact-rank-item"
+                    <div class="rank-list">
+                        <button v-for="(item, index) in activeBoardKeywords"
+                            :key="`${activeBoard.name}-${item.keyword}-${index}`" class="rank-item compact-rank-item"
                             @click="selectKeyword(item.keyword)">
                             <span :class="index < 3 ? 'rank-index top' : 'rank-index'">{{ index + 1 }}</span>
                             <div class="rank-info">
                                 <span class="rank-keyword">{{ item.keyword }}</span>
                                 <span v-if="shouldShowReason(item)" class="rank-meta">{{ item.reason }}</span>
                             </div>
+                            <i class="fas fa-angle-right rank-arrow"></i>
                         </button>
                     </div>
                 </article>
 
-                <div class="switchable-board-panel">
-                    <div v-if="switchableBoards.length" class="side-board-switcher">
-                        <button v-for="(board, boardIndex) in switchableBoards" :key="`${board.name}-${boardIndex}-tab`"
-                            :class="boardIndex === activeSideBoardIndex ? 'switcher-button active' : 'switcher-button'"
-                            @click="activeSideBoardIndex = boardIndex">
-                            {{ board.name }}
-                        </button>
+                <article v-else class="board-card compact-board empty-board">
+                    <div class="empty-state">
+                        <i class="fas fa-music"></i>
+                        <div>
+                            <h2>暂无可切换榜单</h2>
+                            <span>稍后再来看看</span>
+                        </div>
                     </div>
-
-                    <article v-if="activeBoard" class="board-card compact-board">
-                        <div class="rank-list compact-rank-list">
-                            <button v-for="(item, index) in getBoardKeywords(activeBoard, 10)"
-                                :key="`${activeBoard.name}-${item.keyword}-${index}`"
-                                class="rank-item compact-rank-item" @click="selectKeyword(item.keyword)">
-                                <span :class="index < 3 ? 'rank-index top' : 'rank-index'">{{ index + 1 }}</span>
-                                <div class="rank-info">
-                                    <span class="rank-keyword">{{ item.keyword }}</span>
-                                    <span v-if="shouldShowReason(item)" class="rank-meta">{{ item.reason }}</span>
-                                </div>
-                            </button>
-                        </div>
-                    </article>
-
-                    <article v-else class="board-card compact-board empty-board">
-                        <div class="board-header">
-                            <div>
-                                <h2>暂无可切换榜单</h2>
-                            </div>
-                        </div>
-                    </article>
-                </div>
+                </article>
             </div>
         </div>
 
@@ -256,6 +285,9 @@ const getBoardKeywords = (board, limit = null) => {
     return typeof limit === 'number' ? board.keywords.slice(0, limit) : board.keywords;
 };
 
+const fixedBoardKeywords = computed(() => getBoardKeywords(fixedBoard.value, 10));
+const activeBoardKeywords = computed(() => getBoardKeywords(activeBoard.value, 10));
+
 const shouldShowReason = (item) => {
     const reason = normalizeKeyword(item?.reason);
     return !!reason && reason !== normalizeKeyword(item?.keyword);
@@ -362,38 +394,35 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 .recommended-search-page {
-    --page-surface: rgba(255, 255, 255, 0.86);
-    --page-surface-strong: rgba(255, 255, 255, 0.94);
-    --page-line: rgba(var(--primary-color-rgb), 0.14);
-    --page-line-strong: rgba(var(--primary-color-rgb), 0.24);
-    --page-shadow: 0 24px 60px rgba(var(--primary-color-rgb), 0.16);
-    --page-shadow-soft: 0 18px 40px rgba(var(--primary-color-rgb), 0.1);
-    --page-text-muted: rgba(51, 51, 51, 0.68);
-    --page-accent-soft: rgba(var(--primary-color-rgb), 0.78);
-    --page-accent-strong: rgba(var(--primary-color-rgb), 0.96);
-    --page-accent-shadow: rgba(var(--primary-color-rgb), 0.28);
+    --page-panel: rgba(255, 255, 255, 0.88);
+    --page-panel-strong: #fff;
+    --page-border: rgba(24, 28, 37, 0.08);
+    --page-border-strong: rgba(var(--primary-color-rgb), 0.28);
+    --page-text: var(--text-color);
+    --page-muted: rgba(51, 51, 51, 0.62);
+    --page-subtle: rgba(51, 51, 51, 0.42);
+    --page-shadow: 0 18px 45px rgba(29, 35, 53, 0.1);
+    --page-shadow-strong: 0 22px 55px rgba(29, 35, 53, 0.14);
+    --accent-cyan: #38bfd2;
     min-height: calc(100vh - 90px);
-    padding: 32px 24px 48px;
+    padding: 34px 24px 48px;
     position: relative;
-    overflow: hidden;
-    background:
-        radial-gradient(circle at top left, rgba(var(--primary-color-rgb), 0.2), transparent 30%),
-        radial-gradient(circle at top right, rgba(var(--primary-color-rgb), 0.14), transparent 26%),
-        linear-gradient(180deg, rgba(var(--primary-color-rgb), 0.05) 0%, rgba(var(--primary-color-rgb), 0.09) 46%, rgba(var(--primary-color-rgb), 0.03) 100%);
+    overflow-x: hidden;
+    color: var(--page-text);
+    letter-spacing: 0;
+    background: linear-gradient(180deg, #fbfcff 0%, #f7f8fb 46%, #f3f0f7 100%);
 
-    &:is(.dark .recommended-search-page) {
-        --page-surface: rgba(24, 24, 28, 0.88);
-        --page-surface-strong: rgba(30, 30, 36, 0.96);
-        --page-line: rgba(255, 255, 255, 0.08);
-        --page-line-strong: rgba(255, 255, 255, 0.16);
-        --page-shadow: 0 24px 60px rgba(0, 0, 0, 0.32);
-        --page-shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.24);
-        --page-text-muted: rgba(255, 255, 255, 0.62);
-        --page-accent-shadow: rgba(var(--primary-color-rgb), 0.2);
-        background:
-            radial-gradient(circle at top left, rgba(var(--primary-color-rgb), 0.18), transparent 34%),
-            radial-gradient(circle at top right, rgba(var(--primary-color-rgb), 0.12), transparent 30%),
-            linear-gradient(180deg, rgba(12, 13, 16, 0.98) 0%, rgba(18, 20, 24, 0.96) 48%, rgba(11, 12, 15, 0.98) 100%);
+    .dark & {
+        --page-panel: rgba(25, 25, 30, 0.84);
+        --page-panel-strong: rgba(32, 32, 38, 0.96);
+        --page-border: rgba(255, 255, 255, 0.08);
+        --page-border-strong: rgba(var(--primary-color-rgb), 0.36);
+        --page-text: rgba(255, 255, 255, 0.9);
+        --page-muted: rgba(255, 255, 255, 0.62);
+        --page-subtle: rgba(255, 255, 255, 0.38);
+        --page-shadow: 0 18px 45px rgba(0, 0, 0, 0.24);
+        --page-shadow-strong: 0 22px 55px rgba(0, 0, 0, 0.34);
+        background: linear-gradient(180deg, #121214 0%, #18191d 56%, #121316 100%);
     }
 }
 
@@ -405,126 +434,155 @@ onUnmounted(() => {
 }
 
 .search-hero {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 24px;
+    width: min(1120px, 100%);
+    margin: 0 auto 22px;
+    display: grid;
+    grid-template-columns: minmax(240px, 0.72fr) minmax(0, 1.28fr);
+    gap: 22px;
+    align-items: end;
     z-index: 3;
 }
 
-.search-panel {
-    width: min(1080px, 100%);
-    display: block;
-    padding: 22px;
-    border-radius: 34px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 244, 249, 0.84));
-    border: 1px solid rgba(255, 255, 255, 0.9);
-    box-shadow: var(--page-shadow);
-    backdrop-filter: blur(16px);
-    position: relative;
-    z-index: 1;
+.hero-copy {
+    display: grid;
+    gap: 14px;
+    padding-bottom: 8px;
 
-    &:is(.dark .search-panel) {
-        background: linear-gradient(135deg, rgba(30, 30, 36, 0.96), rgba(22, 23, 28, 0.9));
-        border-color: rgba(255, 255, 255, 0.08);
-        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+    h1 {
+        margin: 0;
+        color: var(--page-text);
+        font-size: 38px;
+        font-weight: 800;
+        line-height: 1.12;
+        letter-spacing: 0;
     }
 }
 
-.boards-shell,
-.status-card {
-    border: 1px solid var(--page-line);
-    background: var(--page-surface);
-    box-shadow: var(--page-shadow-soft);
-    backdrop-filter: blur(16px);
-}
-
-.search-tag {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 14px;
-    border-radius: 999px;
-    background: linear-gradient(135deg, rgba(var(--primary-color-rgb), 0.14), rgba(255, 214, 228, 0.86));
+.hero-kicker {
+    width: fit-content;
+    padding: 5px 10px;
+    border-left: 3px solid var(--primary-color);
+    border-radius: 4px;
+    background: rgba(var(--primary-color-rgb), 0.08);
     color: var(--primary-color);
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    line-height: 1.2;
+}
 
-    &:is(.dark .search-tag) {
-        background: linear-gradient(135deg, rgba(var(--primary-color-rgb), 0.1), rgba(255, 214, 228, 0.12));
-        color: rgba(255, 255, 255, 0.88);
+.hero-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    span {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 5px;
+        padding: 7px 10px;
+        border: 1px solid var(--page-border);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.5);
+        color: var(--page-muted);
+        font-size: 13px;
+        line-height: 1;
+
+        .dark & {
+            background: rgba(255, 255, 255, 0.04);
+        }
     }
+
+    strong {
+        color: var(--page-text);
+        font-size: 18px;
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+.search-dock,
+.board-card,
+.status-card {
+    border: 1px solid var(--page-border);
+    border-radius: 8px;
+    background: var(--page-panel);
+    box-shadow: var(--page-shadow);
+    backdrop-filter: blur(14px);
+}
+
+.search-dock {
+    min-width: 0;
+    padding: 16px;
+    box-shadow: var(--page-shadow-strong);
 }
 
 .search-box {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: 38px minmax(0, 1fr) auto;
     align-items: center;
-    gap: 14px;
-    padding: 12px 12px 12px 18px;
-    border-radius: 24px;
-    background: var(--page-surface-strong);
-    border: 1px solid rgba(255, 255, 255, 0.9);
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.65),
-        0 16px 32px rgba(208, 110, 154, 0.12);
+    gap: 10px;
+    min-height: 58px;
+    padding: 6px 6px 6px 14px;
+    border: 1px solid var(--page-border);
+    border-radius: 8px;
+    background: var(--page-panel-strong);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
-    &:is(.dark .search-box) {
-        border-color: rgba(255, 255, 255, 0.08);
-        box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.04),
-            0 16px 32px rgba(0, 0, 0, 0.22);
+    &:focus-within {
+        border-color: var(--page-border-strong);
+        box-shadow: 0 0 0 4px rgba(var(--primary-color-rgb), 0.1);
     }
 
-    i {
-        width: 20px;
+    > i {
         color: var(--primary-color);
-        font-size: 18px;
+        font-size: 17px;
+        text-align: center;
     }
 
     input {
         min-width: 0;
-        border: none;
-        background: transparent;
+        height: 44px;
+        border: none !important;
+        background: transparent !important;
+        color: var(--page-text);
         font-size: 16px;
-        color: var(--text-color);
+        outline: none;
 
         &::placeholder {
-            color: rgba(51, 51, 51, 0.42);
-        }
-
-        .dark &::placeholder {
-            color: rgba(255, 255, 255, 0.36);
-        }
-
-        &:is(.dark input) {
-            color: rgba(255, 255, 255, 0.94);
-        }
-
-        &:focus {
-            outline: none;
+            color: var(--page-subtle);
         }
     }
+}
 
-    button {
-        min-width: 112px;
-        border: none;
-        border-radius: 18px;
-        padding: 12px 18px;
-        background: linear-gradient(135deg, var(--page-accent-soft), var(--page-accent-strong)) !important;
-        color: #fff !important;
-        font-size: 14px;
-        font-weight: 700;
-        cursor: pointer;
-        box-shadow: 0 14px 26px var(--page-accent-shadow);
-        transition: transform 0.22s ease, box-shadow 0.22s ease, opacity 0.22s ease;
+.search-submit {
+    min-width: 104px;
+    height: 46px;
+    border: none !important;
+    border-radius: 8px;
+    padding: 0 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-cyan)) !important;
+    color: #fff !important;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 12px 24px rgba(var(--primary-color-rgb), 0.24);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 
-        &:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 18px 32px rgba(var(--primary-color-rgb), 0.34);
-            opacity: 0.98;
-        }
+    i {
+        font-size: 12px;
+    }
+
+    &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 16px 28px rgba(var(--primary-color-rgb), 0.28);
+    }
+
+    &:active {
+        transform: translateY(0);
+        opacity: 0.9;
     }
 }
 
@@ -540,126 +598,146 @@ onUnmounted(() => {
     left: 0;
     right: 0;
     z-index: 30;
-    padding: 10px;
-    border-radius: 22px;
-    background: rgba(255, 255, 255, 0.96);
-    border: 1px solid rgba(255, 255, 255, 0.92);
-    box-shadow: 0 24px 50px rgba(132, 63, 92, 0.16);
-    backdrop-filter: blur(20px);
-
-    &:is(.dark .suggestion-dropdown) {
-        background: rgba(24, 24, 30, 0.96);
-        border-color: rgba(255, 255, 255, 0.08);
-        box-shadow: 0 24px 50px rgba(0, 0, 0, 0.28);
-    }
+    max-height: 330px;
+    overflow-y: auto;
+    padding: 8px;
+    border: 1px solid var(--page-border);
+    border-radius: 8px;
+    background: var(--page-panel-strong);
+    box-shadow: var(--page-shadow-strong);
+    backdrop-filter: blur(18px);
 }
 
 .suggestion-state {
-    padding: 16px 14px;
-    text-align: left;
-    color: var(--page-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 12px;
+    color: var(--page-muted);
     font-size: 13px;
 }
 
 .suggestion-item {
     width: 100%;
-    border: 1px solid transparent !important;
-    border-radius: 16px;
-    padding: 12px 14px;
-    background: transparent !important;
-    display: flex;
+    min-height: 48px;
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr) auto;
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    cursor: pointer;
+    gap: 10px;
+    padding: 8px 10px;
+    border: 1px solid transparent !important;
+    border-radius: 8px;
+    background: transparent !important;
     text-align: left;
+    cursor: pointer;
     transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 
     &:hover,
     &.active {
-        transform: translateX(4px);
+        transform: translateX(2px);
         background: rgba(var(--primary-color-rgb), 0.08) !important;
-        border-color: rgba(var(--primary-color-rgb), 0.18) !important;
+        border-color: var(--page-border-strong) !important;
     }
+}
+
+.suggestion-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(var(--primary-color-rgb), 0.1);
+    color: var(--primary-color);
+    font-size: 12px;
 }
 
 .suggestion-main {
     min-width: 0;
     display: grid;
-    gap: 4px;
+    gap: 3px;
 }
 
 .suggestion-keyword {
-    color: var(--text-color);
+    overflow: hidden;
+    color: var(--page-text);
     font-size: 14px;
     font-weight: 700;
-    &:is(.dark .suggestion-keyword) {
-        color: rgba(255, 255, 255, 0.94);
-    }
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .suggestion-reason {
-    color: var(--page-text-muted);
+    overflow: hidden;
+    color: var(--page-muted);
     font-size: 12px;
     line-height: 1.4;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.suggestion-arrow {
+    color: var(--page-subtle);
+    font-size: 12px;
 }
 
 .quick-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 20px;
+    gap: 8px;
+    margin-top: 12px;
 }
 
 .quick-tag {
-    border: 1px solid rgba(var(--primary-color-rgb), 0.14) !important;
-    border-radius: 999px;
-    padding: 9px 14px;
-    background: rgba(255, 255, 255, 0.75) !important;
-    color: var(--primary-color) !important;
+    max-width: 176px;
+    overflow: hidden;
+    border: 1px solid var(--page-border) !important;
+    border-radius: 8px;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.58) !important;
+    color: var(--page-text) !important;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     cursor: pointer;
     transition: transform 0.22s ease, background-color 0.22s ease, border-color 0.22s ease;
 
-    &:is(.dark .quick-tag) {
+    .dark & {
         background: rgba(255, 255, 255, 0.05) !important;
-        border-color: rgba(var(--primary-color-rgb), 0.2) !important;
-        color: rgba(255, 255, 255, 0.88) !important;
     }
 
     &:hover {
-        transform: translateY(-2px);
-        background: rgba(var(--primary-color-rgb), 0.12) !important;
-        border-color: rgba(var(--primary-color-rgb), 0.26) !important;
+        transform: translateY(-1px);
+        background: rgba(var(--primary-color-rgb), 0.1) !important;
+        border-color: var(--page-border-strong) !important;
+        color: var(--primary-color) !important;
     }
 }
 
 .status-card {
-    width: min(1080px, 100%);
+    width: min(1120px, 100%);
+    min-height: 220px;
     margin: 0 auto;
-    padding: 24px 22px;
-    border-radius: 24px;
+    padding: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 12px;
-    color: var(--text-color);
+    color: var(--page-muted);
+    font-weight: 700;
+
+    i {
+        color: var(--primary-color);
+    }
 }
 
 .boards-layout {
-    width: min(1080px, 100%);
+    width: min(1120px, 100%);
     margin: 0 auto;
     display: grid;
-    gap: 16px;
-}
-
-.boards-shell {
-    display: grid;
-    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
-    gap: 16px;
-    padding: 16px;
-    border-radius: 30px;
+    grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
+    gap: 18px;
     align-items: start;
 }
 
@@ -671,18 +749,22 @@ onUnmounted(() => {
 
 .side-board-switcher {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
 }
 
 .switcher-button {
     min-width: 0;
-    min-height: 48px;
-    border: 1px solid transparent !important;
-    border-radius: 18px;
-    padding: 12px 14px;
-    background: rgba(255, 255, 255, 0.76) !important;
-    color: var(--text-color) !important;
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    border: 1px solid var(--page-border) !important;
+    border-radius: 8px;
+    padding: 10px;
+    background: var(--page-panel) !important;
+    color: var(--page-text) !important;
     font-size: 13px;
     font-weight: 700;
     line-height: 1.35;
@@ -690,118 +772,154 @@ onUnmounted(() => {
     cursor: pointer;
     transition: transform 0.22s ease, border-color 0.22s ease, background-color 0.22s ease, color 0.22s ease;
 
-    &:is(.dark .switcher-button) {
-        background: rgba(255, 255, 255, 0.05) !important;
-        color: rgba(255, 255, 255, 0.88) !important;
+    span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    small {
+        flex: 0 0 auto;
+        color: var(--page-subtle);
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
     }
 
     &:hover {
-        transform: translateX(4px);
+        transform: translateY(-1px);
         background: rgba(var(--primary-color-rgb), 0.1) !important;
-        border-color: var(--page-line-strong) !important;
+        border-color: var(--page-border-strong) !important;
     }
 
     &.active {
-        background: linear-gradient(135deg, rgba(var(--primary-color-rgb), 0.16), rgba(255, 255, 255, 0.88)) !important;
+        background: rgba(var(--primary-color-rgb), 0.12) !important;
         color: var(--primary-color) !important;
-        border-color: rgba(var(--primary-color-rgb), 0.26) !important;
-        box-shadow: 0 12px 24px rgba(var(--primary-color-rgb), 0.12);
+        border-color: var(--page-border-strong) !important;
 
-        &:is(.dark .switcher-button.active) {
-            background: linear-gradient(135deg, rgba(var(--primary-color-rgb), 0.28), rgba(255, 255, 255, 0.08)) !important;
-            color: #fff !important;
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.22);
+        small {
+            color: var(--primary-color);
         }
     }
 }
 
 .board-card {
-    border-radius: 24px;
-    background: linear-gradient(160deg, rgba(255, 255, 255, 0.96), rgba(var(--primary-color-rgb), 0.08));
-
-    &:is(.dark .board-card) {
-        background: linear-gradient(160deg, rgba(30, 30, 36, 0.96), rgba(var(--primary-color-rgb), 0.14));
-    }
+    min-width: 0;
+    padding: 18px;
+    overflow: hidden;
 }
 
 .fixed-board {
-    min-width: 0;
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(var(--primary-color-rgb), 0.06)),
+        var(--page-panel);
+
+    .dark & {
+        background:
+            linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(var(--primary-color-rgb), 0.12)),
+            var(--page-panel);
+    }
+}
+
+.compact-board {
+    background: var(--page-panel);
 }
 
 .board-header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 16px;
-    margin-left: 10px;
+    gap: 14px;
+    margin-bottom: 14px;
 
     h2 {
-        margin: 10px 0 0;
-        font-size: 26px;
-        color: var(--text-color);
-        line-height: 1.1;
+        margin: 4px 0 0;
+        color: var(--page-text);
+        font-size: 22px;
+        font-weight: 800;
+        line-height: 1.18;
+        letter-spacing: 0;
+    }
+}
 
-        &:is(.dark .board-header h2) {
-            color: rgba(255, 255, 255, 0.94);
-        }
+.compact-header h2 {
+    font-size: 18px;
+}
+
+.board-label {
+    display: inline-flex;
+    color: var(--page-muted);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.board-count {
+    flex: 0 0 auto;
+    padding: 6px 8px;
+    border: 1px solid var(--page-border);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.48);
+    color: var(--page-muted);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+
+    .dark & {
+        background: rgba(255, 255, 255, 0.05);
     }
 }
 
 .rank-list {
     display: grid;
-    gap: 10px;
+    gap: 8px;
 }
 
-.compact-rank-list {
-    max-height: 560px;
-    overflow-y: auto;
-    padding: 6px;
-}
-
-.compact-rank-list::-webkit-scrollbar {
-    width: 6px;
-}
-
-.compact-rank-list::-webkit-scrollbar-thumb {
-    border-radius: 999px;
-    background: rgba(var(--primary-color-rgb), 0.28);
+.feature-rank-list {
+    gap: 9px;
 }
 
 .rank-item {
     width: 100%;
-    border: 1px solid transparent !important;
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: 38px minmax(0, 1fr) auto auto;
     align-items: center;
-    gap: 14px;
-    padding: 14px;
-    border-radius: 18px;
-    background: rgba(255, 255, 255, 0.82) !important;
-    cursor: pointer;
+    gap: 12px;
+    min-height: 56px;
+    padding: 10px 12px;
+    border: 1px solid transparent !important;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.68) !important;
     text-align: left;
+    cursor: pointer;
     transition: transform 0.22s ease, border-color 0.22s ease, background-color 0.22s ease, box-shadow 0.22s ease;
 
-    &:is(.dark .rank-item) {
+    .dark & {
         background: rgba(255, 255, 255, 0.05) !important;
     }
 
     &:hover {
-        transform: translateY(-2px);
-        border-color: rgba(var(--primary-color-rgb), 0.18) !important;
+        transform: translateY(-1px);
+        border-color: var(--page-border-strong) !important;
         background: rgba(var(--primary-color-rgb), 0.08) !important;
-        box-shadow: 0 14px 28px rgba(208, 110, 154, 0.12);
+        box-shadow: 0 12px 24px rgba(29, 35, 53, 0.08);
 
         .dark & {
-            box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
         }
     }
 }
 
+.compact-rank-item {
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    min-height: 52px;
+}
+
 .rank-index {
-    width: 34px;
-    height: 34px;
-    border-radius: 14px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -809,84 +927,173 @@ onUnmounted(() => {
     color: var(--primary-color);
     font-weight: 800;
     font-size: 13px;
+    font-variant-numeric: tabular-nums;
 
     &.top {
-        background: linear-gradient(135deg, var(--page-accent-soft), var(--page-accent-strong));
+        background: linear-gradient(135deg, var(--primary-color), var(--accent-cyan));
         color: #fff;
+        box-shadow: 0 8px 18px rgba(var(--primary-color-rgb), 0.22);
     }
 }
 
 .rank-info {
     display: grid;
-    gap: 4px;
+    gap: 3px;
     min-width: 0;
 }
 
 .rank-keyword {
-    color: var(--text-color);
+    overflow: hidden;
+    color: var(--page-text);
     font-size: 15px;
     font-weight: 700;
     line-height: 1.35;
-
-    &:is(.dark .rank-keyword) {
-        color: rgba(255, 255, 255, 0.94);
-    }
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .rank-meta {
-    color: var(--page-text-muted);
+    overflow: hidden;
+    color: var(--page-muted);
     font-size: 12px;
     line-height: 1.4;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.rank-badge {
+    padding: 5px 7px;
+    border: 1px solid rgba(240, 179, 66, 0.34);
+    border-radius: 6px;
+    background: rgba(240, 179, 66, 0.13);
+    color: #9a6500;
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1;
+
+    .dark & {
+        color: #ffd783;
+    }
+}
+
+.rank-arrow {
+    color: var(--page-subtle);
+    font-size: 12px;
 }
 
 .empty-board {
     min-height: 240px;
     display: flex;
-    flex-direction: column;
+    align-items: center;
 }
 
-@media (max-width: 960px) {
-    .boards-shell {
+.empty-state {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--page-muted);
+
+    i {
+        width: 42px;
+        height: 42px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(var(--primary-color-rgb), 0.1);
+        color: var(--primary-color);
+    }
+
+    h2 {
+        margin: 0 0 4px;
+        color: var(--page-text);
+        font-size: 18px;
+        line-height: 1.2;
+    }
+
+    span {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 980px) {
+    .search-hero,
+    .boards-layout {
         grid-template-columns: 1fr;
+    }
+
+    .hero-copy {
+        padding-bottom: 0;
     }
 }
 
 @media (max-width: 640px) {
     .recommended-search-page {
-        padding: 20px 14px 34px;
+        padding: 22px 12px 34px;
     }
 
-    .search-panel,
-    .boards-shell {
-        padding: 12px;
-        border-radius: 24px;
+    .search-hero {
+        gap: 14px;
+        margin-bottom: 16px;
     }
 
+    .hero-copy {
+        gap: 12px;
+    }
+
+    .hero-copy h1 {
+        font-size: 30px;
+    }
+
+    .search-dock,
     .board-card,
     .status-card {
-        padding: 22px 18px;
-        border-radius: 22px;
+        padding: 12px;
+    }
+
+    .status-card {
+        min-height: 180px;
     }
 
     .search-box {
-        grid-template-columns: 1fr;
-        padding: 14px;
-
-        i {
-            display: none;
-        }
-
-        button {
-            width: 100%;
-        }
+        grid-template-columns: 32px minmax(0, 1fr);
+        gap: 8px;
+        padding: 8px;
     }
 
-    .board-header {
-        flex-direction: column;
+    .search-submit {
+        grid-column: 1 / -1;
+        width: 100%;
+    }
+
+    .quick-tags {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 2px;
+    }
+
+    .quick-tag {
+        flex: 0 0 auto;
+        max-width: 150px;
     }
 
     .side-board-switcher {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .board-header {
+        gap: 10px;
+    }
+
+    .rank-item {
+        grid-template-columns: 34px minmax(0, 1fr) auto;
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .rank-badge {
+        display: none;
     }
 }
 </style>

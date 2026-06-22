@@ -47,13 +47,17 @@
 - 🔴  酷狗帳號登入(掃碼/手機/帳號登入)
 - 📃  支持歌詞顯示
 - 📻  每日推薦歌曲
-- 🚫🤝  無任何社交功能
-- 🔗  官方服務器直連，無任何協力廠商API
+- 🔕  無任何社交功能
+- 🔗  官方伺服器直連
 - ✔️  每日自動領取VIP，登入就是VIP
 - 🎨  主題色切換
 - 👋  啟動問候語
 - ⚙️  多平臺支持
-- 🛠  更多特性開發中
+- 🧩  超級外掛系統
+- 🧭  版面個人化設定
+- 🥚  隱藏功能與彩蛋系統
+- 🚀 新手引导系统
+- ✨  更多特性由你來探索
 
 ## 📢 Todo List
 - [x] 📺  支持MV播放
@@ -299,6 +303,9 @@ API原始程式碼來自[MakcRe/KuGouMusicApi](https://github.com/MakcRe/KuGouMu
 ![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/6.png)
 ![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/7.png)
 ![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/8.png)
+![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/9.png)
+![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/10.png)
+![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/11.png)
 
 ## 🗓️ Star 歷史
 

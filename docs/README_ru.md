@@ -47,13 +47,17 @@
 - 🔴 Авторизация через аккаунт Kugou (QR-код/телефон/логин)
 - 📃 Отображение текстов песен
 - 📻 Ежедневные рекомендации
-- 🚫🤝 Никаких социальных функций
-- 🔗 Прямое подключение к официальным серверам, без сторонних API
-- ✔️ Автоматическое получение VIP ежедневно
+- 🔕 Никаких социальных функций
+- 🔗 Прямое подключение к официальным серверам
+- ✔️ Автоматическое получение VIP ежедневно, после входа вы VIP
 - 🎨 Переключение цветовых тем
 - 👋 Приветствие при запуске
 - ⚙️ Поддержка нескольких платформ
-- 🛠 Больше функций в разработке
+- 🧩 Суперсистема плагинов
+- 🧭 Персонализация макета
+- 🥚 Скрытые функции и система пасхалок
+- 🚀 система направляющих новичков
+- ✨ Больше возможностей для самостоятельного открытия
 
 ## 📢 Список задач
 - [x] 📺 Поддержка воспроизведения MV
@@ -292,7 +296,9 @@ npm run build
 ![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/6.png)
 ![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/7.png)
 ![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/8.png)
-
+![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/9.png)
+![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/10.png)
+![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/11.png)
 
 ## 🗓️ Star History
 

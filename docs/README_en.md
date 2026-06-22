@@ -48,13 +48,17 @@ I said on my personal introduction page that I particularly enjoy listening to m
 -  🔴  KuGou account login (scan code/phone/account login)
 -  📃  Support lyric display
 -  📻  Daily recommended songs
--  🚫🤝  No social function
--  🔗  Official server direct connection, without any third-party APIs
+-  🔕  No social function
+-  🔗  Official server direct connection
 -  ✔️  Automatically claim VIP every day, log in to become VIP
 -  🎨  Theme color switching
 -  👋  Initiate greetings
 -  ⚙️  Multi platform support
--  🛠  More features under development
+-  🧩  Super plugin system
+-  🧭  Personalized layout settings
+-  🥚  Hidden features and easter egg system
+-  🚀  Novice guide system
+-  ✨  More features are yours to explore
 
 ## 📢 Todo List
 - [x]  📺  Support MV playback
@@ -299,6 +303,9 @@ The API source code comes from [MakcRe/KuGouMusicApi](https://github.com/MakcRe/
 ![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/6.png)
 ![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/7.png)
 ![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/8.png)
+![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/9.png)
+![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/10.png)
+![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/11.png)
 
 ## 🗓️ Star History
 

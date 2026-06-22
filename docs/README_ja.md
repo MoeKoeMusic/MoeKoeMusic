@@ -47,13 +47,17 @@
 - 🔴 クールドッグアカウント登録(スキャン/携帯/アカウント登録)
 - 📃 歌詞表示のサポート
 - 📻 毎日のおすすめ曲
-- 🚫🤝 ソーシャル機能なし
-- 🔗 サードパーティ製APIなしの公式サーバ直結
-- ✔️ VIPは毎日自動で受け取り、ログインするとVIPになります
+- 🔕 ソーシャル機能なし
+- 🔗 公式サーバー直結
+- ✔️ 毎日VIPを自動受け取り、ログインするとVIPになります
 - 🎨 テーマカラー切り替え
 - 👋 開始の挨拶
 - ⚙️ マルチプラットフォームサポート
-- 🛠 その他の機能開発中
+- 🧩 スーパーPluginシステム
+- 🧭 レイアウト個人設定
+- 🥚 隠し機能とイースターエッグシステム
+- 🚀 初心者誘導システム
+- ✨ その他の機能はあなたが探索
 
 ## 📢 Todo List
 - [x] 📺 MV再生をサポート
@@ -298,7 +302,9 @@ APIソースコードは[MakcRe/KuGouMusicApi](https://github.com/MakcRe/KuGouMu
 ![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/6.png)
 ![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/7.png)
 ![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/8.png)
-
+![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/9.png)
+![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/10.png)
+![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/11.png)
 
 ## 🗓️ スター履歴
 

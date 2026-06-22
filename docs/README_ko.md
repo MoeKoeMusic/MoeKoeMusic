@@ -47,13 +47,17 @@
 - 🔴 쿠거우 계정 로그인 (코드/핸드폰/계정 로그인)
 - 📃 가사 표시 지원
 - 📻 매일 추천곡
-- 🚫🤝 소셜 기능 없음
-- 🔗 공식 서버 직접 연결, 타사 API 없음
+- 🔕 소셜 기능 없음
+- 🔗 공식 서버 직접 연결
 - ✔️ 매일 VIP 자동 수령, 로그인하면 VIP
 - 🎨 테마 색상 전환
 - 👋 시작 인사말
 - ⚙️ 다중 플랫폼 지원
-- 🛠 더 많은 기능 개발 중
+- 🧩 슈퍼 플러그인 시스템
+- 🧭 레이아웃 개인화 설정
+- 🥚 숨겨진 기능과 이스터에그 시스템
+- 🚀 초보 부트 시스템
+- ✨ 더 많은 기능은 직접 탐색해 보세요
 
 ## 📢 Todo List
 - [x] 📺 뮤직비디오 재생 지원
@@ -303,6 +307,9 @@ API 소스 코드는 [MakcRe/KuGouMusicApi](https://github.com/MakcRe/KuGouMusic
 ![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/6.png)
 ![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/7.png)
 ![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/8.png)
+![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/9.png)
+![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/10.png)
+![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/11.png)
 
 ## 🗓️ 스타 히스토리
 

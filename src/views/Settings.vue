@@ -318,7 +318,6 @@ const loadLocalFonts = async () => {
         const families = [...familyMap.values()].sort((a, b) =>
             a.family.localeCompare(b.family)
         );
-        console.log(families)
         fontOptions.value = [
             { displayText: t('mo-ren-zi-ti'), value: '' },
             ...families.map(f => ({

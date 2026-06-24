@@ -6,13 +6,25 @@
             网络连接已断开
         </div>
         <div class="main-content-shell">
-            <router-view v-slot="{ Component, route }">
+            <router-view v-slot="{ Component, route: currentRoute }">
                 <div
-                    :key="route.fullPath"
                     class="page-route-view"
-                    :class="{ 'page-route-enter-active': pageRouteAnimationsReady }"
+                    :class="{ 'page-route-enter-active': isPageRouteEntering }"
                 >
-                    <component :is="Component" :playerControl="playerControl" />
+                    <KeepAlive :max="pageCacheMax">
+                        <component
+                            v-if="shouldCacheRoute(currentRoute)"
+                            :is="Component"
+                            :key="getRouteCacheKey(currentRoute)"
+                            :playerControl="playerControl"
+                        />
+                    </KeepAlive>
+                    <component
+                        v-if="!shouldCacheRoute(currentRoute)"
+                        :is="Component"
+                        :key="currentRoute.fullPath"
+                        :playerControl="playerControl"
+                    />
                 </div>
             </router-view>
         </div>
@@ -36,8 +48,19 @@ const isOnline = ref(navigator.onLine);
 const navigationMode = ref('top');
 const sidebarCollapsed = ref(localStorage.getItem('sidebarCollapsed') === '1');
 const playerBarLayout = ref('full');
-const pageRouteAnimationsReady = ref(false);
+const isPageRouteEntering = ref(false);
 const routeViewKey = computed(() => route.fullPath);
+const cacheableRouteNames = new Set([
+    'Index',
+    'Share',
+    'Discover',
+    'Library',
+    'Search',
+    'RecommendedSearch',
+    'Ranking'
+]);
+const pageCacheMax = cacheableRouteNames.size;
+let pageRouteAnimationFrame = null;
 
 // 监听网络状态变化
 const handleNetworkChange = (online) => {
@@ -74,8 +97,28 @@ const applyPlayerBarLayout = () => {
     document.documentElement.style.setProperty('--side-navigation-width', sidebarCollapsed.value ? '64px' : '226px');
 };
 
+const shouldCacheRoute = (currentRoute) => cacheableRouteNames.has(String(currentRoute?.name || ''));
+
+const getRouteCacheKey = (currentRoute) => String(currentRoute?.name || currentRoute?.path || '');
+
+const stopPageRouteAnimation = () => {
+    if (pageRouteAnimationFrame !== null) {
+        window.cancelAnimationFrame(pageRouteAnimationFrame);
+        pageRouteAnimationFrame = null;
+    }
+};
+
+const replayPageRouteAnimation = () => {
+    stopPageRouteAnimation();
+    isPageRouteEntering.value = false;
+    pageRouteAnimationFrame = window.requestAnimationFrame(() => {
+        isPageRouteEntering.value = true;
+        pageRouteAnimationFrame = null;
+    });
+};
+
 watch(routeViewKey, () => {
-    pageRouteAnimationsReady.value = true;
+    replayPageRouteAnimation();
 });
 
 onMounted(() => {
@@ -99,10 +142,13 @@ onMounted(() => {
     if (Notification.permission !== 'granted') {
         Notification.requestPermission();
     }
+
+    replayPageRouteAnimation();
 });
 
 // 组件卸载时移除事件监听
 onUnmounted(() => {
+    stopPageRouteAnimation();
     window.removeEventListener('online', handleOnline);
     window.removeEventListener('offline', handleOffline);
     window.removeEventListener('settings-change', handleSettingsChange);
@@ -186,7 +232,7 @@ main {
 }
 
 .page-route-enter-active {
-    animation: page-route-enter 0.4s ease-out both;
+    animation: page-route-enter 0.34s ease-out both;
     will-change: opacity, transform;
 }
 

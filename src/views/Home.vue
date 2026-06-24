@@ -39,7 +39,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUpdated } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { get } from '../utils/request';
 import ContextMenu from '../components/ContextMenu.vue';
 import CommonSkeleton from '../components/CommonSkeleton.vue';
@@ -75,25 +75,30 @@ onMounted(() => {
     playlist();
 });
 
-onUpdated(async () => {
+const handleShareRoute = async () => {
+    if (window.electron) return;
+
     await new Promise(resolve => setTimeout(resolve, 1000));
-    if (!window.electron) {
-        if (route.query.hash) {
-            privilegeSong(route.query.hash).then(res => {
-                if (res.status == 1) {
-                    const songInfo = res.data[0];
-                    playSong(songInfo.hash, songInfo.albumname, getCover(songInfo.info.image, 480), songInfo.singername)
-                    router.push('/');
-                }
-            })
-        } else if (route.query.listid) {
-            router.push({
-                path: '/PlaylistDetail',
-                query: { global_collection_id: route.query.listid }
-            });
-        }
+
+    if (route.query.hash) {
+        privilegeSong(route.query.hash).then(res => {
+            if (res.status == 1) {
+                const songInfo = res.data[0];
+                playSong(songInfo.hash, songInfo.albumname, getCover(songInfo.info.image, 480), songInfo.singername)
+                router.push('/');
+            }
+        })
+    } else if (route.query.listid) {
+        router.push({
+            path: '/PlaylistDetail',
+            query: { global_collection_id: route.query.listid }
+        });
     }
-})
+};
+
+watch(() => [route.query.hash, route.query.listid], () => {
+    handleShareRoute();
+}, { immediate: true });
 
 const recommend = async () => {
     const response = await get('/everyday/recommend');

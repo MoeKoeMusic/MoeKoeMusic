@@ -202,7 +202,7 @@ const profileHeaderStyle = computed(() => ({
 
 const selectCategory = (index) => {
     selectedCategory.value = index;
-    router.replace({ path: '/library', query: { category: index } });
+    // router.replace({ path: '/library', query: { category: index } });
 };
 
 // 格式化听歌时长（分钟转为小时和分钟）

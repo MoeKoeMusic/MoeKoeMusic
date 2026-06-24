@@ -747,10 +747,9 @@ const scrollToFirstItem = () => {
     if (recycleScrollerRef.value) {
         recycleScrollerRef.value.scrollToItem(0, { behavior: 'smooth' });
     }
-    window.scrollTo({
+    document.querySelector('.app-main-scroll')?.scrollTo({
         top: 0,
-        behavior: 'smooth',
-        scrollSource: 'manual-button-click'
+        behavior: 'smooth'
     });
 };
 

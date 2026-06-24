@@ -1,7 +1,12 @@
 <template>
     <Header v-if="navigationMode === 'top'" />
     <SidebarNavigation v-else />
-    <main :class="{ 'side-navigation-main-content': navigationMode === 'side', collapsed: sidebarCollapsed }">
+    <main
+        ref="mainScrollRef"
+        class="app-main-scroll"
+        :class="{ 'side-navigation-main-content': navigationMode === 'side', collapsed: sidebarCollapsed }"
+        @scroll="handleMainScroll"
+    >
         <div v-if="!isOnline" class="network-status">
             网络连接已断开
         </div>
@@ -34,7 +39,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import Header from "@/components/Header.vue";
 import SidebarNavigation from "@/components/SidebarNavigation.vue";
@@ -44,6 +49,7 @@ import { setTheme, applyColorTheme, applyCustomFont } from '../utils/utils';
 
 const route = useRoute();
 const playerControl = ref(null);
+const mainScrollRef = ref(null);
 const isOnline = ref(navigator.onLine);
 const navigationMode = ref('top');
 const sidebarCollapsed = ref(localStorage.getItem('sidebarCollapsed') === '1');
@@ -60,6 +66,7 @@ const cacheableRouteNames = new Set([
     'Ranking'
 ]);
 const pageCacheMax = cacheableRouteNames.size;
+const routeScrollPositions = new Map();
 let pageRouteAnimationFrame = null;
 
 // 监听网络状态变化
@@ -101,6 +108,24 @@ const shouldCacheRoute = (currentRoute) => cacheableRouteNames.has(String(curren
 
 const getRouteCacheKey = (currentRoute) => String(currentRoute?.name || currentRoute?.path || '');
 
+const getScrollRouteKey = (currentRoute) => String(currentRoute?.fullPath || currentRoute?.path || '');
+
+const saveRouteScrollPosition = (currentRoute, scrollTop) => {
+    routeScrollPositions.set(getScrollRouteKey(currentRoute), scrollTop);
+};
+
+const restoreRouteScrollPosition = (currentRoute) => {
+    nextTick(() => {
+        if (!mainScrollRef.value) return;
+        const scrollTop = routeScrollPositions.get(getScrollRouteKey(currentRoute)) ?? 0;
+        mainScrollRef.value.scrollTop = scrollTop;
+    });
+};
+
+const handleMainScroll = (event) => {
+    saveRouteScrollPosition(route, event.target.scrollTop);
+};
+
 const stopPageRouteAnimation = () => {
     if (pageRouteAnimationFrame !== null) {
         window.cancelAnimationFrame(pageRouteAnimationFrame);
@@ -117,8 +142,12 @@ const replayPageRouteAnimation = () => {
     });
 };
 
-watch(routeViewKey, () => {
+watch(routeViewKey, (to, from) => {
+    if (from && mainScrollRef.value) {
+        saveRouteScrollPosition({ fullPath: from }, mainScrollRef.value.scrollTop);
+    }
     replayPageRouteAnimation();
+    restoreRouteScrollPosition(route);
 });
 
 onMounted(() => {
@@ -211,13 +240,15 @@ body {
 }
 
 main {
-    min-height: calc(100vh - 80px - 188px);
+    height: 100vh;
     width: 100%;
     margin: 0;
-    margin-bottom: 150px;
     padding-top: 80px;
     padding-bottom: 150px;
     box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
 }
 
 .main-content-shell {

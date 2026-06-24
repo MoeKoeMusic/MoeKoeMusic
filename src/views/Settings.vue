@@ -15,17 +15,34 @@
                 <ExtensionManager v-if="section.title === t('cha-jian')" />
                 <div v-else class="settings-cards">
                     <div v-for="(item, itemIndex) in getVisibleItems(section)" :key="itemIndex" class="setting-card"
-                        @click="item.action ? item.action(item.helpLink) : openSelection(item.key, item.helpLink)">
+                        :class="{ 'setting-card--toggle': isToggleItem(item) }" @click="handleCardClick(item)">
                         <div class="setting-card-header">
-                            <i :class="item.itemIcon || 'fas fa-sliders-h'"></i>
-                            <span>{{ item.label }}</span>
-                            <span v-if="item.showRefreshHint && showRefreshHint[item.key]" class="refresh-hint">
-                                {{ item.refreshHintText }}
-                            </span>
+                            <div class="setting-card-title">
+                                <i :class="item.itemIcon || 'fas fa-sliders-h'"></i>
+                                <span>{{ item.label }}</span>
+                                <span v-if="item.showRefreshHint && showRefreshHint[item.key]" class="refresh-hint">
+                                    {{ item.refreshHintText }}
+                                </span>
+                            </div>
+                            <button v-if="item.helpLink" type="button" class="card-help-link"
+                                :title="$t('bang-zhu')" :aria-label="$t('bang-zhu')"
+                                @click.stop="openHelpLink(item.helpLink)">
+                                <i class="fas fa-question-circle"></i>
+                            </button>
                         </div>
                         <div class="setting-card-value">
-                            <span>{{ item.icon }}{{ item.customText || selectedSettings[item.key]?.displayText }}</span>
-                            <i class="fas fa-chevron-right"></i>
+                            <template v-if="isToggleItem(item)">
+                                <span>{{ item.icon }}{{ selectedSettings[item.key]?.displayText }}</span>
+                                <button type="button" class="setting-switch" :class="{ active: isToggleEnabled(item) }"
+                                    :aria-checked="isToggleEnabled(item)" role="switch"
+                                    @click.stop="toggleSetting(item)">
+                                    <span class="setting-switch-thumb"></span>
+                                </button>
+                            </template>
+                            <template v-else>
+                                <span>{{ item.icon }}{{ item.customText || selectedSettings[item.key]?.displayText }}</span>
+                                <i class="fas fa-chevron-right"></i>
+                            </template>
                         </div>
                     </div>
                 </div>
@@ -378,6 +395,27 @@ const getSettingItem = (key) => {
 
 const getVisibleItems = (section) => section.items.filter(item => !item.hidden && !getUnavailableSettingText(item));
 
+const isToggleItem = (item) => {
+    if (!item?.options || item.options.length !== 2) return false;
+    const values = item.options.map(option => option.value);
+    return values.includes('on') && values.includes('off');
+};
+
+const isToggleEnabled = (item) => selectedSettings.value[item.key]?.value === 'on';
+
+const handleCardClick = (item) => {
+    if (item.action) {
+        item.action(item.helpLink);
+        return;
+    }
+
+    if (isToggleItem(item)) {
+        return;
+    }
+
+    openSelection(item.key);
+};
+
 const markRefreshHint = (key) => {
     if (getSettingItem(key)?.showRefreshHint) {
         showRefreshHint.value[key] = true;
@@ -480,6 +518,17 @@ const selectActions = {
 const runSelectAction = async (item, option) => {
     if (!item?.selectAction) return;
     await selectActions[item.selectAction]?.(option);
+};
+
+const toggleSetting = async (item) => {
+    const currentValue = selectedSettings.value[item.key]?.value;
+    const nextOption = item.options.find(option => option.value === (currentValue === 'on' ? 'off' : 'on'));
+    if (!nextOption) return;
+
+    selectedSettings.value[item.key] = { ...nextOption };
+    await runSelectAction(item, nextOption);
+    saveSettings();
+    markRefreshHint(item.key);
 };
 
 const selectOption = async (option) => {
@@ -1077,14 +1126,9 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
 
     &-header {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
+        justify-content: space-between;
         margin-bottom: 12px;
-
-        i {
-            color: $primary;
-            margin-right: 10px;
-            font-size: 16px;
-        }
     }
 
     &-value {
@@ -1101,6 +1145,86 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
             font-size: 12px;
         }
     }
+
+    &--toggle {
+        .setting-card-value {
+            gap: 12px;
+            min-height: 38px;
+            padding: 4px 12px;
+            box-sizing: border-box;
+        }
+    }
+}
+
+.setting-card-title {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+
+    i {
+        color: $primary;
+        margin-right: 10px;
+        font-size: 16px;
+        flex: 0 0 auto;
+    }
+
+    > span {
+        min-width: 0;
+        word-break: break-word;
+    }
+}
+
+.card-help-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    margin-left: 12px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: $primary;
+    cursor: pointer;
+    flex: 0 0 auto;
+
+    &:hover {
+        opacity: 0.85;
+    }
+}
+
+.setting-switch {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    border: 0;
+    border-radius: 999px;
+    background: #d9d9d9;
+    cursor: pointer;
+    padding: 0;
+    transition: background-color 0.2s ease;
+    flex: 0 0 auto;
+
+    &.active {
+        background: $primary;
+    }
+}
+
+.setting-switch-thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s ease;
+}
+
+.setting-switch.active .setting-switch-thumb {
+    transform: translateX(18px);
 }
 
 .refresh-hint {

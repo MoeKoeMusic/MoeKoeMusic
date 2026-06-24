@@ -60,6 +60,7 @@
             </div>
         </div>
 
+        <teleport to="body">
         <div v-if="isSelectionOpen" class="modal" @click.self="closeSelection">
             <div class="modal-content">
                 <a v-if="currentHelpLink" class="help-link" @click="openHelpLink" :title="$t('bang-zhu')"
@@ -168,8 +169,10 @@
                 <button @click="closeSelection">{{ $t('guan-bi-an-niu') }}</button>
             </div>
         </div>
+        </teleport>
 
         <!-- 快捷键设置弹窗 -->
+        <teleport to="body">
         <div v-if="showShortcutModal" class="shortcut-modal" @click.self="closeShortcutSettings">
             <div class="shortcut-modal-content">
                 <h3>{{ $t('kuai-jie-jian-she-zhi') }}</h3>
@@ -192,6 +195,7 @@
                 </div>
             </div>
         </div>
+        </teleport>
     </div>
 </template>
 
@@ -1043,11 +1047,10 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
 
 .settings-page {
     display: flex;
-    height: 100vh;
+    height: 90vh;
     overflow: hidden;
     box-shadow: 0 0 30px $shadow-light;
     border-radius: 8px;
-    margin-bottom: -80px;
 }
 
 .settings-sidebar {
@@ -1257,7 +1260,7 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     animation: slideIn 0.3s ease-in-out;
     position: relative;
-    max-height: 80vh;
+    max-height: 50vh;
     overflow: hidden;
     overscroll-behavior: contain;
     display: flex;

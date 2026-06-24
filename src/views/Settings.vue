@@ -50,6 +50,8 @@
                     <i class="fas fa-question-circle"></i>
                 </a>
                 <h3>{{ getSettingItem(selectionType)?.selectionTitle }}</h3>
+                <input v-if="selectionType === 'font'" class="font-search" placeholder="搜索字体..."
+                    v-model="fontSearch" />
                 <ul v-if="selectionType !== 'font' && selectionType !== 'audioOutputDevice'">
                     <li v-for="option in getSettingItem(selectionType)?.options || []" :key="option.value"
                         @click="selectOption(option)">
@@ -69,10 +71,17 @@
                 <ul v-else-if="selectionType === 'font'" class="font-list">
                     <li v-if="fontOptionsLoading">{{ $t('jia-zai-zhong') }}</li>
                     <li v-else-if="fontOptions.length === 0">{{ $t('mo-ren-zi-ti') }}</li>
-                    <li v-else v-for="option in fontOptions" :key="option.value" :style="{ fontFamily: option.value }"
-                        @click="selectFontOption(option)">
-                        {{ option.displayText }}
-                    </li>
+                    <template v-else v-for="option in fontOptions" :key="option.value">
+                        <li v-if="!fontSearch || option.displayText.toLowerCase().includes(fontSearch.toLowerCase())"
+                            :style="{ fontFamily: option.value }"
+                            @click="selectFontOption(option)"
+                            v-html="fontSearch? option.displayText.replace(
+                                new RegExp(fontSearch, 'ig'),
+                                `<mark>${fontSearch}</mark>`
+                            ): option.displayText">
+                        </li>
+                    </template>
+                    
                 </ul>
 
                 <div v-if="selectionType === 'highDpi'" class="scale-slider-container">
@@ -220,6 +229,7 @@ const currentHelpLink = ref('');
 const selectionType = ref('');
 const fontOptions = ref([]);
 const fontOptionsLoading = ref(false);
+const fontSearch = ref('');
 
 const showRefreshHint = ref({});
 
@@ -290,12 +300,30 @@ const loadLocalFonts = async () => {
         }
 
         const fonts = await window.queryLocalFonts();
-        const families = [...new Set(fonts.map(font => font.family).filter(Boolean))].sort((a, b) =>
-            a.localeCompare(b)
+        const familyMap = new Map();
+        for (const font of fonts) {
+            const family = font.family;
+            const name = font.fullName;
+            if (!family || !name) continue;
+
+            if (!familyMap.has(family) || name.length < familyMap.get(family).name.length) {
+                familyMap.set(family, {
+                    // 如果 fullName 太长了那就说明是变体名，直接用字族名代替
+                    name: name.length > family.length? family: name,
+                    family
+                });
+            }
+        }
+
+        const families = [...familyMap.values()].sort((a, b) =>
+            a.family.localeCompare(b.family)
         );
         fontOptions.value = [
             { displayText: t('mo-ren-zi-ti'), value: '' },
-            ...families.map(family => ({ displayText: family, value: family }))
+            ...families.map(f => ({
+                displayText: f.name === f.family? f.family: `${f.name} (${f.family})`,
+                value: f.family
+            }))
         ];
     } catch {
         fontOptions.value = [];
@@ -1116,6 +1144,15 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
         font-size: 20px;
         margin-bottom: 20px;
         color: #333;
+    }
+
+    .font-search {
+        padding: 12px;
+        margin: 6px 0;
+        outline: 0;
+        border: 0;
+        border-radius: 8px;
+        font-size: 1em;
     }
 
     ul {

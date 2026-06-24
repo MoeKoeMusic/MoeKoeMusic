@@ -6,7 +6,15 @@
             网络连接已断开
         </div>
         <div class="main-content-shell">
-            <router-view :playerControl="playerControl"></router-view>
+            <router-view v-slot="{ Component, route }">
+                <div
+                    :key="route.fullPath"
+                    class="page-route-view"
+                    :class="{ 'page-route-enter-active': pageRouteAnimationsReady }"
+                >
+                    <component :is="Component" :playerControl="playerControl" />
+                </div>
+            </router-view>
         </div>
     </main>
     <PlayerControl ref="playerControl" />
@@ -14,18 +22,22 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { useRoute } from 'vue-router';
 import Header from "@/components/Header.vue";
 import SidebarNavigation from "@/components/SidebarNavigation.vue";
 import PlayerControl from "@/components/PlayerControl.vue";
 import OnboardingGuide from "@/components/OnboardingGuide.vue";
 import { setTheme, applyColorTheme, applyCustomFont } from '../utils/utils';
 
+const route = useRoute();
 const playerControl = ref(null);
 const isOnline = ref(navigator.onLine);
 const navigationMode = ref('top');
 const sidebarCollapsed = ref(localStorage.getItem('sidebarCollapsed') === '1');
 const playerBarLayout = ref('full');
+const pageRouteAnimationsReady = ref(false);
+const routeViewKey = computed(() => route.fullPath);
 
 // 监听网络状态变化
 const handleNetworkChange = (online) => {
@@ -61,6 +73,10 @@ const applyPlayerBarLayout = () => {
     document.body.classList.toggle('player-bar-content-layout', enabled);
     document.documentElement.style.setProperty('--side-navigation-width', sidebarCollapsed.value ? '64px' : '226px');
 };
+
+watch(routeViewKey, () => {
+    pageRouteAnimationsReady.value = true;
+});
 
 onMounted(() => {
     const savedConfig = JSON.parse(localStorage.getItem('settings'));
@@ -161,6 +177,29 @@ main {
 .main-content-shell {
     width: min(1200px, 100%);
     margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+}
+
+.page-route-view {
+    width: 100%;
+}
+
+.page-route-enter-active {
+    animation: page-route-enter 0.4s ease-out both;
+    will-change: opacity, transform;
+}
+
+@keyframes page-route-enter {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 6px, 0);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
 }
 
 main.side-navigation-main-content {

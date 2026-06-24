@@ -100,7 +100,7 @@
             </div>
 
             <RecycleScroller ref="recycleScrollerRef" :items="filteredTracks" :item-size="listMode === 'list' ? 50 : 70"
-                class="track-list" key-field="name" v-if="musicFiles.length > 0">
+                class="track-list" key-field="name" page-mode :buffer="400" v-if="musicFiles.length > 0">
                 <template #default="{ item, index }">
                     <div class="li" :key="item.name"
                         :class="{ 'cover-view': listMode === 'grid', 'selected': batchSelectionMode && selectedTracks.includes(index) }"
@@ -738,15 +738,13 @@ const getFileExtension = (filename) => {
 const scrollToItem = () => {
     const currentIndex = filteredTracks.value.findIndex(song => song.name === props.playerControl?.currentSong.name);
     if (currentIndex !== -1) {
-        recycleScrollerRef.value.scrollToItem(currentIndex - 3, { behavior: 'smooth' });
+        recycleScrollerRef.value?.scrollToItem(Math.max(0, currentIndex - 3), { behavior: 'smooth' });
     }
 };
 
 // 滚动到顶部
 const scrollToFirstItem = () => {
-    if (recycleScrollerRef.value) {
-        recycleScrollerRef.value.scrollToItem(0, { behavior: 'smooth' });
-    }
+    recycleScrollerRef.value?.scrollToItem(0, { behavior: 'smooth' });
     document.querySelector('.app-main-scroll')?.scrollTo({
         top: 0,
         behavior: 'smooth'
@@ -1183,19 +1181,7 @@ const getSortIconClass = (field) => {
 }
 
 .track-list {
-    height: 800px;
-    scrollbar-width: thin;
-    scrollbar-color: transparent transparent;
-    overflow: auto;
-
-    &::-webkit-scrollbar {
-        width: 8px !important;
-        display: block !important;
-    }
-
-    &:hover {
-        scrollbar-color: var(--primary-color) transparent;
-    }
+    width: 100%;
 }
 
 .li {

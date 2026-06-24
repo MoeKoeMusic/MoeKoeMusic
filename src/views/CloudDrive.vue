@@ -84,7 +84,7 @@
             </div>
 
             <RecycleScroller ref="recycleScrollerRef" :items="filteredTracks" :item-size="listMode === 'list' ? 50 : 70"
-                class="track-list" key-field="hash">
+                class="track-list" key-field="hash" page-mode :buffer="400">
                 <template #default="{ item, index }">
                     <div class="li" :key="item.hash"
                         :class="{ 'cover-view': listMode === 'grid', 'selected': batchSelectionMode && selectedTracks.includes(index) }"
@@ -360,13 +360,13 @@ const uploadMusic = () => {
 const scrollToItem = () => {
     const currentIndex = filteredTracks.value.findIndex(song => song.hash === props.playerControl.currentSong.hash);
     if (currentIndex !== -1) {
-        recycleScrollerRef.value.scrollToItem(currentIndex - 3, { behavior: 'smooth' });
+        recycleScrollerRef.value?.scrollToItem(Math.max(0, currentIndex - 3), { behavior: 'smooth' });
     }
 };
 
 // 滚动到顶部
 const scrollToFirstItem = () => {
-    recycleScrollerRef.value.scrollToItem(0, { behavior: 'smooth' });
+    recycleScrollerRef.value?.scrollToItem(0, { behavior: 'smooth' });
     document.querySelector('.app-main-scroll')?.scrollTo({
         top: 0,
         behavior: 'smooth'
@@ -748,19 +748,7 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .track-list {
-    height: 800px;
-    scrollbar-width: thin;
-    scrollbar-color: transparent transparent;
-    overflow: auto;
-
-    &::-webkit-scrollbar {
-        width: 8px !important;
-        display: block !important;
-    }
-
-    &:hover {
-        scrollbar-color: $primary transparent;
-    }
+    width: 100%;
 }
 
 .li {

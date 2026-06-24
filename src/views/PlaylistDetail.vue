@@ -137,12 +137,13 @@
             </div>
 
             <RecycleScroller v-else ref="recycleScrollerRef" :items="filteredTracks"
-                :item-size="viewMode === 'list' ? 50 : 70" class="track-list" key-field="hash" @scroll="handleScroll">
-                <template #default="{ item, index }">
-                    <div class="li" :key="item.hash"
-                        :class="{ 'cover-view': viewMode === 'grid', 'selected': batchSelectionMode && selectedTracks.includes(index) }"
-                        @click="batchSelectionMode ? selectTrack(index, $event) : playSong(item.hash, item.name, item.cover, item.author)"
-                        @contextmenu.prevent="showContextMenu($event, item)">
+                :item-size="viewMode === 'list' ? 50 : 70" class="track-list" key-field="hash" page-mode
+                :buffer="400" :emit-update="true" @update="handleVirtualUpdate">
+                        <template #default="{ item, index }">
+                        <div class="li" :key="item.hash"
+                            :class="{ 'cover-view': viewMode === 'grid', 'selected': batchSelectionMode && selectedTracks.includes(index) }"
+                            @click="batchSelectionMode ? selectTrack(index, $event) : playSong(item.hash, item.name, item.cover, item.author)"
+                            @contextmenu.prevent="showContextMenu($event, item)">
 
                         <!-- 复选框或序号 -->
                         <div class="track-checkbox" v-if="batchSelectionMode">
@@ -187,8 +188,8 @@
                                 class="queue-play-btn fas fa-music"></button>
                             {{ $formatMilliseconds(item.timelen) }}
                         </div>
-                    </div>
-                </template>
+                        </div>
+                        </template>
             </RecycleScroller>
         </div>
 
@@ -354,6 +355,11 @@ const loadData = async () => {
         router.push('/library');
         return;
     }
+    loading.value = true;
+    isSearching.value = false;
+    tracks.value = [];
+    filteredTracks.value = [];
+    lastVisibleBottomIndex = 0;
     if (isArtist.value) {
         getArtistInfo();
         fetchArtistSongs();
@@ -722,7 +728,6 @@ const loadMoreTracks = async () => {
 // 记录最后的滚动位置信息
 let lastVisibleBottomIndex = 0;
 
-// 确保始终有足够的缓冲数据
 const ensureBufferData = () => {
     const totalItems = filteredTracks.value.length;
     const remainingItems = totalItems - lastVisibleBottomIndex;
@@ -733,17 +738,12 @@ const ensureBufferData = () => {
     }
 };
 
-const handleScroll = (event) => {
-    const { scrollTop, clientHeight } = event.target;
-    const itemSize = viewMode.value === 'list' ? 50 : 70;
-    // 计算当前可见区域底部对应的item索引
-    const visibleBottomIndex = Math.ceil((scrollTop + clientHeight) / itemSize);
-    lastVisibleBottomIndex = visibleBottomIndex;
-
+// 搜索歌曲
+const handleVirtualUpdate = (startIndex, endIndex) => {
+    lastVisibleBottomIndex = Math.max(startIndex, endIndex);
     ensureBufferData();
 };
 
-// 搜索歌曲
 const loadAllRemainingTracks = async () => {
     while (hasMore.value) {
         if (isLoadingMore.value) {
@@ -927,13 +927,12 @@ const showContextMenu = (event, song) => {
 const scrollToItem = () => {
     const currentIndex = filteredTracks.value.findIndex(song => song.hash === props.playerControl.currentSong.hash);
     if (currentIndex !== -1) {
-        recycleScrollerRef.value.scrollToItem(currentIndex - 3, { behavior: 'smooth' });
+        recycleScrollerRef.value?.scrollToItem(Math.max(0, currentIndex - 3), { behavior: 'smooth' });
     }
 };
 
 // 滚动到顶部
 const scrollToFirstItem = () => {
-    recycleScrollerRef.value.scrollToItem(0, { behavior: 'smooth' });
     document.querySelector('.app-main-scroll')?.scrollTo({
         top: 0,
         behavior: 'smooth'
@@ -1426,19 +1425,7 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .track-list {
-    height: 800px;
-    scrollbar-width: thin;
-    scrollbar-color: transparent transparent;
-    overflow: auto;
-
-    &::-webkit-scrollbar {
-        width: 8px !important;
-        display: block !important;
-    }
-
-    &:hover {
-        scrollbar-color: $primary transparent;
-    }
+    width: 100%;
 }
 
 .search-loading-overlay {
@@ -1714,7 +1701,7 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
     position: fixed;
     bottom: 168px;
     right: 14px;
-    z-index: 1;
+    z-index: 110;
     cursor: pointer;
     font-size: 20px;
     color: $primary;
@@ -1724,7 +1711,7 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
     position: fixed;
     bottom: 100px;
     right: 10px;
-    z-index: 1;
+    z-index: 110;
     cursor: pointer;
     font-size: 20px;
     color: $primary;

@@ -263,8 +263,8 @@ main {
 }
 
 .page-route-enter-active {
-    animation: page-route-enter 0.34s ease-out both;
-    will-change: opacity, transform;
+    animation: page-route-enter 0.45s ease-out;
+    will-change: opacity;
 }
 
 @keyframes page-route-enter {

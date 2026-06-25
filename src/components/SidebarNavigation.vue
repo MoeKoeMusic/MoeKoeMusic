@@ -825,6 +825,10 @@ watch(() => MoeAuth.isAuthenticated, (isAuthenticated) => {
     background: #fff;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
 
+    &:is(.dark .side-profile-menu) {
+        background: #2a2a2a;
+    }   
+
     ul {
         list-style: none;
         margin: 0;
@@ -841,6 +845,14 @@ watch(() => MoeAuth.isAuthenticated, (isAuthenticated) => {
 
         &:hover {
             background: var(--secondary-color);
+        }
+
+        &:is(.dark li a) {
+            color: #e1e1e1;
+
+            &:hover {
+                background: #222222;
+            }
         }
     }
 }

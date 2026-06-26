@@ -86,6 +86,15 @@ const formatDuration = (value) => {
     transform: translateY(-4px);
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
   }
+
+  &:is(.dark .mv-card) {
+    background-color: #1e1e1e;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+    &:hover {
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.5);
+    }
+  } 
 }
 
 .mv-cover {
@@ -121,6 +130,10 @@ const formatDuration = (value) => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+
+  &:is(.dark .mv-name) {
+    color: #fff;
+  }
 }
 
 .mv-singer {
@@ -144,6 +157,13 @@ const formatDuration = (value) => {
     background-color: #f5f5f5;
     color: #666;
     font-size: 12px;
+  }
+
+  &:is(.dark .mv-meta) {
+    span {
+      background-color: rgba(255, 255, 255, 0.08);
+      color: #aaa;
+    }
   }
 }
 

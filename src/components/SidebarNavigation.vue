@@ -520,7 +520,11 @@ watch(() => MoeAuth.isAuthenticated, (isAuthenticated) => {
         gap: 6px;
         padding: 0 8px;
         border-color: var(--border-color);
-        background: var(--background-color);
+    }
+
+    &:is(.dark .side-top-search:hover),
+    &:is(.dark .side-top-search:focus-within) {
+        border-color: #505050;
     }
 
     input {

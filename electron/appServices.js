@@ -273,19 +273,20 @@ export function createTray(mainWindow, title = '') {
 
     const contextMenu = Menu.buildFromTemplate([
         {
-            label: t('project-home'),
-            icon: getIconPath('home.png', 'menu'),
+            label: t('show-hide'),
+            accelerator: 'CmdOrCtrl+Shift+S',
+            icon: getIconPath('show.png', 'menu'),
             click: () => {
-                shell.openExternal('https://Music.MoeKoe.cn');
+                if (mainWindow) {
+                    if (mainWindow.isVisible()) {
+                        mainWindow.hide();
+                    } else {
+                        mainWindow.show();
+                    }
+                }
             }
         },
-        {
-            label: t('report-bug'),
-            icon: getIconPath('bug.png', 'menu'),
-            click: () => {
-                shell.openExternal('https://github.com/iAJue/MoeKoeMusic/issues');
-            }
-        },
+        { type: 'separator' },
         {
             label: t('prev-track'),
             icon: getIconPath('prev.png', 'menu'),
@@ -310,6 +311,21 @@ export function createTray(mainWindow, title = '') {
                 mainWindow.webContents.send('play-next-track');
             }
         },
+        { type: 'separator' },
+        {
+            label: t('project-home'),
+            icon: getIconPath('home.png', 'menu'),
+            click: () => {
+                shell.openExternal('https://Music.MoeKoe.cn');
+            }
+        },
+        {
+            label: t('report-bug'),
+            icon: getIconPath('bug.png', 'menu'),
+            click: () => {
+                shell.openExternal('https://github.com/iAJue/MoeKoeMusic/issues');
+            }
+        },
         {
             label: t('check-updates'),
             icon: getIconPath('update.png', 'menu'),
@@ -326,20 +342,7 @@ export function createTray(mainWindow, title = '') {
                 app.quit();
             }
         },
-        {
-            label: t('show-hide'),
-            accelerator: 'CmdOrCtrl+Shift+S',
-            icon: getIconPath('show.png', 'menu'),
-            click: () => {
-                if (mainWindow) {
-                    if (mainWindow.isVisible()) {
-                        mainWindow.hide();
-                    } else {
-                        mainWindow.show();
-                    }
-                }
-            }
-        },
+        { type: 'separator' },
         {
             label: t('quit'),
             accelerator: 'CmdOrCtrl+Q',

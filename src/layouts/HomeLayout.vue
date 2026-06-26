@@ -55,7 +55,8 @@ const navigationMode = ref('top');
 const sidebarCollapsed = ref(localStorage.getItem('sidebarCollapsed') === '1');
 const playerBarLayout = ref('full');
 const isPageRouteEntering = ref(false);
-const routeViewKey = computed(() => route.fullPath);
+// const routeViewKey = computed(() => route.fullPath);
+const routeViewKey = computed(() => route.name);
 const cacheableRouteNames = new Set([
     'Index',
     'Share',

@@ -97,7 +97,7 @@ const searchTabs = [
 
 // 切换搜索类型
 const changeSearchType = (type) => {
-    searchType.value = type;
+    if (searchType.value === type) return;
     currentPage.value = 1; // 切换类型时重置页码
 
     // 更新URL参数
@@ -107,7 +107,6 @@ const changeSearchType = (type) => {
             type: type
         }
     });
-    performSearch();
 };
 
 const showContextMenu = (event, song) => {
@@ -120,25 +119,26 @@ const showContextMenu = (event, song) => {
 };
 
 onMounted(() => {
-    if (route.query.type) {
-        searchType.value = route.query.type;
-    }
-    performSearch();
+    syncSearchFromRoute(true);
 });
 
-watch(() => route.query.q, (newQuery) => {
-    currentPage.value = 1;
-    searchQuery.value = newQuery;
-    performSearch();
+watch(() => [route.name, route.query.q, route.query.type], () => {
+    syncSearchFromRoute();
 });
 
-watch(() => route.query.type, (newType) => {
-    const nextType = newType || 'song';
-    if (searchType.value === nextType) return;
+const syncSearchFromRoute = (force = false) => {
+    if (route.name !== 'Search') return;
+
+    const nextQuery = route.query.q || '';
+    const nextType = route.query.type || 'complex';
+    const changed = searchQuery.value !== nextQuery || searchType.value !== nextType;
+    if (!force && !changed) return;
+
     currentPage.value = 1;
+    searchQuery.value = nextQuery;
     searchType.value = nextType;
     performSearch();
-});
+};
 
 const props = defineProps({
     playerControl: Object
@@ -176,7 +176,13 @@ const showPagination = computed(() => {
 });
 
 const performSearch = async () => {
-    if (!searchQuery.value) return;
+    if (!searchQuery.value) {
+        searchResults.value = [];
+        complexSearchData.value = null;
+        totalPages.value = 1;
+        return;
+    }
+
     isLoading.value = true;
     searchResults.value = [];
     totalPages.value = 1;

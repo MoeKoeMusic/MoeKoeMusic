@@ -39,13 +39,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted } from "vue";
 import { get } from '../utils/request';
 import ContextMenu from '../components/ContextMenu.vue';
 import CommonSkeleton from '../components/CommonSkeleton.vue';
 import HomeRecommendations from '../components/home/HomeRecommendations.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getCover } from '../utils/utils';
+import { useActivatedWatch } from '../composables/useActivatedWatch';
 
 const router = useRouter();
 const route = useRoute();
@@ -75,13 +76,23 @@ onMounted(() => {
     playlist();
 });
 
-const handleShareRoute = async () => {
+const handleShareRoute = async (onCleanup) => {
     if (window.electron) return;
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    let cancelled = false;
+    await new Promise(resolve => {
+        const timer = setTimeout(resolve, 1000);
+        onCleanup(() => {
+            cancelled = true;
+            clearTimeout(timer);
+        });
+    });
+
+    if (cancelled) return;
 
     if (route.query.hash) {
         privilegeSong(route.query.hash).then(res => {
+            if (cancelled) return;
             if (res.status == 1) {
                 const songInfo = res.data[0];
                 playSong(songInfo.hash, songInfo.albumname, getCover(songInfo.info.image, 480), songInfo.singername)
@@ -96,8 +107,8 @@ const handleShareRoute = async () => {
     }
 };
 
-watch(() => [route.query.hash, route.query.listid], () => {
-    handleShareRoute();
+useActivatedWatch(() => [route.query.hash, route.query.listid], (_value, _oldValue, onCleanup) => {
+    handleShareRoute(onCleanup);
 }, { immediate: true });
 
 const recommend = async () => {

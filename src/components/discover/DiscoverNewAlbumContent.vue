@@ -26,10 +26,11 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import CommonSkeleton from '../CommonSkeleton.vue';
 import { get } from '../../utils/request';
+import { useActivatedWatch } from '../../composables/useActivatedWatch';
 
 const route = useRoute();
 const router = useRouter();
@@ -114,7 +115,7 @@ const selectAlbumType = (type) => {
     });
 };
 
-watch(() => route.query.albumType, async (albumType) => {
+useActivatedWatch(() => route.query.albumType, async (albumType) => {
     selectedAlbumType.value = normalizeAlbumType(albumType);
     await fetchNewAlbums();
 }, { immediate: true });

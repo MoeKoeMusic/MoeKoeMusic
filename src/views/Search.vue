@@ -62,7 +62,7 @@
     <ContextMenu ref="contextMenuRef" :playerControl="playerControl" />
 </template>
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import ContextMenu from '../components/ContextMenu.vue';
 import CommonSkeleton from '../components/CommonSkeleton.vue';
 import SongSearchList from '../components/search/SongSearchList.vue';
@@ -74,6 +74,7 @@ import ComplexSearchResults from '../components/search/ComplexSearchResults.vue'
 import { get } from '../utils/request';
 import { openMvPlayer } from '../utils/utils';
 import { useRoute, useRouter } from 'vue-router';
+import { useActivatedWatch } from '../composables/useActivatedWatch';
 const route = useRoute();
 const router = useRouter();
 const searchQuery = ref(route.query.q || '');
@@ -122,7 +123,7 @@ onMounted(() => {
     syncSearchFromRoute(true);
 });
 
-watch(() => [route.name, route.query.q, route.query.type], () => {
+useActivatedWatch(() => [route.name, route.query.q, route.query.type], () => {
     syncSearchFromRoute();
 });
 

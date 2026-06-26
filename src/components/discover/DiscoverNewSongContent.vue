@@ -32,12 +32,13 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import CommonSkeleton from '../CommonSkeleton.vue';
 import ContextMenu from '../ContextMenu.vue';
 import SongSearchList from '../search/SongSearchList.vue';
 import { get } from '../../utils/request';
+import { useActivatedWatch } from '../../composables/useActivatedWatch';
 
 const route = useRoute();
 const router = useRouter();
@@ -203,7 +204,7 @@ const prevSongPage = () => {
     }
 };
 
-watch(() => route.query.songPage, async (songPage) => {
+useActivatedWatch(() => route.query.songPage, async (songPage) => {
     currentSongPage.value = normalizePage(songPage);
     await fetchNewSongs();
 }, { immediate: true });

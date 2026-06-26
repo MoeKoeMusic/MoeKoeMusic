@@ -140,6 +140,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { get } from '../utils/request';
+import { useActivatedWatch } from '../composables/useActivatedWatch';
 
 const route = useRoute();
 const router = useRouter();
@@ -356,7 +357,7 @@ const focusSearchInput = () => {
     });
 };
 
-watch(() => route.query.q, (value) => {
+useActivatedWatch(() => route.query.q, (value) => {
     searchKeyword.value = getRouteKeyword(value);
 });
 

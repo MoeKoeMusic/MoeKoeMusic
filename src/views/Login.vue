@@ -369,13 +369,18 @@ const checkQrStatus = async () => {
   justify-content: center;
   align-items: center;
   position: relative;
-  margin-top: 100px;
+  width: 100%;
+  height: calc(100vh - 230px);
+  box-sizing: border-box;
+  padding: 24px;
+  overflow: hidden;
 }
 
 .login-container {
   background-color: #fff;
   border-radius: 20px;
   width: 400px;
+  max-width: 100%;
   box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
   text-align: center;
   padding: 30px 25px;
@@ -1003,6 +1008,10 @@ h2 {
 }
 
 @media (max-width: 480px) {
+  .login-page {
+    padding: 16px;
+  }
+
   .login-container {
     width: 100%;
     padding: 25px 18px;

@@ -885,7 +885,6 @@ const getSortIconClass = (field) => {
 .header {
     display: flex;
     align-items: center;
-    margin-bottom: 40px;
 }
 
 .cover-art {
@@ -1050,20 +1049,17 @@ const getSortIconClass = (field) => {
 }
 
 .track-list-container {
-    margin-top: 30px;
 }
 
 .track-list-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
 }
 
 .track-list-title {
     font-size: 24px;
     font-weight: bold;
-    margin-bottom: 10px;
     color: var(--primary-color);
 }
 

@@ -542,7 +542,6 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 .header {
     display: flex;
     align-items: center;
-    margin-bottom: 40px;
 }
 
 .cover-art {
@@ -640,20 +639,17 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .track-list-container {
-    margin-top: 30px;
 }
 
 .track-list-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
 }
 
 .track-list-title {
     font-size: 24px;
     font-weight: bold;
-    margin-bottom: 10px;
     color: $primary;
 }
 

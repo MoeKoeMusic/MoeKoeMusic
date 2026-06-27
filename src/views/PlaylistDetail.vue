@@ -24,7 +24,18 @@
                     <span>粉丝: {{ detail.fansnums }}</span>
                 </div>
                 <p class="meta" v-if="!isArtist && !isAlbum">{{ detail.tags }}</p>
-                <div class="description">{{ isArtist ? detail.intro : detail.intro }}</div>
+                <div v-if="descriptionText" class="description"
+                    :class="{ expanded: isDescriptionExpanded, collapsible: shouldCollapseDescription }">
+                    <div class="description-popover">
+                        <div class="description-content">
+                            {{ descriptionText }}
+                        </div>
+                        <button v-if="shouldCollapseDescription" class="description-toggle" type="button"
+                            @click="isDescriptionExpanded = !isDescriptionExpanded">
+                            {{ isDescriptionExpanded ? '收起' : '查看更多' }}
+                        </button>
+                    </div>
+                </div>
                 <div class="actions">
                     <button class="primary-btn" @click="addPlaylistToQueue($event)">
                         <i class="fas fa-play"></i> {{ $t('bo-fang') }}
@@ -247,6 +258,7 @@ const loading = ref(true);
 const isSearching = ref(false); // 搜索加载状态
 const isDropdownVisible = ref(false);
 const flyingNotes = ref([]);
+const isDescriptionExpanded = ref(false);
 let noteId = 0;
 
 // 请求次数追踪，用于计算下一次的pageSize
@@ -324,6 +336,9 @@ const displayTrackCount = computed(() => {
     return hasMore.value ? totalCount.value : tracks.value.length;
 });
 
+const descriptionText = computed(() => (detail.value.intro || '').trim());
+const shouldCollapseDescription = computed(() => descriptionText.value.length > 80 || descriptionText.value.includes('\n'));
+
 const props = defineProps({
     playerControl: Object
 });
@@ -359,15 +374,16 @@ const loadData = async () => {
     isSearching.value = false;
     tracks.value = [];
     filteredTracks.value = [];
+    isDescriptionExpanded.value = false;
     lastVisibleBottomIndex = 0;
     if (isArtist.value) {
-        getArtistInfo();
-        fetchArtistSongs();
+        await getArtistInfo();
+        await fetchArtistSongs();
     } else if (isAlbum.value) {
-        getAlbumInfo();
-        fetchAlbumSongs();
+        await getAlbumInfo();
+        await fetchAlbumSongs();
     } else {
-        updateFavoriteStatus();
+        await updateFavoriteStatus();
         await fetchPlaylistTracks();
     }
 };
@@ -1154,15 +1170,15 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 
 .header {
     display: flex;
-    align-items: center;
-    margin-bottom: 40px;
+    align-items: stretch;
+    gap: 20px;
 }
 
 .cover-art {
+    flex: 0 0 200px;
     width: 200px;
     height: 200px;
     border-radius: 10px;
-    margin-right: 20px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     object-fit: cover;
 
@@ -1172,13 +1188,18 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .info {
+    display: flex;
+    flex-direction: column;
+    height: 200px;
+    min-width: 0;
     max-width: 600px;
 }
 
 .title {
     font-size: 36px;
     font-weight: bold;
-    width: 800px;
+    width: 100%;
+    line-height: 1.2;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1188,12 +1209,15 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 
 .subtitle {
     font-size: 18px;
+    line-height: 1.4;
+    margin: 8px 0 0;
     color: $text-muted;
 }
 
 .meta {
     font-size: 14px;
-    margin-bottom: 10px;
+    line-height: 1.4;
+    margin: 8px 0 0;
     color: $text-light;
 }
 
@@ -1205,20 +1229,102 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .description {
-    white-space: pre-wrap;
-    line-height: 1.6;
-    color: var(--text-color);
-    margin-bottom: 20px;
-    font-size: 16px;
-    max-height: 200px;
+    position: relative;
+    flex: 0 0 auto;
+    height: 42px;
+    margin: 6px 0;
+    overflow: visible;
+}
+
+.description.expanded {
+    z-index: 50;
+}
+
+.description:not(.collapsible) {
+    height: auto;
+}
+
+.description-popover {
+    position: relative;
+    z-index: 20;
     overflow: hidden;
-    text-overflow: ellipsis;
+    transition: max-height 0.24s ease, padding 0.24s ease, box-shadow 0.24s ease, transform 0.24s ease, border-radius 0.24s ease;
+}
+
+.description.collapsible .description-popover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    max-height: 42px;
+}
+
+.description.collapsible:not(.expanded) .description-popover::after {
+    content: '...';
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 5.1em;
+    height: 21px;
+    background: #fff;
+    pointer-events: none;
+
+    .dark & {
+        background: #0E0E0E;
+    }
+}
+
+.description-content {
+    font-size: 14px;
+    line-height: 1.5;
     white-space: break-spaces;
-    overflow-y: auto;
+}
+
+.description.expanded .description-popover {
+    max-height: 70vh;
+    padding: 10px 12px 34px;
+    box-sizing: border-box;
+    overflow: hidden;
+    border-radius: 10px;
+    border-left: 3px solid $primary;
+    background: #fff;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16);
+    transform: translateY(2px);
+
+    .dark & {
+        background: #252525;
+    }
+}
+
+.description.expanded .description-content {
+    padding-bottom: 26px;
+}
+
+.description-toggle {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    margin-top: 6px;
+    padding: 0 0 0 6px;
+    border: none !important;
+    color: $primary !important;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1.5;
+    z-index: 1;
+    transition: right 0.24s ease, bottom 0.24s ease;
+    background: none;
+}
+
+.description.expanded .description-toggle {
+    right: 12px;
+    bottom: 10px;
 }
 
 .actions {
     display: flex;
+    flex-shrink: 0;
+    margin-top: auto;
     gap: 10px;
 }
 
@@ -1264,20 +1370,17 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .track-list-container {
-    margin-top: 30px;
 }
 
 .track-list-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
 }
 
 .track-list-title {
     font-size: 24px;
     font-weight: bold;
-    margin-bottom: 10px;
     color: $primary;
 }
 

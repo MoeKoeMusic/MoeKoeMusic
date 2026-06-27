@@ -1,17 +1,20 @@
 <template>
     <div class="side-top-actions" :class="{ collapsed: isCollapsed }">
         <div class="side-action-buttons">
-            <button class="side-action-button" @click="toggleCollapse">
+            <button class="side-action-button" title="折叠/展开" @click="toggleCollapse">
                 <i :class="isCollapsed ? 'fas fa-indent' : 'fas fa-outdent'"></i>
             </button>
-            <button class="side-action-button" @click="goBack" :disabled="!canGoBack">
+            <button class="side-action-button" title="后退" @click="goBack" :disabled="!canGoBack">
                 <i class="fas fa-chevron-left"></i>
             </button>
-            <button class="side-action-button" @click="goForward" :disabled="!canGoForward">
+            <button class="side-action-button" title="前进" @click="goForward" :disabled="!canGoForward">
                 <i class="fas fa-chevron-right"></i>
             </button>
-            <button class="side-action-button" @click="refreshPage">
+            <button class="side-action-button" title="刷新页面" @click="refreshPage">
                 <i class="fas fa-redo"></i>
+            </button>
+            <button class="side-action-button side-recognize-button" title="听歌识曲" @click="router.push('/recognize')">
+                <i class="fas fa-microphone"></i>
             </button>
         </div>
         <div class="side-top-search">
@@ -90,6 +93,10 @@
                 <router-link to="/LocalMusic" class="side-link" title="本地音乐">
                     <i class="fas fa-compact-disc"></i>
                     <span>本地音乐</span>
+                </router-link>
+                <router-link to="/recognize" class="side-link" title="听歌识曲">
+                    <i class="fas fa-microphone"></i>
+                    <span>听歌识曲</span>
                 </router-link>
             </div>
 
@@ -470,6 +477,11 @@ watch(() => MoeAuth.isAuthenticated, (isAuthenticated) => {
         color: #bbb;
         cursor: not-allowed;
     }
+}
+
+.side-recognize-button:hover {
+    background: var(--side-hover);
+    color: var(--color-primary);
 }
 
 .side-action-button {

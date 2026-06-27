@@ -1,19 +1,21 @@
 <template>
-    <transition name="fade">
-        <div v-if="isOpen" class="modal">
-            <div class="modal-content">
-                <h3>{{ t('shou-cang-dao') }}</h3>
-                <ul class="playlist-select-list" v-if="playlists.length > 0">
-                    <li v-for="playlist in playlists" :key="playlist.list_id"
-                        @click="addToPlaylist(playlist.listid, currentSong); isOpen = false">
-                        {{ playlist.name }}
-                    </li>
-                </ul>
-                <div v-else>{{ t('mei-you-ge-dan') }}</div>
-                <button class="close-btn-modal" @click="isOpen = false">{{ t('guan-bi-an-niu') }}</button>
+    <Teleport to="body">
+        <transition name="fade">
+            <div v-if="isOpen" class="modal">
+                <div class="modal-content">
+                    <h3>{{ t('shou-cang-dao') }}</h3>
+                    <ul class="playlist-select-list" v-if="playlists.length > 0">
+                        <li v-for="playlist in playlists" :key="playlist.list_id"
+                            @click="addToPlaylist(playlist.listid, currentSong); isOpen = false">
+                            {{ playlist.name }}
+                        </li>
+                    </ul>
+                    <div v-else>{{ t('mei-you-ge-dan') }}</div>
+                    <button class="close-btn-modal" @click="isOpen = false">{{ t('guan-bi-an-niu') }}</button>
+                </div>
             </div>
-        </div>
-    </transition>
+        </transition>
+    </Teleport>
 </template>
 
 <script setup>

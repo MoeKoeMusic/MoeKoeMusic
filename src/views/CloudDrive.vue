@@ -1,32 +1,38 @@
 <template>
     <div class="detail-page">
         <!-- 头部信息区域 -->
-        <div class="header">
-            <img class="cover-art" :src="`./assets/images/cloud.png`" />
-            <div class="info">
-                <h1 class="title">{{ $t('wo-de-yun-pan') }}</h1>
-                <p class="subtitle">{{ $t('yun-pan-ge-qu-shu') }}: {{ tracks.length }}</p>
-                <div class="storage-info" v-if="storageInfo.totalSize > 0">
-                    <div class="storage-progress">
-                        <div class="storage-progress-bar"
-                            :style="{ width: (storageInfo.usedSize / storageInfo.totalSize * 100) + '%' }"></div>
+        <div class="header detail-sliver-header" :style="headerStyle">
+            <img class="cover-art" :style="coverStyle" :src="`./assets/images/cloud.png`" />
+            <div class="info" :style="infoStyle">
+                <h1 class="title" :style="titleStyle">{{ $t('wo-de-yun-pan') }}</h1>
+                <div class="expanded-info" :style="detailsStyle">
+                    <p class="subtitle">{{ $t('yun-pan-ge-qu-shu') }}: {{ tracks.length }}</p>
+                    <div class="storage-info" v-if="storageInfo.totalSize > 0">
+                        <div class="storage-progress">
+                            <div class="storage-progress-bar" :style="storageUsageStyle"></div>
+                        </div>
+                        <div class="storage-text">
+                            {{ formatStorageSize(storageInfo.usedSize) }} / {{ formatStorageSize(storageInfo.totalSize) }}
+                            ({{ $t('ke-yong') }}: {{ formatStorageSize(storageInfo.availableSize) }})
+                        </div>
                     </div>
-                    <div class="storage-text">
-                        {{ formatStorageSize(storageInfo.usedSize) }} / {{ formatStorageSize(storageInfo.totalSize) }}
-                        ({{ $t('ke-yong') }}: {{ formatStorageSize(storageInfo.availableSize) }})
+                    <div class="description">{{ $t('yun-pan-miao-shu') }}</div>
+                    <div class="actions">
+                        <button class="primary-btn" @click="addPlaylistToQueue($event)">
+                            <i class="fas fa-play"></i> {{ $t('bo-fang') }}
+                        </button>
+                        <button class="upload-btn" @click="uploadMusic">
+                            <i class="fas fa-upload"></i> {{ $t('shang-chuan-yin-le') }}
+                        </button>
                     </div>
-                </div>
-                <div class="description">{{ $t('yun-pan-miao-shu') }}</div>
-                <div class="actions">
-                    <button class="primary-btn" @click="addPlaylistToQueue($event)">
-                        <i class="fas fa-play"></i> {{ $t('bo-fang') }}
-                    </button>
-                    <button class="upload-btn" @click="uploadMusic">
-                        <i class="fas fa-upload"></i> {{ $t('shang-chuan-yin-le') }}
-                    </button>
                 </div>
             </div>
+            <button class="collapsed-play-btn" :style="collapsedActionsStyle" @click="addPlaylistToQueue($event)"
+                :title="$t('bo-fang')">
+                <i class="far fa-play-circle"></i>
+            </button>
         </div>
+        <div class="detail-sliver-spacer" :style="spacerStyle"></div>
 
         <!-- 导航按钮 -->
         <i class="location-arrow fas fa-location-arrow" @click="scrollToItem" :title="t('dang-qian-bo-fang-ge-qu')"></i>
@@ -35,8 +41,8 @@
 
         <!-- 歌曲列表 -->
         <div class="track-list-container">
-            <div class="track-list-header">
-                <h2 class="track-list-title"><span>{{ $t('yun-pan-ge-qu') }}</span> ( {{ tracks.length }} )</h2>
+            <div class="track-list-header" :style="listHeaderStyle">
+                <h2 class="track-list-title" :style="listTitleStyle"><span>{{ $t('yun-pan-ge-qu') }}</span> ( {{ tracks.length }} )</h2>
                 <div class="track-list-actions">
                     <div class="batch-action-container">
                         <button class="batch-action-btn" @click="toggleBatchSelection"
@@ -64,7 +70,7 @@
             </div>
 
             <!-- 表头 -->
-            <div class="track-list-header-row">
+            <div class="track-list-header-row" :style="trackHeaderStyle">
                 <div class="track-checkbox-header" v-if="batchSelectionMode">
                     <input type="checkbox" :checked="isAllSelected" @click="toggleSelectAll">
                 </div>
@@ -139,6 +145,7 @@ import { get } from '../utils/request';
 import { useRouter } from 'vue-router';
 import { MoeAuthStore } from '../stores/store';
 import { useI18n } from 'vue-i18n';
+import { useStickyDetailHeader } from '@/composables/useStickyDetailHeader';
 
 
 const { t } = useI18n();
@@ -183,6 +190,23 @@ const isAllSelected = computed(() => {
 const props = defineProps({
     playerControl: Object
 });
+
+const {
+    headerStyle,
+    spacerStyle,
+    coverStyle,
+    infoStyle,
+    titleStyle,
+    detailsStyle,
+    listTitleStyle,
+    collapsedActionsStyle,
+    listHeaderStyle,
+    trackHeaderStyle
+} = useStickyDetailHeader();
+
+const storageUsageStyle = computed(() => ({
+    width: `${storageInfo.value.totalSize ? storageInfo.value.usedSize / storageInfo.value.totalSize * 100 : 0}%`
+}));
 
 onMounted(() => {
     loadData();
@@ -544,23 +568,46 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
     align-items: center;
 }
 
+.detail-sliver-header {
+    position: sticky;
+    z-index: 120;
+    box-sizing: border-box;
+    overflow: visible;
+    align-items: flex-start;
+    padding: 10px 0;
+    background: #fff;
+    gap: 20px;
+}
+
+.detail-sliver-spacer {
+    pointer-events: none;
+}
+
 .cover-art {
+    flex: 0 0 auto;
     width: 200px;
     height: 200px;
     border-radius: 10px;
-    margin-right: 20px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     object-fit: cover;
+    transition: box-shadow 0.2s ease;
 }
 
 .info {
-    max-width: 600px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-width: 0;
+    max-width: calc(100% - 110px);
 }
 
 .title {
+    flex: 0 0 auto;
     font-size: 36px;
     font-weight: bold;
-    width: 800px;
+    width: 100%;
+    line-height: 1.2;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -568,13 +615,41 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
     color: $primary;
 }
 
+.expanded-info {
+    display: flex;
+    flex-direction: column;
+    transition: opacity 0.12s linear;
+}
+
+.collapsed-play-btn {
+    position: absolute;
+    top: 50%;
+    right: 18px;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: $primary;
+    cursor: pointer;
+    font-size: 30px;
+    line-height: 1;
+    transition: color 0.2s ease, opacity 0.2s ease;
+
+    &:hover {
+        color: var(--color-primary);
+    }
+}
+
 .subtitle {
     font-size: 18px;
+    line-height: 1.35;
+    margin: 6px 0 0;
     color: $text-muted;
 }
 
 .storage-info {
-    margin: 10px 0;
+    margin: 8px 0;
     width: 100%;
     max-width: 600px;
 }
@@ -601,16 +676,15 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .description {
-    white-space: pre-wrap;
-    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-height: 1.45;
     color: var(--text-color);
-    margin-bottom: 20px;
+    margin: 0 0 12px;
     font-size: 16px;
-    max-height: 200px;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: break-spaces;
-    overflow-y: auto;
 }
 
 .actions {
@@ -642,9 +716,12 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .track-list-header {
+    position: sticky;
+    z-index: 115;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    background: #fff;
 }
 
 .track-list-title {
@@ -1011,10 +1088,13 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .track-list-header-row {
+    position: sticky;
+    z-index: 114;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 10px;
+    background: #fff;
     border-bottom: 1px solid $primary;
     font-weight: bold;
     border-radius: 5px 5px 0 0;

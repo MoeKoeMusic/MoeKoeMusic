@@ -1,75 +1,83 @@
 <template>
     <div class="detail-page">
         <!-- 头部信息区域 -->
-        <div class="header">
+        <div class="header detail-sliver-header" :style="headerStyle">
             <img class="cover-art" :class="isArtist ? 'artist-avatar' : ''" :data-playlist-id="detail.listid || null"
+                :style="coverStyle"
                 :src="isArtist ? ($getCover(detail.sizable_avatar, 480)) : (detail.pic ? $getCover(detail.pic, 480) : './assets/images/live.png')" />
-            <div class="info">
-                <h1 class="title">{{ isArtist ? detail.author_name : detail.name }}</h1>
-                <p class="subtitle" v-if="!isArtist && !isAlbum">
-                    <span :title="detail.publish_date ? `创建于 ${detail.publish_date}` : ''">
-                        {{ formatTimestampToAgo(detail.update_time) }}
-                    </span>
-                    | {{ detail.list_create_username }}
-                </p>
-                <p class="subtitle" v-else-if="isAlbum">
-                    <span :title="detail.publish_date ? `创建于 ${detail.publish_date}` : ''">
-                        {{ formatTimestampToAgo(detail.update_time) }}
-                    </span>
-                </p>
-                <div class="stats" v-if="isArtist">
-                    <span>歌曲: {{ detail.song_count }}</span>
-                    <span>专辑: {{ detail.album_count }}</span>
-                    <span>MV: {{ detail.mv_count }}</span>
-                    <span>粉丝: {{ detail.fansnums }}</span>
-                </div>
-                <p class="meta" v-if="!isArtist && !isAlbum">{{ detail.tags }}</p>
-                <div v-if="descriptionText" class="description"
-                    :class="{ expanded: isDescriptionExpanded, collapsible: shouldCollapseDescription }">
-                    <div class="description-popover">
-                        <div class="description-content">
-                            {{ descriptionText }}
-                        </div>
-                        <button v-if="shouldCollapseDescription" class="description-toggle" type="button"
-                            @click="isDescriptionExpanded = !isDescriptionExpanded">
-                            {{ isDescriptionExpanded ? '收起' : '查看更多' }}
-                        </button>
+            <div class="info" :style="infoStyle">
+                <h1 class="title" :style="titleStyle">{{ isArtist ? detail.author_name : detail.name }}</h1>
+                <div class="expanded-info" :style="detailsStyle">
+                    <p class="subtitle" v-if="!isArtist && !isAlbum">
+                        <span :title="detail.publish_date ? `创建于 ${detail.publish_date}` : ''">
+                            {{ formatTimestampToAgo(detail.update_time) }}
+                        </span>
+                        | {{ detail.list_create_username }}
+                    </p>
+                    <p class="subtitle" v-else-if="isAlbum">
+                        <span :title="detail.publish_date ? `创建于 ${detail.publish_date}` : ''">
+                            {{ formatTimestampToAgo(detail.update_time) }}
+                        </span>
+                    </p>
+                    <div class="stats" v-if="isArtist">
+                        <span>歌曲: {{ detail.song_count }}</span>
+                        <span>专辑: {{ detail.album_count }}</span>
+                        <span>MV: {{ detail.mv_count }}</span>
+                        <span>粉丝: {{ detail.fansnums }}</span>
                     </div>
-                </div>
-                <div class="actions">
-                    <button class="primary-btn" @click="addPlaylistToQueue($event)">
-                        <i class="fas fa-play"></i> {{ $t('bo-fang') }}
-                    </button>
-                    <button class="follow-btn" v-if="isArtist" @click="toggleFollow" :disabled="followLoading">
-                        <i class="fas fa-heart"></i> {{ isFollowed ? '已关注' : '关注' }}
-                    </button>
-                    <button class="fav-btn"
-                        v-if="!isArtist && !isAlbum && detail.list_create_userid != MoeAuth.UserInfo?.userid && !route.query.listid"
-                        @click="toggleFavorite(detail.list_create_gid)" :class="{ 'active': isPlaylistFavorited }">
-                        <i class="fas fa-heart"></i>
-                    </button>
-                    <div class="more-btn-container" v-if="!isArtist && !isAlbum">
-                        <button class="more-btn" @click="toggleDropdown">
-                            <i class="fas fa-ellipsis-h"></i>
+                    <p class="meta" v-if="!isArtist && !isAlbum">{{ detail.tags }}</p>
+                    <div v-if="descriptionText" class="description"
+                        :class="{ expanded: isDescriptionExpanded, collapsible: shouldCollapseDescription }">
+                        <div class="description-popover">
+                            <div class="description-content">
+                                {{ descriptionText }}
+                            </div>
+                            <button v-if="shouldCollapseDescription" class="description-toggle" type="button"
+                                @click="isDescriptionExpanded = !isDescriptionExpanded">
+                                {{ isDescriptionExpanded ? '收起' : '查看更多' }}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button class="primary-btn" @click="addPlaylistToQueue($event)">
+                            <i class="fas fa-play"></i> {{ $t('bo-fang') }}
                         </button>
-                        <div v-if="isDropdownVisible" class="dropdown-menu">
-                            <ul>
-                                <li @click="deletePlaylist(detail.listid)"
-                                    v-if="(detail.list_create_userid == MoeAuth.UserInfo?.userid || route.query.listid) && detail.sort > 1">
-                                    <i class="fas fa-trash-alt"></i>
-                                </li>
-                                <li @click="sharePlaylist">
-                                    <i class="fas fa-share-alt"></i>
-                                </li>
-                                <li @click="addPlaylistToQueue($event, true)" title="添加至播放列表">
-                                    <i class="fas fa-add"></i>
-                                </li>
-                            </ul>
+                        <button class="follow-btn" v-if="isArtist" @click="toggleFollow" :disabled="followLoading">
+                            <i class="fas fa-heart"></i> {{ isFollowed ? '已关注' : '关注' }}
+                        </button>
+                        <button class="fav-btn"
+                            v-if="!isArtist && !isAlbum && detail.list_create_userid != MoeAuth.UserInfo?.userid && !route.query.listid"
+                            @click="toggleFavorite(detail.list_create_gid)" :class="{ 'active': isPlaylistFavorited }">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                        <div class="more-btn-container" v-if="!isArtist && !isAlbum">
+                            <button class="more-btn" @click="toggleDropdown">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </button>
+                            <div v-if="isDropdownVisible" class="dropdown-menu">
+                                <ul>
+                                    <li @click="deletePlaylist(detail.listid)"
+                                        v-if="(detail.list_create_userid == MoeAuth.UserInfo?.userid || route.query.listid) && detail.sort > 1">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </li>
+                                    <li @click="sharePlaylist">
+                                        <i class="fas fa-share-alt"></i>
+                                    </li>
+                                    <li @click="addPlaylistToQueue($event, true)" title="添加至播放列表">
+                                        <i class="fas fa-add"></i>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+            <button class="collapsed-play-btn" :style="collapsedActionsStyle" @click="addPlaylistToQueue($event)"
+                :title="$t('bo-fang')">
+                <i class="far fa-play-circle"></i>
+            </button>
         </div>
+        <div class="detail-sliver-spacer" :style="spacerStyle"></div>
 
         <!-- 导航按钮 -->
         <i class="location-arrow fas fa-crosshairs" @click="scrollToItem" :title="t('dang-qian-bo-fang-ge-qu')"></i>
@@ -78,8 +86,8 @@
 
         <!-- 歌曲列表 -->
         <div class="track-list-container">
-            <div class="track-list-header">
-                <h2 class="track-list-title"><span>{{ $t('ge-qu-lie-biao') }}</span> ( {{ displayTrackCount }} )</h2>
+            <div class="track-list-header" :style="listHeaderStyle">
+                <h2 class="track-list-title" :style="listTitleStyle"><span>{{ $t('ge-qu-lie-biao') }}</span> ( {{ displayTrackCount }} )</h2>
                 <div class="track-list-actions">
                     <div class="batch-action-container">
                         <button class="batch-action-btn" @click="toggleBatchSelection"
@@ -120,7 +128,7 @@
             </div>
 
             <!-- 表头 -->
-            <div class="track-list-header-row">
+            <div class="track-list-header-row" :style="trackHeaderStyle">
                 <div class="track-checkbox-header" v-if="batchSelectionMode">
                     <input type="checkbox" :checked="isAllSelected" @click="toggleSelectAll">
                 </div>
@@ -232,6 +240,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { MoeAuthStore } from '../stores/store';
 import { useI18n } from 'vue-i18n';
 import { share, formatTimestampToAgo } from '@/utils/utils';
+import { useStickyDetailHeader } from '@/composables/useStickyDetailHeader';
 
 const playlistSelect = ref(null);
 const { t } = useI18n();
@@ -342,6 +351,19 @@ const shouldCollapseDescription = computed(() => descriptionText.value.length > 
 const props = defineProps({
     playerControl: Object
 });
+
+const {
+    headerStyle,
+    spacerStyle,
+    coverStyle,
+    infoStyle,
+    titleStyle,
+    detailsStyle,
+    listTitleStyle,
+    collapsedActionsStyle,
+    listHeaderStyle,
+    trackHeaderStyle
+} = useStickyDetailHeader();
 
 onMounted(() => {
     isFollowed.value = !!route.query.unfollow;
@@ -1174,13 +1196,28 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
     gap: 20px;
 }
 
+.detail-sliver-header {
+    position: sticky;
+    z-index: 120;
+    box-sizing: border-box;
+    overflow: visible;
+    align-items: flex-start;
+    padding: 10px 0;
+    background: #fff;
+}
+
+.detail-sliver-spacer {
+    pointer-events: none;
+}
+
 .cover-art {
-    flex: 0 0 200px;
+    flex: 0 0 auto;
     width: 200px;
     height: 200px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     object-fit: cover;
+    transition: border-radius 0.2s ease, box-shadow 0.2s ease;
 
     &.artist-avatar {
         border-radius: 50%;
@@ -1188,14 +1225,17 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .info {
+    position: relative;
     display: flex;
     flex-direction: column;
-    height: 200px;
+    height: 100%;
     min-width: 0;
-    max-width: 600px;
+    max-width: calc(100% - 110px);
+    justify-content: flex-start;
 }
 
 .title {
+    flex: 0 0 auto;
     font-size: 36px;
     font-weight: bold;
     width: 100%;
@@ -1205,6 +1245,34 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
     white-space: nowrap;
     margin: 0;
     color: $primary;
+}
+
+.expanded-info {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
+    transition: opacity 0.12s linear;
+}
+
+.collapsed-play-btn {
+    position: absolute;
+    top: 50%;
+    right: 18px;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: $primary;
+    cursor: pointer;
+    font-size: 30px;
+    line-height: 1;
+    transition: color 0.2s ease, opacity 0.2s ease;
+
+    &:hover {
+        color: var(--color-primary);
+    }
 }
 
 .subtitle {
@@ -1373,9 +1441,12 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .track-list-header {
+    position: sticky;
+    z-index: 115;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    background: #fff;
 }
 
 .track-list-title {
@@ -1893,10 +1964,13 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .track-list-header-row {
+    position: sticky;
+    z-index: 114;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 10px;
+    background: #fff;
     border-bottom: 1px solid $primary;
     font-weight: bold;
     border-radius: 5px 5px 0 0;

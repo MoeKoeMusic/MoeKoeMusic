@@ -256,7 +256,7 @@ main {
     width: min(1200px, 100%);
     margin: 0 auto;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .page-route-view {

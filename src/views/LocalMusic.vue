@@ -1,48 +1,55 @@
 <template>
     <div class="detail-page">
-        <div class="header">
-            <img class="cover-art" :src="`./assets/images/local.png`" />
-            <div class="info">
-                <h1 class="title">本地音乐</h1>
-                <p class="subtitle">本地歌曲数: {{ musicFiles.length }}</p>
-                <div class="folder-info" v-if="currentFolder">
-                    <div class="folder-path">
-                        <i class="fas fa-folder"></i>
-                        <span>{{ currentFolder.name }}</span>
-                    </div>
-                </div>
-                <div class="description">这里存放着你授权的文件夹中的歌曲，支持 MP3、FLAC、WAV、AAC、OGG、M4A 等格式</div>
-                <div class="actions">
-                    <button class="primary-btn" @click="addPlaylistToQueue($event)" v-if="musicFiles.length > 0">
-                        <i class="fas fa-play"></i> 播放全部
-                    </button>
-                    <button class="upload-btn" @click="selectFolder" :disabled="loading">
-                        <i class="fas fa-folder-open"></i> {{ currentFolder ? '重新选择文件夹' : '选择音乐文件夹' }}
-                    </button>
-                    <div class="folder-history-container" v-if="folderHistory.length > 0">
-                        <button class="upload-btn" @click="toggleFolderHistory" :disabled="loading">
-                            <i class="fas fa-history"></i> 快速切换
-                        </button>
-                        <div class="folder-history-menu" v-if="isFolderHistoryVisible">
-                            <div v-for="folder in folderHistory" :key="folder.id" class="folder-history-item"
-                                :class="{ active: currentFolder?.name === folder.name }">
-                                <button class="folder-history-name" @click="switchFolder(folder)" :title="folder.name">
-                                    <i class="fas fa-folder"></i>
-                                    <span>{{ folder.name }}</span>
-                                </button>
-                                <button class="folder-history-delete" @click.stop="removeFolderHistory(folder.id)"
-                                    title="移除记录">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
+        <div class="header detail-sliver-header" :style="headerStyle">
+            <img class="cover-art" :style="coverStyle" :src="`./assets/images/local.png`" />
+            <div class="info" :style="infoStyle">
+                <h1 class="title" :style="titleStyle">本地音乐</h1>
+                <div class="expanded-info" :style="detailsStyle">
+                    <p class="subtitle">本地歌曲数: {{ musicFiles.length }}</p>
+                    <div class="folder-info" v-if="currentFolder">
+                        <div class="folder-path">
+                            <i class="fas fa-folder"></i>
+                            <span>{{ currentFolder.name }}</span>
                         </div>
                     </div>
-                    <button v-if="currentFolder" class="upload-btn" @click="refreshFolder" :disabled="refreshing">
-                        <i class="fas fa-sync-alt"></i> 刷新
-                    </button>
+                    <div class="description">这里存放着你授权的文件夹中的歌曲，支持 MP3、FLAC、WAV、AAC、OGG、M4A 等格式</div>
+                    <div class="actions">
+                        <button class="primary-btn" @click="addPlaylistToQueue($event)" v-if="musicFiles.length > 0">
+                            <i class="fas fa-play"></i> 播放全部
+                        </button>
+                        <button class="upload-btn" @click="selectFolder" :disabled="loading">
+                            <i class="fas fa-folder-open"></i> {{ currentFolder ? '重新选择文件夹' : '选择音乐文件夹' }}
+                        </button>
+                        <div class="folder-history-container" v-if="folderHistory.length > 0">
+                            <button class="upload-btn" @click="toggleFolderHistory" :disabled="loading">
+                                <i class="fas fa-history"></i> 快速切换
+                            </button>
+                            <div class="folder-history-menu" v-if="isFolderHistoryVisible">
+                                <div v-for="folder in folderHistory" :key="folder.id" class="folder-history-item"
+                                    :class="{ active: currentFolder?.name === folder.name }">
+                                    <button class="folder-history-name" @click="switchFolder(folder)" :title="folder.name">
+                                        <i class="fas fa-folder"></i>
+                                        <span>{{ folder.name }}</span>
+                                    </button>
+                                    <button class="folder-history-delete" @click.stop="removeFolderHistory(folder.id)"
+                                        title="移除记录">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <button v-if="currentFolder" class="upload-btn" @click="refreshFolder" :disabled="refreshing">
+                            <i class="fas fa-sync-alt"></i> 刷新
+                        </button>
+                    </div>
                 </div>
             </div>
+            <button v-if="musicFiles.length > 0" class="collapsed-play-btn" :style="collapsedActionsStyle"
+                @click="addPlaylistToQueue($event)" title="播放全部">
+                <i class="far fa-play-circle"></i>
+            </button>
         </div>
+        <div class="detail-sliver-spacer" :style="spacerStyle"></div>
 
         <!-- 导航按钮 -->
         <i class="location-arrow fas fa-location-arrow" @click="scrollToItem" title="当前播放歌曲"></i>
@@ -50,8 +57,8 @@
 
         <!-- 歌曲列表 -->
         <div class="track-list-container" v-if="!loading">
-            <div class="track-list-header">
-                <h2 class="track-list-title"><span>本地歌曲</span> ( {{ filteredTracks.length }} )</h2>
+            <div class="track-list-header" :style="listHeaderStyle">
+                <h2 class="track-list-title" :style="listTitleStyle"><span>本地歌曲</span> ( {{ filteredTracks.length }} )</h2>
                 <div class="track-list-actions">
                     <div class="batch-action-container">
                         <button class="batch-action-btn" @click="toggleBatchSelection"
@@ -77,7 +84,7 @@
             </div>
 
             <!-- 表头 -->
-            <div class="track-list-header-row" v-if="musicFiles.length > 0">
+            <div class="track-list-header-row" v-if="musicFiles.length > 0" :style="trackHeaderStyle">
                 <div class="track-checkbox-header" v-if="batchSelectionMode">
                     <input type="checkbox" :checked="isAllSelected" @click="toggleSelectAll">
                 </div>
@@ -173,6 +180,7 @@
 import { ref, shallowRef, onMounted, onBeforeUnmount, computed, toRaw } from 'vue';
 import { RecycleScroller } from 'vue3-virtual-scroller';
 import { parseBlob } from 'music-metadata';
+import { useStickyDetailHeader } from '@/composables/useStickyDetailHeader';
 
 // Props
 const props = defineProps({
@@ -220,6 +228,19 @@ const MAX_FOLDER_HISTORY = 10;
 const isAllSelected = computed(() => {
     return selectedTracks.value.length === filteredTracks.value.length && filteredTracks.value.length > 0;
 });
+
+const {
+    headerStyle,
+    spacerStyle,
+    coverStyle,
+    infoStyle,
+    titleStyle,
+    detailsStyle,
+    listTitleStyle,
+    collapsedActionsStyle,
+    listHeaderStyle,
+    trackHeaderStyle
+} = useStickyDetailHeader();
 
 onMounted(() => {
     loadLastFolder();
@@ -887,23 +908,46 @@ const getSortIconClass = (field) => {
     align-items: center;
 }
 
+.detail-sliver-header {
+    position: sticky;
+    z-index: 120;
+    box-sizing: border-box;
+    overflow: visible;
+    align-items: flex-start;
+    padding: 10px 0;
+    background: #fff;
+    gap: 20px;
+}
+
+.detail-sliver-spacer {
+    pointer-events: none;
+}
+
 .cover-art {
+    flex: 0 0 auto;
     width: 200px;
     height: 200px;
     border-radius: 10px;
-    margin-right: 20px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     object-fit: cover;
+    transition: box-shadow 0.2s ease;
 }
 
 .info {
-    max-width: 600px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-width: 0;
+    max-width: calc(100% - 110px);
 }
 
 .title {
+    flex: 0 0 auto;
     font-size: 36px;
     font-weight: bold;
-    width: 800px;
+    width: 100%;
+    line-height: 1.2;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -911,13 +955,41 @@ const getSortIconClass = (field) => {
     color: var(--primary-color);
 }
 
+.expanded-info {
+    display: flex;
+    flex-direction: column;
+    transition: opacity 0.12s linear;
+}
+
+.collapsed-play-btn {
+    position: absolute;
+    top: 50%;
+    right: 18px;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--primary-color);
+    cursor: pointer;
+    font-size: 30px;
+    line-height: 1;
+    transition: color 0.2s ease, opacity 0.2s ease;
+
+    &:hover {
+        color: var(--color-primary);
+    }
+}
+
 .subtitle {
     font-size: 18px;
+    line-height: 1.35;
+    margin: 6px 0 0;
     color: #666;
 }
 
 .folder-info {
-    margin: 10px 0;
+    margin: 8px 0;
 }
 
 .folder-path {
@@ -933,16 +1005,15 @@ const getSortIconClass = (field) => {
 }
 
 .description {
-    white-space: pre-wrap;
-    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-height: 1.45;
     color: var(--text-color);
-    margin-bottom: 20px;
+    margin: 0 0 12px;
     font-size: 16px;
-    max-height: 200px;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: break-spaces;
-    overflow-y: auto;
 }
 
 .actions {
@@ -1052,9 +1123,12 @@ const getSortIconClass = (field) => {
 }
 
 .track-list-header {
+    position: sticky;
+    z-index: 115;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    background: #fff;
 }
 
 .track-list-title {
@@ -1389,10 +1463,13 @@ const getSortIconClass = (field) => {
 }
 
 .track-list-header-row {
+    position: sticky;
+    z-index: 114;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 10px;
+    background: #fff;
     border-bottom: 1px solid var(--primary-color);
     font-weight: bold;
     border-radius: 5px 5px 0 0;

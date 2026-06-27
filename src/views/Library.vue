@@ -36,8 +36,8 @@
                                     class="stat-label">{{ $t('fang-wen') }}</span></div>
                         </div>
                         <div class="user-meta">
-                            <span class="user-gender">
-                                <i :class="userDetail.gender === 1 ? 'fas fa-mars' : 'fas fa-venus'"></i>
+                            <span class="user-gender" :title="userGenderTitle">
+                                <i :class="userGenderIcon"></i>
                             </span>
                             <span class="user-duration">{{ formatDuration(userDetail.duration || 0) }} {{
                                 $t('ting-ge-shi-chang') }}</span>
@@ -199,6 +199,18 @@ const profileHeaderStyle = computed(() => ({
     '--profile-bg-image': profileBackgroundImage.value ? `url(${profileBackgroundImage.value})` : 'none',
     '--profile-bg-color': profileBgColor.value
 }));
+const userGenderIcon = computed(() => {
+    const gender = userDetail.value.gender;
+    if (gender === 1) return 'fas fa-mars';
+    if (gender === 0) return 'fas fa-venus';
+    return 'fas fa-user-secret';
+});
+const userGenderTitle = computed(() => {
+    const gender = userDetail.value.gender;
+    if (gender === 1) return '男';
+    if (gender === 0) return '女';
+    return '保密';
+});
 
 const selectCategory = (index) => {
     selectedCategory.value = index;

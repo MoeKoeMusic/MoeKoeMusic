@@ -31,6 +31,10 @@ const props = defineProps({
     currentSong: {
         type: Object,
         required: true
+    },
+    playlists: {
+        type: Array,
+        default: () => []
     }
 });
 const playlists = ref([]);

@@ -1,5 +1,11 @@
 <template>
     <div class="recognize-page">
+        <div class="recognize-decor" aria-hidden="true">
+            <i class="decor-note fas fa-music note-a"></i>
+            <i class="decor-note fas fa-headphones note-b"></i>
+            <i class="decor-note fas fa-volume-up note-c"></i>
+            <span class="decor-ring ring-b"></span>
+        </div>
         <section class="recognize-panel">
             <div class="recognize-head">
                 <h2>听歌识曲</h2>
@@ -532,9 +538,80 @@ onMounted(() => loadMicDevices());
     justify-content: center;
     align-items: center;
     overflow-x: clip;
+    position: relative;
+    background-image: url('/assets/images/recognize-bg.png');
+    background-repeat: no-repeat;
+    background-size: 35% auto;
+    background-position: left bottom;
+}
+
+.recognize-decor {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.decor-note,
+.decor-ring {
+    position: absolute;
+    color: rgba(var(--primary-color-rgb), 0.26);
+    opacity: 0.9;
+    filter: blur(0.2px);
+    animation-timing-function: ease-in-out;
+}
+
+.decor-note {
+    --note-size: 30px;
+    font-size: var(--note-size);
+    animation-name: recognize-note-float;
+    animation-iteration-count: infinite;
+    animation-fill-mode: both;
+}
+
+.note-a {
+    left: 9%;
+    top: 12%;
+    animation-duration: 12s;
+    animation-delay: -1.2s;
+}
+
+.note-b {
+    left: 23%;
+    top: 58%;
+    animation-duration: 9.5s;
+    animation-delay: -3.6s;
+}
+
+.note-c {
+    right: 18%;
+    top: 18%;
+    animation-duration: 14s;
+    animation-delay: -7.8s;
+}
+
+.decor-ring {
+    border: 1px solid rgba(var(--primary-color-rgb), 0.22);
+    border-radius: 50%;
+    animation-name: recognize-ring-rotate;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+    --ring-scale: 1;
+    transform: scale(var(--ring-scale));
+}
+
+.ring-b {
+    width: 150px;
+    height: 150px;
+    right: 8%;
+    top: 58%;
+    animation-duration: 28s;
+    animation-direction: reverse;
 }
 
 .recognize-panel {
+    position: relative;
+    z-index: 1;
     width: min(720px, 100%);
     display: flex;
     flex-direction: column;
@@ -1170,6 +1247,29 @@ onMounted(() => loadMicDevices());
     }
 }
 
+@keyframes recognize-note-float {
+    0%,
+    100% {
+        transform: translateY(0);
+        opacity: 0.7;
+    }
+
+    50% {
+        transform: translateY(-16px);
+        opacity: 1;
+    }
+}
+
+@keyframes recognize-ring-rotate {
+    from {
+        transform: rotate(0deg) scale(var(--ring-scale));
+    }
+
+    to {
+        transform: rotate(360deg) scale(var(--ring-scale));
+    }
+}
+
 :global(html.dark) {
     .recognize-head p {
         color: rgba(255, 255, 255, 0.62);
@@ -1197,11 +1297,26 @@ onMounted(() => loadMicDevices());
     .hero-shade {
         background: linear-gradient(180deg, rgba(0, 0, 0, 0.12) 24%, rgba(18, 18, 18, 0.88) 100%);
     }
+
+    .decor-note,
+    .decor-ring {
+        color: rgba(255, 255, 255, 0.22);
+        border-color: rgba(255, 255, 255, 0.22);
+    }
 }
 
 @media (max-width: 560px) {
     .recognize-page {
         align-items: flex-start;
+    }
+
+    .decor-note {
+        --note-size: 20px;
+        opacity: 0.72;
+    }
+
+    .ring-b {
+        --ring-scale: 0.74;
     }
 
     .result-carousel {

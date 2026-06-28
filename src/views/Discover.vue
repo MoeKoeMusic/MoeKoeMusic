@@ -96,7 +96,7 @@ const handleDiscoverTabClick = (tab) => {
 
 .discover-floating-arona {
     position: absolute;
-    top: -80px;
+    top: -75px;
     left: 50%;
     z-index: 26;
     width: clamp(128px, 20vw, 200px);

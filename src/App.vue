@@ -4,6 +4,7 @@
         <RouterView />
         <Disclaimer v-if="!isLyricsRoute" />
         <StatusBarLyrics v-if="!isLyricsRoute" ref="statusBarLyricsRef" />
+        <RiskVerifyModal />
     </div>
 </template>
 
@@ -13,6 +14,7 @@ import { useRoute } from 'vue-router';
 import Disclaimer from '@/components/Disclaimer.vue';
 import TitleBar from '@/components/TitleBar.vue';
 import StatusBarLyrics from '@/components/StatusBarLyrics.vue';
+import RiskVerifyModal from '@/components/RiskVerifyModal.vue';
 import { MoeAuthStore } from '@/stores/store';
 import logoImageSrc from '@/assets/images/tray/tray-icon@2x.png?url';
 

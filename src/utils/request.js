@@ -51,8 +51,13 @@ httpClient.interceptors.request.use(
 // 响应拦截器
 httpClient.interceptors.response.use(
     async response => {
+        if (response.config.__rawResponse) {
+            return response;
+        }
+
         const riskResult = await handleRiskResponse(response, (retryConfig) =>
-            httpClient.request(retryConfig),
+            httpClient.request({ ...retryConfig, __rawResponse: true }),
+            (url, params) => httpClient.get(url, { params, __skipRisk: true }),
         );
         if (riskResult.handled) {
             return riskResult.data;
@@ -61,9 +66,14 @@ httpClient.interceptors.response.use(
         return response.data;
     },
     async error => {
+        if (error.config?.__rawResponse) {
+            return Promise.reject(error);
+        }
+
         if (error.response) {
             const riskResult = await handleRiskResponse(error.response, (retryConfig) =>
-                httpClient.request(retryConfig),
+                httpClient.request({ ...retryConfig, __rawResponse: true }),
+                (url, params) => httpClient.get(url, { params, __skipRisk: true }),
             );
             if (riskResult.handled) {
                 return riskResult.data;

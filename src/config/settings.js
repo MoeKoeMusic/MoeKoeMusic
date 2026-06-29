@@ -453,6 +453,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             },
             {
                 key: 'pwa',
+                available: 'web',
                 itemIcon: 'fas fa-mobile-alt',
                 label: t('pwa-app'),
                 customText: t('install'),

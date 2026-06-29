@@ -1047,14 +1047,25 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
 
 .settings-page {
     display: flex;
-    height: 90vh;
+    height: var(--settings-page-height, calc(100vh - 160px));
+    min-height: 0;
     overflow: hidden;
     box-shadow: 0 0 30px $shadow-light;
     border-radius: 8px;
 }
 
+:global(main.app-main-scroll:has(.settings-page)) {
+    --settings-page-height: calc(100vh - 160px);
+    padding-bottom: 80px;
+}
+
+:global(main.side-navigation-main-content:has(.settings-page)) {
+    --settings-page-height: calc(100vh - 132px);
+}
+
 .settings-sidebar {
     width: 220px;
+    flex: 0 0 220px;
     box-shadow: 0 0 10px $shadow-light;
     padding: 20px 0;
     overflow-y: auto;
@@ -1089,6 +1100,8 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
 
 .settings-content {
     flex: 1;
+    min-width: 0;
+    min-height: 0;
     padding: 20px;
     overflow-y: auto;
 }
@@ -1107,7 +1120,7 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
 
 .settings-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
     gap: 16px;
 
     .setting-card-header i {
@@ -1116,6 +1129,8 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
 }
 
 .setting-card {
+    min-width: 0;
+    box-sizing: border-box;
     border-radius: 12px;
     padding: 16px;
     box-shadow: 0 4px 16px $shadow-light;
@@ -1138,6 +1153,7 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
         display: flex;
         justify-content: space-between;
         align-items: center;
+        min-width: 0;
         padding: 8px 12px;
         border-radius: 6px;
         font-size: 14px;
@@ -1146,6 +1162,14 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
         i {
             color: #999;
             font-size: 12px;
+            flex: 0 0 auto;
+        }
+
+        span {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
     }
 

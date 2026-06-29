@@ -1,6 +1,7 @@
 <template>
-    <div v-if="showContextMenu" :style="{ top: `${menuPosition.y}px`, left: `${menuPosition.x}px` }"
-        class="context-menu">
+    <div v-if="showContextMenu" ref="contextMenuRef"
+        :style="{ top: `${menuPosition.y}px`, left: `${menuPosition.x}px` }"
+        :class="{ 'submenu-left': submenuLeft }" class="context-menu">
         <ul>
             <li @mouseenter="fetchPlaylists" @mouseleave="hideSubMenu">
                 <i class="fa-solid fa-plus"></i>
@@ -25,7 +26,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { get } from '../utils/request';
 import { MoeAuthStore } from '../stores/store';
@@ -37,18 +38,38 @@ const MoeAuth = MoeAuthStore();
 const showContextMenu = ref(false);
 const showSubMenu = ref(false);
 const menuPosition = ref({ x: 0, y: 0 });
+const contextMenuRef = ref(null);
+const submenuLeft = ref(false);
 const playlists = ref([]);
 const listId = ref(0);
 const contextSong = ref(null);
 let events;
+const MENU_GAP = 8;
+const SUBMENU_WIDTH = 170;
+
+const adjustMenuPosition = () => {
+    const menu = contextMenuRef.value;
+    if (!menu) return;
+
+    const rect = menu.getBoundingClientRect();
+    const maxX = window.innerWidth - rect.width - MENU_GAP;
+    const maxY = window.innerHeight - rect.height - MENU_GAP;
+    const x = Math.max(MENU_GAP, Math.min(menuPosition.value.x, maxX));
+    const y = Math.max(MENU_GAP, Math.min(menuPosition.value.y, maxY));
+
+    menuPosition.value = { x, y };
+    submenuLeft.value = window.innerWidth - (x + rect.width) < SUBMENU_WIDTH && x > SUBMENU_WIDTH;
+};
 // 右键菜单显示与隐藏
 const openContextMenu = (event, song, Id) => {
     events = event
     event.preventDefault();
     showContextMenu.value = true;
+    showSubMenu.value = false;
     listId.value = Id;
     menuPosition.value = { x: event.clientX, y: event.clientY };
     contextSong.value = song;
+    nextTick(adjustMenuPosition);
 };
 const hideContextMenu = () => {
     showContextMenu.value = false;
@@ -154,6 +175,9 @@ defineExpose({ openContextMenu });
     border-radius: 10px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
     z-index: 1000;
+    min-width: 120px;
+    max-width: calc(100vw - 16px);
+    box-sizing: border-box;
 
     ul {
         list-style: none;
@@ -166,11 +190,17 @@ defineExpose({ openContextMenu });
         cursor: pointer;
         position: relative;
         border-radius: 10px;
+        white-space: nowrap;
 
         &:hover {
             background-color: var(--background-color);
         }
     }
+}
+
+.context-menu.submenu-left .submenu {
+    left: auto;
+    right: 100%;
 }
 
 .submenu {

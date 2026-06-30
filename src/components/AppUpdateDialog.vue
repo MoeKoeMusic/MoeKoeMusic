@@ -2,9 +2,7 @@
     <div v-if="showUpdateDialog" class="modal-overlay" @click="closeUpdateDialog">
         <div class="modal-content update-dialog" @click.stop>
             <h2>发现新版本 V{{ latestVersion }}</h2>
-            <div class="update-log-box">
-                <pre>{{ updateLog }}</pre>
-            </div>
+            <MarkdownContent class="update-log-box" :content="updateLog" :repo-url="projectRepoUrl" />
             <div v-if="isStartingUpdate || isDownloadingUpdate || isUpdateDownloaded || updateStatusText" class="update-progress-inline">
                 <div class="update-progress-bar">
                     <div class="update-progress-fill" :style="{ width: `${updateProgress}%` }"></div>
@@ -24,6 +22,7 @@
 
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue';
+import MarkdownContent from './MarkdownContent.vue';
 import { openRegisterUrl } from '../utils/utils';
 
 const props = defineProps({
@@ -39,7 +38,8 @@ const props = defineProps({
 
 const emit = defineEmits(['badge-change']);
 
-const repoUrl = 'https://github.com/iAJue/MoeKoeMusic/releases';
+const projectRepoUrl = 'https://github.com/MoeKoeMusic/MoeKoeMusic';
+const repoUrl = `${projectRepoUrl}/releases`;
 const showUpdateDialog = ref(false);
 const showNewBadge = ref(false);
 const downloadUrl = ref('');
@@ -285,16 +285,6 @@ defineExpose({
         border-radius: 10px;
         background: #faf7fb;
         border: 1px solid rgba(var(--primary-color-rgb), 0.18);
-    }
-
-    pre {
-        margin: 0;
-        white-space: pre-wrap;
-        word-break: break-word;
-        line-height: 1.65;
-        font-size: 14px;
-        color: #333;
-        font-family: inherit;
     }
 
     .update-dialog-actions {

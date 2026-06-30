@@ -68,9 +68,9 @@
                     <i class="fas fa-question-circle"></i>
                 </a>
                 <h3>{{ getSettingItem(selectionType)?.selectionTitle }}</h3>
-                <input v-if="selectionType === 'font'" class="font-search" placeholder="搜索字体..."
+                <input v-if="isFontSelection()" class="font-search" placeholder="搜索字体..."
                     v-model="fontSearch" />
-                <ul v-if="selectionType !== 'font' && selectionType !== 'audioOutputDevice'">
+                <ul v-if="!isFontSelection() && selectionType !== 'audioOutputDevice'">
                     <li v-for="option in getSettingItem(selectionType)?.options || []" :key="option.value"
                         @click="selectOption(option)">
                         {{ option.displayText }}
@@ -86,7 +86,7 @@
                     </li>
                 </ul>
 
-                <ul v-else-if="selectionType === 'font'" class="font-list">
+                <ul v-else-if="isFontSelection()" class="font-list">
                     <li v-if="fontOptionsLoading">{{ $t('jia-zai-zhong') }}</li>
                     <li v-else-if="fontOptions.length === 0">{{ $t('mo-ren-zi-ti') }}</li>
                     <template v-else v-for="option in fontOptions" :key="option.value">
@@ -257,6 +257,8 @@ const showRefreshHint = ref({});
 const audioOutputDeviceOptions = ref([]);
 const audioOutputDevicesLoading = ref(false);
 
+const isFontSelection = (type = selectionType.value) => ['font', 'desktopLyricsFont'].includes(type);
+
 const updateAudioOutputDeviceDisplayText = async (deviceId) => {
     if (!deviceId || deviceId === 'default') {
         selectedSettings.value.audioOutputDevice = { displayText: '默认', value: 'default' };
@@ -362,7 +364,7 @@ const openSelection = (type, helpLink) => {
         dpiScale.value = parseFloat(selectedSettings.value.dpiScale?.value || '1.0');
     }
 
-    if (type === 'font') void loadLocalFonts();
+    if (isFontSelection(type)) void loadLocalFonts();
 
     if (type === 'proxy') {
         proxyForm.url = selectedSettings.value.proxyUrl?.value || '';
@@ -550,14 +552,15 @@ const selectOption = async (option) => {
 };
 
 const selectFontOption = (option) => {
-    selectedSettings.value.font = {
+    const key = selectionType.value;
+    selectedSettings.value[key] = {
         displayText: option.displayText,
         value: option.value
     };
-    applyCustomFont(option.value);
+    if (key === 'font') applyCustomFont(option.value);
     saveSettings();
     closeSelection();
-    markRefreshHint('font');
+    markRefreshHint(key);
 };
 
 const isElectron = () => {
@@ -614,7 +617,7 @@ onMounted(() => {
                 selectedSettings.value[key] = { displayText: value, value: value };
                 continue;
             }
-            if (key === 'font') {
+            if (isFontSelection(key)) {
                 const value = savedSettings[key] || '';
                 selectedSettings.value[key] = {
                     displayText: value || t('mo-ren-zi-ti'),
@@ -1120,7 +1123,7 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
 
 .settings-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
     gap: 16px;
 
     .setting-card-header i {

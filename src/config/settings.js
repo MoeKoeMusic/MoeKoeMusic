@@ -251,6 +251,17 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
                 label: t('xian-shi-zhuo-mian-ge-ci')
             },
             {
+                key: 'desktopLyricsFont',
+                defaultValue: '',
+                defaultDisplayText: t('mo-ren-zi-ti'),
+                itemIcon: 'fas fa-font',
+                selectionTitle: t('zhuo-mian-ge-ci-zi-ti-she-zhi'),
+                keepOpen: true,
+                available: 'client',
+                label: t('zhuo-mian-ge-ci-zi-ti-she-zhi'),
+                helpLink: 'https://music.moekoe.cn/guide/font-settings.html'
+            },
+            {
                 key: 'statusBarLyrics',
                 defaultValue: 'off',
                 itemIcon: 'fas fa-align-justify',

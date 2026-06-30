@@ -1,6 +1,6 @@
 <template>
     <div class="lyrics-container" :class="{ 'locked': isLocked, 'hovering': isHovering && !isLocked }"
-        :style="resizeCursor ? { cursor: resizeCursor } : null" @mouseleave="handleMouseLeave">
+        :style="[lyricsFontStyle, resizeCursor ? { cursor: resizeCursor } : null]" @mouseleave="handleMouseLeave">
         <div class="lyrics-panel">
         <!-- 控制栏 -->
         <div class="controls-overlay" ref="controlsOverlay">
@@ -566,6 +566,23 @@ window.electron.ipcRenderer.on('playing-status', (_event, playing) => {
 })
 
 const fontSize = ref(32)
+const desktopLyricsFont = ref('')
+
+const fontFamilyFallback = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif"
+
+const escapeFontFamily = (fontFamily) => String(fontFamily).replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+
+const getLocalSettings = () => JSON.parse(localStorage.getItem('settings') || '{}')
+
+const loadDesktopLyricsFont = (settings = getLocalSettings()) => {
+    desktopLyricsFont.value = settings?.desktopLyricsFont || ''
+}
+
+const handleStorageChange = (event) => {
+    if (event.key !== 'settings') return
+    loadDesktopLyricsFont(JSON.parse(event.newValue || '{}'))
+}
+
 const changeFontSize = (delta) => {
     fontSize.value = Math.max(12, Math.min(72, fontSize.value + delta))
     localStorage.setItem('lyrics-font-size', fontSize.value)
@@ -574,6 +591,8 @@ const changeFontSize = (delta) => {
 onMounted(() => {
     isLocked.value = localStorage.getItem('lyrics-lock') === 'true'
     setIgnoreMouseEvents(true)
+    loadDesktopLyricsFont()
+    window.addEventListener('storage', handleStorageChange)
 
     document.addEventListener('mousemove', checkMousePosition)
     document.addEventListener('mouseleave', handleMouseLeave)
@@ -652,6 +671,7 @@ const endDrag = () => {
 
 onBeforeUnmount(() => {
     stopHoverPolling()
+    window.removeEventListener('storage', handleStorageChange)
     document.removeEventListener('mousemove', checkMousePosition)
     document.removeEventListener('mouseleave', handleMouseLeave)
     document.removeEventListener('mousedown', startDrag)
@@ -661,6 +681,16 @@ onBeforeUnmount(() => {
 })
 
 const isHovering = ref(false)
+
+const lyricsFontStyle = computed(() => {
+    const fontFamily = desktopLyricsFont.value
+        ? `"${escapeFontFamily(desktopLyricsFont.value)}", ${fontFamilyFallback}`
+        : fontFamilyFallback
+
+    return {
+        '--desktop-lyrics-font-family': fontFamily
+    }
+})
 
 const containerStyle = computed(() => ({
     fontSize: `${fontSize.value}px`
@@ -812,6 +842,7 @@ $bg-button: rgba(50, 50, 50, 0.7);
     transform: translateZ(0);
     white-space: pre;
     letter-spacing: 0.5px;
+    font-family: var(--desktop-lyrics-font-family) !important;
 }
 
 .lyrics-layer {
@@ -822,6 +853,7 @@ $bg-button: rgba(50, 50, 50, 0.7);
     font-weight: bold;
     white-space: pre;
     text-shadow: $text-shadow;
+    font-family: var(--desktop-lyrics-font-family) !important;
 
     &-default {
         position: relative;
@@ -1044,11 +1076,13 @@ $bg-button: rgba(50, 50, 50, 0.7);
     border-radius: 6px;
     transform: translateX(0);
     background-color: transparent;
+    font-family: var(--desktop-lyrics-font-family) !important;
 }
 
 .nolyrics {
     margin-bottom: 30px;
     color: var(--primary-color);
+    font-family: var(--desktop-lyrics-font-family) !important;
 }
 
 .font-size-controls {

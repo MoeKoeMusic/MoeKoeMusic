@@ -71,7 +71,7 @@ I said on my personal introduction page that I particularly enjoy listening to m
 - [x]  ⚙️  System architecture optimization
 - [x]  🎶  Songs, playlists/favorites, cancellation
 
-Please check the  for the update log [Commits](https://github.com/iAJue/MoeKoeMusic/commits/main/)
+[View changelog](http://music.moekoe.cn/changelog.html)
 
 ## 📦️ Installation
 

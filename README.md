@@ -69,7 +69,7 @@
 - [x] ⚙️ 系统架构优化
 - [x] 🎶 歌曲、歌单/收藏、取消
 
-更新日志请查看 [Commits](https://github.com/iAJue/MoeKoeMusic/commits/main/)
+[查看更新日志](http://music.moekoe.cn/changelog.html)
 
 ## 📦️ 安装
 

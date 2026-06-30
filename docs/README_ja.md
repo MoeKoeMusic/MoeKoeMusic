@@ -70,7 +70,7 @@
 - [x] ⚙️ システムアーキテクチャの最適化
 - [x] 🎶 曲、歌/コレクション、キャンセル
 
-更新ログは[Commits](https://github.com/iAJue/MoeKoeMusic/commits/main/)
+[更新履歴を見る](http://music.moekoe.cn/changelog.html)
 
 ## 📦️ インストール
 

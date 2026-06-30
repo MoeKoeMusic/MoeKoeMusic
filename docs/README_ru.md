@@ -70,7 +70,7 @@
 - [x] ⚙️ Оптимизация архитектуры
 - [x] 🎶 Добавление/удаление песен и плейлистов в избранное
 
-История изменений: [Commits](https://github.com/iAJue/MoeKoeMusic/commits/main/)
+[Посмотреть журнал изменений](http://music.moekoe.cn/changelog.html)
 
 ## 📦️ Установка
 

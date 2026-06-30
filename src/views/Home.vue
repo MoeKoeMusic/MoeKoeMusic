@@ -5,7 +5,7 @@
             <img :src="`./assets/images/home/mama.png`" class="mama" @click="addAllSongsToQueue">
             {{ $t('mei-ri-tui-jian') }}
         </h2>
-        <CommonSkeleton v-if="isLoading" variant="compact-grid" :count="16" />
+        <CommonSkeleton v-if="isLoading" variant="compact-grid" :count="20" />
         <div v-else class="song-list">
             <div class="song-item" v-for="(song, index) in songs" :key="index"
                 @click="playSong(song['hash'], song.ori_audio_name, $getCover(song.sizable_cover, 480), song.author_name)"

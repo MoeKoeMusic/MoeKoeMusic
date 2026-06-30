@@ -15,7 +15,7 @@
                 <CommonSkeleton v-if="searchType === 'song' || searchType === 'complex'" variant="song-list" :count="10" />
 
                 <!-- 歌手/专辑/歌单/mv共用骨架屏 -->
-                <CommonSkeleton v-else variant="search-grid" :count="12" :avatar="searchType === 'author'" />
+                <CommonSkeleton v-else variant="search-grid" :count="10" :avatar="searchType === 'author'" />
             </div>
 
             <template v-else-if="hasSearchContent">

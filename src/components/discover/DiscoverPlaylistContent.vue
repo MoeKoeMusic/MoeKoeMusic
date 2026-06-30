@@ -18,7 +18,7 @@
             </div>
         </div>
 
-        <CommonSkeleton v-if="isLoading" variant="card-grid" :count="10" />
+        <CommonSkeleton v-if="isLoading" variant="card-grid" :count="12" />
 
         <div v-else class="music-grid">
             <div class="music-card" v-for="card in cardItems" :key="card.key">

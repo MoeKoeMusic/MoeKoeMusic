@@ -60,7 +60,7 @@
         </div>
         <div v-if="showListenSection" class="favorite-section">
             <div class="song-list">
-                <CommonSkeleton v-if="isLoading" variant="compact-grid" :count="16" />
+                <CommonSkeleton v-if="isLoading" variant="compact-grid" :count="15" />
                 <ul v-else>
                     <li v-for="(song, index) in listenHistory" :key="index" class="song-item"
                         @click="playSong(song['hash'], song.name.split(' - ')[1] || song.name, $getCover(song.image, 480), song.singername)">
@@ -313,7 +313,7 @@ const getlisten = async () => {
     if (historyResponse.status === 1) {
         const allLists = historyResponse.data.lists;
         const shuffled = allLists.sort(() => 0.5 - Math.random());
-        listenHistory.value = shuffled.slice(0, 16);
+        listenHistory.value = shuffled.slice(0, 20);
     }
 }
 const hideListenSection = () => {

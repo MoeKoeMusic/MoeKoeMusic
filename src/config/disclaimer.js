@@ -1,4 +1,4 @@
-export const DISCLAIMER_BANNER_SRC = '/assets/images/banners.png';
+export const DISCLAIMER_BANNER_SRC = './assets/images/banners.png';
 
 export const ABOUT_DISCLAIMER_KEYS = [
     '0-ben-cheng-xu-shi-ku-gou-di-san-fang-ke-hu-duan-bing-fei-ku-gou-guan-fang-xu-yao-geng-wan-shan-de-gong-neng-qing-xia-zai-guan-fang-ke-hu-duan-ti-yan',

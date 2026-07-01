@@ -101,7 +101,8 @@ export function setupAutoUpdater(mainWindow) {
             cancelId: 1
         }).then(result => {
             if (result.response === 0) {
-                autoUpdater.quitAndInstall(false, true);
+                app.isQuitting = true;
+                autoUpdater.quitAndInstall(true, true);
             }
         });
     });

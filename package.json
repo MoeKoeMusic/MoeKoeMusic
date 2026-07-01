@@ -97,6 +97,8 @@
       "installerIcon": "build/icons/icon.ico",
       "uninstallerIcon": "build/icons/icon.ico",
       "installerHeaderIcon": "build/icons/icon.ico",
+      "installerSidebar": "build/installerSidebar.bmp",
+      "uninstallerSidebar": "build/uninstallerSidebar.bmp",
       "createDesktopShortcut": false,
       "createStartMenuShortcut": true,
       "shortcutName": "MoeKoe Music",

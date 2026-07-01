@@ -124,12 +124,15 @@ app.on('before-quit', () => {
     }
 
     // 清理状态栏歌词服务
-    statusBarLyricsService.cleanup();
-    customTrayMenuService.cleanup();
+    setImmediate(() => {
+        statusBarLyricsService.cleanup();
+        customTrayMenuService.cleanup();
 
-    stopApiServer();
-    apiService.stop();
-    cleanupExtensions();
+        stopApiServer();
+        apiService.stop();
+        cleanupExtensions();
+        app.exit(0);
+    });
 });
 // 关闭所有窗口
 app.on('window-all-closed', () => {

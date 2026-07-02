@@ -246,7 +246,7 @@
                         </div>
                         <div v-else id="lyrics" :class="{ 'line-highlight-mode': lyricsHighlightMode === 'line' }"
                             :style="{ fontSize: lyricsFontSize, transform: `translateY(${scrollAmount ? scrollAmount + 'px' : '50%'})` }">
-                            <div class="line-group" v-for="(lineData, lineIndex) in lyricsData" :key="lineIndex">
+                            <div class="line-group" :class="{ 'current-line-group': currentLyricsLineIndex === lineIndex }" v-for="(lineData, lineIndex) in lyricsData" :key="lineIndex">
                                 <div class="line" @click="handleLyricsClick(lineIndex)" :class="{ click: lyricsFlag, 'line-highlight': isCurrentLyricsLine(lineIndex), [lyricsAlign]: true }">
                                     <span v-for="(charData, charIndex) in lineData.characters" :key="charIndex" class="char"
                                         :class="{ highlight: lyricsHighlightMode === 'char' && charData.highlighted }">

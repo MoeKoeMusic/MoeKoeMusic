@@ -13,6 +13,8 @@ $shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
 $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
 
 #lyrics-container {
+    --lyrics-edge-fade-size: clamp(72px, 12vh, 140px);
+
     height: 75vh;
     overflow: hidden;
     display: flex;
@@ -22,6 +24,18 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
     margin-top: 80px;
     position: relative;
     width: 60%;
+    -webkit-mask-image: linear-gradient(to bottom,
+            transparent 0,
+            #fff var(--lyrics-edge-fade-size),
+            #fff calc(100% - var(--lyrics-edge-fade-size)),
+            transparent 100%);
+    mask-image: linear-gradient(to bottom,
+            transparent 0,
+            #fff var(--lyrics-edge-fade-size),
+            #fff calc(100% - var(--lyrics-edge-fade-size)),
+            transparent 100%);
+    mask-size: 100% 100%;
+    mask-repeat: no-repeat;
 }
 
 #lyrics {
@@ -67,6 +81,19 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
 
 .line-group {
     margin-bottom: 12px;
+    transform: translateY(0) scale(1);
+    transform-origin: center;
+    transition:
+        transform 0.42s cubic-bezier(0.18, 1.35, 0.28, 1),
+        filter 0.32s ease;
+    will-change: transform;
+}
+
+.line-group.current-line-group {
+    position: relative;
+    z-index: 1;
+    transform: translateY(0px) scale(1.25);
+    filter: drop-shadow(0 10px 20px rgba(255, 255, 255, 0.16));
 }
 
 .line {

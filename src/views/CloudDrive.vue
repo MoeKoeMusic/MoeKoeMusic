@@ -6,7 +6,7 @@
             <div class="info" :style="infoStyle">
                 <h1 class="title" :style="titleStyle">{{ $t('wo-de-yun-pan') }}</h1>
                 <div class="expanded-info" :style="detailsStyle">
-                    <p class="subtitle">{{ $t('yun-pan-ge-qu-shu') }}: {{ tracks.length }}</p>
+                    <p class="subtitle">{{ $t('yun-pan-ge-qu-shu') }}: {{ displayTrackCount }}</p>
                     <div class="storage-info" v-if="storageInfo.totalSize > 0">
                         <div class="storage-progress">
                             <div class="storage-progress-bar" :style="storageUsageStyle"></div>
@@ -42,7 +42,7 @@
         <!-- 歌曲列表 -->
         <div class="track-list-container">
             <div class="track-list-header" :style="listHeaderStyle">
-                <h2 class="track-list-title" :style="listTitleStyle"><span>{{ $t('yun-pan-ge-qu') }}</span> ( {{ tracks.length }} )</h2>
+                <h2 class="track-list-title" :style="listTitleStyle"><span>{{ $t('yun-pan-ge-qu') }}</span> ( {{ displayTrackCount }} )</h2>
                 <div class="track-list-actions">
                     <div class="batch-action-container">
                         <button class="batch-action-btn" @click="toggleBatchSelection"
@@ -89,8 +89,16 @@
                 </div>
             </div>
 
-            <RecycleScroller ref="recycleScrollerRef" :items="filteredTracks" :item-size="listMode === 'list' ? 50 : 70"
-                class="track-list" key-field="hash" page-mode :buffer="400">
+            <div v-if="isSearching" class="search-loading-overlay">
+                <div class="search-loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>{{ $t('zheng-zai-jia-zai-quan-bu-ge-qu') }}</span>
+                </div>
+            </div>
+
+            <RecycleScroller v-else ref="recycleScrollerRef" :items="filteredTracks" :item-size="listMode === 'list' ? 50 : 70"
+                class="track-list" key-field="hash" page-mode :buffer="400" :emit-update="true"
+                @update="handleVirtualUpdate">
                 <template #default="{ item, index }">
                     <div class="li" :key="item.hash"
                         :class="{ 'cover-view': listMode === 'grid', 'selected': batchSelectionMode && selectedTracks.includes(index) }"
@@ -156,9 +164,15 @@ const router = useRouter();
 const tracks = ref([]);
 const filteredTracks = ref([]);
 const searchQuery = ref('');
-const pageSize = ref(100);
+const pageSize = 60;
+const maxPageSize = 300;
+const currentPage = ref(1);
+const hasMore = ref(true);
+const isLoadingMore = ref(false);
+const totalCount = ref(0);
 const recycleScrollerRef = ref(null);
 const loading = ref(true);
+const isSearching = ref(false);
 const flyingNotes = ref([]);
 let noteId = 0;
 
@@ -185,6 +199,10 @@ const listMode = ref(localStorage.getItem('cloudDriveListMode') || 'list');
 // 判断是否全选
 const isAllSelected = computed(() => {
     return selectedTracks.value.length === filteredTracks.value.length && filteredTracks.value.length > 0;
+});
+
+const displayTrackCount = computed(() => {
+    return hasMore.value ? totalCount.value : tracks.value.length;
 });
 
 const props = defineProps({
@@ -227,47 +245,22 @@ const loadData = async () => {
 
 // 获取云盘歌曲
 const fetchCloudTracks = async () => {
-    let allTracks = [];
-    let currentPage = 1;
+    currentPage.value = 1;
+    hasMore.value = true;
+    loading.value = true;
+    isSearching.value = false;
+    totalCount.value = 0;
+    tracks.value = [];
+    filteredTracks.value = [];
 
     try {
+        const curPage = currentPage.value;
         const firstPageResponse = await get('/user/cloud', {
-            page: currentPage,
-            pagesize: pageSize.value
+            page: curPage,
+            pagesize: pageSize
         });
 
-        if (firstPageResponse.status === 1) {
-            // 处理存储空间信息
-            if (firstPageResponse.data.type_size) {
-                const { max_size, used_size, availble_size } = firstPageResponse.data;
-                storageInfo.value = {
-                    totalSize: max_size || 0,
-                    usedSize: used_size || 0,
-                    availableSize: availble_size || 0
-                };
-            }
-
-            // 处理歌曲列表
-            const songList = firstPageResponse.data.list || firstPageResponse.data.info || [];
-            allTracks = formatTrackList(songList);
-            tracks.value = allTracks;
-            filteredTracks.value = allTracks;
-            currentPage++;
-
-            // 获取剩余页面数据
-            if (firstPageResponse.data.list_count > pageSize.value) {
-                const totalPages = Math.ceil(firstPageResponse.data.list_count / pageSize.value);
-                for (let i = 1; i < totalPages && currentPage <= totalPages; i++) {
-                    const nextPageData = await fetchCloudPage(currentPage);
-                    if (!nextPageData || nextPageData.length === 0) break;
-
-                    allTracks = allTracks.concat(nextPageData);
-                    tracks.value = allTracks;
-                    filteredTracks.value = allTracks;
-                    currentPage++;
-                }
-            }
-        }
+        applyCloudResponse(firstPageResponse, true, curPage, pageSize);
     } catch (error) {
         $message.error(t('ge-qu-shu-ju-cuo-wu'));
         console.error('获取云盘歌曲失败:', error);
@@ -281,17 +274,113 @@ const fetchCloudPage = async (page) => {
     try {
         const response = await get('/user/cloud', {
             page,
-            pagesize: pageSize.value
+            pagesize: pageSize
         });
 
-        if (response.status === 1) {
-            const songList = response.data.list || response.data.info || [];
-            return formatTrackList(songList);
-        }
+        return response;
     } catch (error) {
         console.error('获取更多云盘歌曲失败:', error);
     }
-    return [];
+    return null;
+};
+
+const applyCloudResponse = (response, replace, curPage, curPageSize) => {
+    if (!response || response.status !== 1) {
+        hasMore.value = false;
+        return;
+    }
+
+    if (response.data.type_size) {
+        const { max_size, used_size, availble_size } = response.data;
+        storageInfo.value = {
+            totalSize: max_size || 0,
+            usedSize: used_size || 0,
+            availableSize: availble_size || 0
+        };
+    }
+
+    const songList = response.data.list || response.data.info || [];
+    const formattedTracks = formatTrackList(songList);
+    totalCount.value = response.data.list_count ?? (replace ? formattedTracks.length : totalCount.value);
+    tracks.value = replace ? formattedTracks : [...tracks.value, ...formattedTracks];
+    filteredTracks.value = tracks.value;
+    currentPage.value = curPage + 1;
+    hasMore.value = songList.length >= curPageSize && tracks.value.length < totalCount.value;
+};
+
+const loadMoreTracks = async () => {
+    if (loading.value || isLoadingMore.value || !hasMore.value) return;
+
+    isLoadingMore.value = true;
+
+    try {
+        const curPage = currentPage.value;
+        const response = await fetchCloudPage(curPage);
+        applyCloudResponse(response, false, curPage, pageSize);
+    } finally {
+        isLoadingMore.value = false;
+    }
+};
+
+const handleVirtualUpdate = (startIndex, endIndex) => {
+    if (loading.value || searchQuery.value.trim()) return;
+    if (Math.max(startIndex, endIndex) >= filteredTracks.value.length - 1) {
+        loadMoreTracks();
+    }
+};
+
+const loadAllRemainingTracks = async (onAppend) => {
+    while (isLoadingMore.value) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    if (!hasMore.value) return;
+
+    isLoadingMore.value = true;
+    try {
+        const loadedHashes = new Set(tracks.value.map(track => track.hash));
+        let page = Math.floor(tracks.value.length / maxPageSize) + 1;
+
+        while (hasMore.value) {
+            const response = await get('/user/cloud', {
+                page,
+                pagesize: maxPageSize
+            });
+
+            if (!response || response.status !== 1) break;
+
+            if (response.data.type_size) {
+                const { max_size, used_size, availble_size } = response.data;
+                storageInfo.value = {
+                    totalSize: max_size || 0,
+                    usedSize: used_size || 0,
+                    availableSize: availble_size || 0
+                };
+            }
+
+            const songList = response.data.list || response.data.info || [];
+            if (songList.length === 0) {
+                hasMore.value = false;
+                return;
+            }
+
+            totalCount.value = response.data.list_count ?? totalCount.value;
+            const newTracks = formatTrackList(songList).filter(track => !loadedHashes.has(track.hash));
+            if (newTracks.length > 0) {
+                tracks.value = [...tracks.value, ...newTracks];
+                filteredTracks.value = tracks.value;
+                newTracks.forEach(track => loadedHashes.add(track.hash));
+                onAppend?.(newTracks);
+            }
+
+            hasMore.value = songList.length >= maxPageSize && tracks.value.length < totalCount.value;
+            page++;
+        }
+
+        currentPage.value = Math.floor(tracks.value.length / pageSize) + 1;
+    } finally {
+        isLoadingMore.value = false;
+    }
 };
 
 // 获取音质信息
@@ -343,7 +432,16 @@ const formatStorageSize = (bytes) => {
 };
 
 // 搜索歌曲
-const searchTracks = () => {
+const searchTracks = async () => {
+    if (hasMore.value) {
+        isSearching.value = true;
+        try {
+            await loadAllRemainingTracks();
+        } finally {
+            isSearching.value = false;
+        }
+    }
+
     filteredTracks.value = tracks.value.filter(track =>
         track.name.toLowerCase().trim().includes(searchQuery.value.toLowerCase().trim()) ||
         track.author.toLowerCase().trim().includes(searchQuery.value.toLowerCase().trim())
@@ -357,6 +455,12 @@ const playSong = async (hash, name, author, timeLength, cover) => {
 };
 
 // 添加整个播放列表到队列
+const loadAndAppendRemainingTracks = async () => {
+    await loadAllRemainingTracks((newTracks) => {
+        props.playerControl.addCloudPlaylistToQueue(newTracks, true);
+    });
+};
+
 const addPlaylistToQueue = async (event, append = false) => {
     const playButton = event.currentTarget;
     const rect = playButton.getBoundingClientRect();
@@ -374,6 +478,9 @@ const addPlaylistToQueue = async (event, append = false) => {
         flyingNotes.value = flyingNotes.value.filter(n => n.id !== note.id);
     }, 1500);
     props.playerControl.addCloudPlaylistToQueue(filteredTracks.value, append);
+    if (hasMore.value) {
+        loadAndAppendRemainingTracks();
+    }
 };
 
 const uploadMusic = () => {
@@ -498,7 +605,16 @@ const toggleSelectAll = () => {
 };
 
 // 根据字段排序
-const sortTracks = (field) => {
+const sortTracks = async (field) => {
+    if (hasMore.value) {
+        isSearching.value = true;
+        try {
+            await loadAllRemainingTracks();
+        } finally {
+            isSearching.value = false;
+        }
+    }
+
     if (sortField.value === field) {
         sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
     } else {
@@ -822,6 +938,33 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 
 .track-list {
     width: 100%;
+}
+
+.search-loading-overlay {
+    height: 800px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 150px;
+    border-radius: 0 0 5px 5px;
+}
+
+.search-loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    color: var(--text-color);
+
+    i {
+        font-size: 48px;
+        color: $primary;
+    }
+
+    span {
+        font-size: 16px;
+        color: $text-muted;
+    }
 }
 
 .li {

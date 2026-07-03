@@ -234,7 +234,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, onBeforeUnmount, computed } from 'vue';
+import { ref, onMounted, watch, onBeforeUnmount, computed, nextTick } from 'vue';
 import { RecycleScroller } from 'vue3-virtual-scroller';
 import CommonSkeleton from '../components/CommonSkeleton.vue';
 import ContextMenu from '../components/ContextMenu.vue';
@@ -862,11 +862,39 @@ const showContextMenu = (event, song) => {
     }
 };
 
+const scrollToTrackIndex = async (index) => {
+    await nextTick();
+    const scrollContainer = document.querySelector('.app-main-scroll');
+    const scrollerElement = recycleScrollerRef.value?.$el;
+    if (!scrollContainer || !scrollerElement) return;
+
+    const targetIndex = Math.max(0, index - 5);
+    const itemSize = viewMode.value === 'list' ? 50 : 70;
+    const offsetTop = scrollContainer.scrollTop + scrollerElement.getBoundingClientRect().top - scrollContainer.getBoundingClientRect().top;
+
+    scrollContainer.scrollTo({
+        top: Math.max(0, offsetTop + targetIndex * itemSize),
+        behavior: 'smooth'
+    });
+};
+
 // 滚动到当前播放歌曲
-const scrollToItem = () => {
-    const currentIndex = filteredTracks.value.findIndex(song => song.hash === props.playerControl.currentSong.hash);
+const scrollToItem = async () => {
+    const currentHash = props.playerControl?.currentSong?.hash;
+    if (!currentHash) return;
+
+    let currentIndex = filteredTracks.value.findIndex(song => song.hash === currentHash);
+    if (currentIndex === -1 && hasMore.value && !searchQuery.value.trim()) {
+        try {
+            await loadAllRemainingTracks();
+            currentIndex = filteredTracks.value.findIndex(song => song.hash === currentHash);
+        } catch (error) {
+            console.error('滚动到当前播放歌曲时出错:', error);
+        }
+    }
+
     if (currentIndex !== -1) {
-        recycleScrollerRef.value?.scrollToItem(Math.max(0, currentIndex - 3), { behavior: 'smooth' });
+        await scrollToTrackIndex(currentIndex);
     }
 };
 
@@ -1921,7 +1949,6 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .track-timelen-header {
-    width: 95px;
     text-align: right;
 
     i {

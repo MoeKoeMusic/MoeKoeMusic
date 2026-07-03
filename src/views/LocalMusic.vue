@@ -55,8 +55,8 @@
         <div class="detail-sliver-spacer" :style="spacerStyle"></div>
 
         <!-- 导航按钮 -->
-        <i class="location-arrow fas fa-location-arrow" @click="scrollToItem" title="当前播放歌曲"></i>
-        <img :src="`./assets/images/lemon.gif`" class="scroll-bottom-img" @click="scrollToFirstItem" title="返回顶部" />
+        <i class="location-arrow fas fa-crosshairs" @click="scrollToItem" title="当前播放歌曲"></i>
+        <i class="scroll-bottom-img fas fa-angle-double-up" @click="scrollToFirstItem" title="返回顶部"></i>
 
         <!-- 歌曲列表 -->
         <div class="track-list-container" v-if="!loading">
@@ -180,7 +180,7 @@
 </template>
 
 <script setup>
-import { ref, shallowRef, onMounted, onBeforeUnmount, computed, toRaw } from 'vue';
+import { ref, shallowRef, onMounted, onBeforeUnmount, computed, toRaw, nextTick } from 'vue';
 import { RecycleScroller } from 'vue3-virtual-scroller';
 import CommonSkeleton from '../components/CommonSkeleton.vue';
 import { parseBlob } from 'music-metadata';
@@ -760,10 +760,26 @@ const getFileExtension = (filename) => {
 };
 
 // 滚动到当前播放歌曲
-const scrollToItem = () => {
+const scrollToTrackIndex = async (index) => {
+    await nextTick();
+    const scrollContainer = document.querySelector('.app-main-scroll');
+    const scrollerElement = recycleScrollerRef.value?.$el;
+    if (!scrollContainer || !scrollerElement) return;
+
+    const targetIndex = Math.max(0, index - 5);
+    const itemSize = listMode.value === 'list' ? 50 : 70;
+    const offsetTop = scrollContainer.scrollTop + scrollerElement.getBoundingClientRect().top - scrollContainer.getBoundingClientRect().top;
+
+    scrollContainer.scrollTo({
+        top: Math.max(0, offsetTop + targetIndex * itemSize),
+        behavior: 'smooth'
+    });
+};
+
+const scrollToItem = async () => {
     const currentIndex = filteredTracks.value.findIndex(song => song.name === props.playerControl?.currentSong.name);
     if (currentIndex !== -1) {
-        recycleScrollerRef.value?.scrollToItem(Math.max(0, currentIndex - 3), { behavior: 'smooth' });
+        await scrollToTrackIndex(currentIndex);
     }
 };
 
@@ -1407,20 +1423,20 @@ const getSortIconClass = (field) => {
     position: fixed;
     bottom: 168px;
     right: 14px;
-    z-index: 1;
+    z-index: 110;
     cursor: pointer;
-    font-size: 37px;
+    font-size: 20px;
     color: var(--primary-color);
 }
 
 .scroll-bottom-img {
     position: fixed;
-    width: 60px;
-    height: 60px;
-    bottom: 110px;
-    right: 88px;
-    z-index: 1;
+    bottom: 100px;
+    right: 10px;
+    z-index: 110;
     cursor: pointer;
+    font-size: 20px;
+    color: var(--primary-color);
 }
 
 .note-container {

@@ -219,6 +219,8 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
     justify-content: center;
     align-items: center;
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
 
     img {
         width: 64px;
@@ -229,6 +231,28 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
     i {
         font-size: 24px;
         color: $text-muted;
+    }
+
+    .album-art-hover-indicator {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.3);
+        color: #fff;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        pointer-events: none;
+
+        i {
+            font-size: 18px;
+            color: inherit;
+        }
+    }
+
+    &:hover .album-art-hover-indicator {
+        opacity: 1;
     }
 }
 

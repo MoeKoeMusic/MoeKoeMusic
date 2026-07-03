@@ -1,7 +1,9 @@
 <template>
     <div class="detail-page">
         <div class="header detail-sliver-header" :style="headerStyle">
-            <img class="cover-art" :style="coverStyle" :src="`./assets/images/local.png`" />
+            <CommonSkeleton v-if="loading" variant="detail-header" />
+            <template v-else>
+                <img class="cover-art" :style="coverStyle" :src="`./assets/images/local.png`" />
             <div class="info" :style="infoStyle">
                 <h1 class="title" :style="titleStyle">本地音乐</h1>
                 <div class="expanded-info" :style="detailsStyle">
@@ -48,6 +50,7 @@
                 @click="addPlaylistToQueue($event)" title="播放全部">
                 <i class="far fa-play-circle"></i>
             </button>
+            </template>
         </div>
         <div class="detail-sliver-spacer" :style="spacerStyle"></div>
 
@@ -179,6 +182,7 @@
 <script setup>
 import { ref, shallowRef, onMounted, onBeforeUnmount, computed, toRaw } from 'vue';
 import { RecycleScroller } from 'vue3-virtual-scroller';
+import CommonSkeleton from '../components/CommonSkeleton.vue';
 import { parseBlob } from 'music-metadata';
 import { useStickyDetailHeader } from '@/composables/useStickyDetailHeader';
 
@@ -910,7 +914,7 @@ const getSortIconClass = (field) => {
 
 .detail-sliver-header {
     position: sticky;
-    z-index: 120;
+    z-index: 10;
     box-sizing: border-box;
     overflow: visible;
     align-items: flex-start;

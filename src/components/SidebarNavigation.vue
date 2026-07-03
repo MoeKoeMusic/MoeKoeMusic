@@ -280,7 +280,7 @@ const getplaylist = async () => {
 
     try {
         const playlistResponse = await get('/user/playlist', {
-            pagesize: 500,
+            pagesize: 100,
             t: localStorage.getItem('t')
         });
         if (playlistResponse.status !== 1) return;

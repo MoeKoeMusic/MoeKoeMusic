@@ -31,6 +31,22 @@
         </div>
     </div>
 
+    <div v-else-if="variant === 'detail-header'" class="skeleton-detail-header">
+        <div :class="['detail-cover', { avatar }]"></div>
+        <div class="detail-content">
+            <div class="detail-line title"></div>
+            <div class="detail-line subtitle"></div>
+            <div class="detail-line meta"></div>
+            <div class="detail-line description"></div>
+            <div class="detail-actions">
+                <div class="detail-button primary"></div>
+                <div class="detail-button secondary"></div>
+                <div class="detail-icon"></div>
+                <div class="detail-icon"></div>
+            </div>
+        </div>
+    </div>
+
     <div v-else class="skeleton-card-grid">
         <div v-for="index in count" :key="index" class="card">
             <div class="card-cover"></div>
@@ -74,6 +90,10 @@ defineProps({
 .cover,
 .grid-cover,
 .compact-cover,
+.detail-cover,
+.detail-line,
+.detail-button,
+.detail-icon,
 .card-cover,
 .card-title,
 .card-text {
@@ -90,6 +110,7 @@ defineProps({
 .skeleton-card-grid,
 .skeleton-song-list,
 .skeleton-search-grid,
+.skeleton-detail-header,
 .skeleton-compact-grid {
     --skeleton-surface: #f5f5f5;
     --skeleton-surface-strong: #f0f0f0;
@@ -101,6 +122,7 @@ defineProps({
     &:is(.dark .skeleton-card-grid),
     &:is(.dark .skeleton-song-list),
     &:is(.dark .skeleton-search-grid),
+    &:is(.dark .skeleton-detail-header),
     &:is(.dark .skeleton-compact-grid) {
         --skeleton-surface: #1d1d1d;
         --skeleton-surface-strong: #242424;
@@ -222,6 +244,86 @@ defineProps({
     margin-bottom: 34px;
 }
 
+.skeleton-detail-header {
+    display: flex;
+    align-items: stretch;
+    gap: 20px;
+    width: 100%;
+    min-height: 200px;
+}
+
+.detail-cover {
+    flex: 0 0 auto;
+    width: 200px;
+    height: 200px;
+    border-radius: 10px;
+
+    &.avatar {
+        border-radius: 50%;
+    }
+}
+
+.detail-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.detail-line {
+    height: 16px;
+    border-radius: 4px;
+
+    &.title {
+        width: min(520px, 72%);
+        height: 42px;
+        margin-bottom: 14px;
+    }
+
+    &.subtitle {
+        width: 220px;
+        margin-bottom: 10px;
+    }
+
+    &.meta {
+        width: 38%;
+        margin-bottom: 12px;
+    }
+
+    &.description {
+        width: 88%;
+        height: 44px;
+        margin-bottom: 16px;
+    }
+}
+
+.detail-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: auto;
+}
+
+.detail-button {
+    height: 40px;
+    border-radius: 5px;
+
+    &.primary {
+        width: 120px;
+    }
+
+    &.secondary {
+        width: 96px;
+    }
+}
+
+.detail-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
+}
+
 .compact-item {
     display: flex;
     align-items: center;
@@ -309,12 +411,49 @@ defineProps({
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
     }
+
+    .skeleton-detail-header {
+        gap: 14px;
+    }
+
+    .detail-cover {
+        width: 160px;
+        height: 160px;
+    }
+
+    .detail-line.title {
+        width: 88%;
+        height: 34px;
+    }
+
+    .detail-line.meta,
+    .detail-line.description {
+        width: 100%;
+    }
 }
 
 @media (max-width: 576px) {
     .skeleton-compact-grid,
     .skeleton-search-grid.avatar {
         grid-template-columns: 1fr;
+    }
+
+    .skeleton-detail-header {
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .detail-cover {
+        width: 136px;
+        height: 136px;
+    }
+
+    .detail-content {
+        width: 100%;
+    }
+
+    .detail-actions {
+        flex-wrap: wrap;
     }
 }
 </style>

@@ -2,7 +2,9 @@
     <div class="detail-page">
         <!-- 头部信息区域 -->
         <div class="header detail-sliver-header" :style="headerStyle">
-            <img class="cover-art" :style="coverStyle" :src="`./assets/images/cloud.png`" />
+            <CommonSkeleton v-if="loading" variant="detail-header" />
+            <template v-else>
+                <img class="cover-art" :style="coverStyle" :src="`./assets/images/cloud.png`" />
             <div class="info" :style="infoStyle">
                 <h1 class="title" :style="titleStyle">{{ $t('wo-de-yun-pan') }}</h1>
                 <div class="expanded-info" :style="detailsStyle">
@@ -31,6 +33,7 @@
                 :title="$t('bo-fang')">
                 <i class="far fa-play-circle"></i>
             </button>
+            </template>
         </div>
         <div class="detail-sliver-spacer" :style="spacerStyle"></div>
 
@@ -149,6 +152,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import { RecycleScroller } from 'vue3-virtual-scroller';
+import CommonSkeleton from '../components/CommonSkeleton.vue';
 import { get } from '../utils/request';
 import { useRouter } from 'vue-router';
 import { MoeAuthStore } from '../stores/store';
@@ -686,7 +690,7 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 
 .detail-sliver-header {
     position: sticky;
-    z-index: 120;
+    z-index: 10;
     box-sizing: border-box;
     overflow: visible;
     align-items: flex-start;

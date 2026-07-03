@@ -2,6 +2,8 @@
     <div class="detail-page">
         <!-- 头部信息区域 -->
         <div class="header detail-sliver-header" :style="headerStyle">
+            <CommonSkeleton v-if="loading" variant="detail-header" :avatar="isArtist" />
+            <template v-else>
             <img class="cover-art" :class="isArtist ? 'artist-avatar' : ''" :data-playlist-id="detail.listid || null"
                 :style="coverStyle"
                 :src="isArtist ? ($getCover(detail.sizable_avatar, 480)) : (detail.pic ? $getCover(detail.pic, 480) : './assets/images/live.png')" />
@@ -76,6 +78,7 @@
                 :title="$t('bo-fang')">
                 <i class="far fa-play-circle"></i>
             </button>
+            </template>
         </div>
         <div class="detail-sliver-spacer" :style="spacerStyle"></div>
 
@@ -233,6 +236,7 @@
 <script setup>
 import { ref, onMounted, watch, onBeforeUnmount, computed } from 'vue';
 import { RecycleScroller } from 'vue3-virtual-scroller';
+import CommonSkeleton from '../components/CommonSkeleton.vue';
 import ContextMenu from '../components/ContextMenu.vue';
 import PlaylistSelectModal from '../components/PlaylistSelectModal.vue';
 import { get } from '../utils/request';
@@ -558,7 +562,7 @@ const applyTracksResult = (result, replace, curPage, curPageSize) => {
         return;
     }
 
-    if (result.listInfo) {
+    if (curPage === 1 && result.listInfo) {
         detail.value = result.listInfo;
     }
 
@@ -649,6 +653,7 @@ const loadMoreTracks = async () => {
 
 // 搜索歌曲
 const handleVirtualUpdate = (startIndex, endIndex) => {
+    if (loading.value) return;
     if (Math.max(startIndex, endIndex) >= filteredTracks.value.length - 1) {
         loadMoreTracks();
     }
@@ -664,8 +669,6 @@ const loadAllRemainingTracks = async (onAppend) => {
     isLoadingMore.value = true;
     try {
         const loadedHashes = new Set(tracks.value.map(track => track.hash));
-        let reachedEnd = false;
-        const normalPageSize = getNormalPageSize();
 
         const appendResult = (result) => {
             if (result.total !== undefined) {
@@ -684,26 +687,6 @@ const loadAllRemainingTracks = async (onAppend) => {
             }
         };
 
-        while (hasMore.value && tracks.value.length % maxPageSize !== 0) {
-            const curPage = currentPage.value;
-            const result = await fetchTracksPage(curPage, normalPageSize);
-            if (!result) break;
-
-            if (result.rawSongs.length === 0) {
-                hasMore.value = false;
-                return;
-            }
-
-            appendResult(result);
-            currentPage.value = curPage + 1;
-            reachedEnd = result.rawSongs.length < normalPageSize;
-            hasMore.value = !reachedEnd && tracks.value.length < totalCount.value;
-
-            if (!hasMore.value) {
-                return;
-            }
-        }
-
         let page = Math.floor(tracks.value.length / maxPageSize) + 1;
         while (hasMore.value) {
             const result = await fetchTracksPage(page, maxPageSize);
@@ -716,12 +699,12 @@ const loadAllRemainingTracks = async (onAppend) => {
 
             appendResult(result);
 
-            reachedEnd = result.rawSongs.length < maxPageSize;
+            const reachedEnd = result.rawSongs.length < maxPageSize;
             hasMore.value = !reachedEnd && tracks.value.length < totalCount.value;
             page++;
         }
 
-        currentPage.value = Math.floor(tracks.value.length / normalPageSize) + 1;
+        currentPage.value = Math.floor(tracks.value.length / getNormalPageSize()) + 1;
     } finally {
         isLoadingMore.value = false;
     }
@@ -1116,7 +1099,7 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 
 .detail-sliver-header {
     position: sticky;
-    z-index: 120;
+    z-index: 10;
     box-sizing: border-box;
     overflow: visible;
     align-items: flex-start;

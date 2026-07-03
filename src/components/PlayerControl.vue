@@ -15,6 +15,9 @@
             <div class="album-art" @click="toggleLyrics(currentSong.hash, currentTime)">
                 <img v-if="currentSong.img" :src="currentSong.img" alt="Album Art" />
                 <i v-else class="fas fa-music"></i>
+                <span class="album-art-hover-indicator" aria-hidden="true">
+                    <i class="fas fa-angle-double-up"></i>
+                </span>
             </div>
             <div class="song-info" @click="toggleLyrics(currentSong.hash, currentTime)">
                 <div class="song-title-row">

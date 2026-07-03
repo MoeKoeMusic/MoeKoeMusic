@@ -99,7 +99,7 @@
                         :class="{ active: source === 'mic' }"
                         :disabled="isBusy"
                         type="button"
-                        @click="source = 'mic'"
+                        @click="setSource('mic')"
                     >
                         <i class="fas fa-microphone"></i>
                         麦克风
@@ -109,21 +109,62 @@
                         :class="{ active: source === 'system' }"
                         :disabled="isBusy"
                         type="button"
-                        @click="source = 'system'"
+                        @click="setSource('system')"
                     >
                         <i class="fas fa-volume-up"></i>
                         系统音频
                     </button>
                 </div>
-                <label class="device-select" :class="{ hidden: source !== 'mic' }">
+                <div
+                    ref="deviceSelectRef"
+                    class="device-select"
+                    :class="{
+                        hidden: source !== 'mic',
+                        open: isDeviceMenuOpen,
+                        'open-above': isDeviceMenuOpenAbove,
+                        disabled: isBusy || !micDevices.length
+                    }"
+                >
                     <i class="fas fa-microphone-alt"></i>
-                    <select v-model="selectedMicId" :disabled="isBusy || !micDevices.length">
-                        <option value="">默认麦克风</option>
-                        <option v-for="device in micDevices" :key="device.deviceId" :value="device.deviceId">
-                            {{ device.label || '麦克风' }}
-                        </option>
-                    </select>
-                </label>
+                    <button
+                        class="device-trigger"
+                        type="button"
+                        :disabled="isBusy || !micDevices.length"
+                        :aria-expanded="isDeviceMenuOpen"
+                        aria-haspopup="listbox"
+                        @click="toggleDeviceMenu"
+                    >
+                        <span class="device-trigger-label">{{ selectedMicLabel }}</span>
+                        <i class="fas fa-chevron-down device-trigger-arrow"></i>
+                    </button>
+                    <transition name="device-menu">
+                        <div
+                            v-if="isDeviceMenuOpen"
+                            class="device-menu"
+                            :style="{ '--device-menu-max-height': `${deviceMenuMaxHeight}px` }"
+                            role="listbox"
+                        >
+                            <button
+                                class="device-option"
+                                :class="{ active: !selectedMicId }"
+                                type="button"
+                                @click="selectMic('')"
+                            >
+                                默认麦克风
+                            </button>
+                            <button
+                                v-for="device in micDevices"
+                                :key="device.deviceId"
+                                class="device-option"
+                                :class="{ active: selectedMicId === device.deviceId }"
+                                type="button"
+                                @click="selectMic(device.deviceId)"
+                            >
+                                {{ getMicDeviceLabel(device) }}
+                            </button>
+                        </div>
+                    </transition>
+                </div>
             </div>
 
             <div class="recognize-actions">
@@ -138,7 +179,7 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { recognizeAudio } from '@/utils/recognize';
 import PlaylistSelectModal from '@/components/PlaylistSelectModal.vue';
@@ -170,6 +211,10 @@ const playlistSelect = ref(null);
 const playlistSong = ref({});
 const micDevices = ref([]);
 const selectedMicId = ref('');
+const deviceSelectRef = ref(null);
+const isDeviceMenuOpen = ref(false);
+const isDeviceMenuOpenAbove = ref(false);
+const deviceMenuMaxHeight = ref(280);
 
 let recorder = null;
 let chunks = [];
@@ -182,6 +227,11 @@ let hasDragged = false;
 let ignoreClickUntil = 0;
 
 const isBusy = computed(() => status.value === 'recording' || status.value === 'recognizing');
+const selectedMicLabel = computed(() => {
+    if (!selectedMicId.value) return '默认麦克风';
+    const currentDevice = micDevices.value.find(device => device.deviceId === selectedMicId.value);
+    return currentDevice ? getMicDeviceLabel(currentDevice) : '默认麦克风';
+});
 
 const statusText = computed(() => {
     if (status.value === 'recording') return `正在聆听... ${seconds.value}s`;
@@ -196,6 +246,65 @@ const clearTimer = () => {
     if (!timer) return;
     clearInterval(timer);
     timer = null;
+};
+
+const getMicDeviceLabel = device => device.label || '麦克风';
+
+const closeDeviceMenu = () => {
+    isDeviceMenuOpen.value = false;
+};
+
+const updateDeviceMenuLayout = () => {
+    if (!deviceSelectRef.value) return;
+
+    const rect = deviceSelectRef.value.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const menuPadding = 16;
+    const menuOffset = 10;
+    const viewportGap = 20;
+    const optionHeight = 44;
+    const desiredHeight = Math.min(280, (micDevices.value.length + 1) * optionHeight + menuPadding);
+    const spaceBelow = viewportHeight - rect.bottom - viewportGap - menuOffset;
+    const spaceAbove = rect.top - viewportGap - menuOffset;
+
+    isDeviceMenuOpenAbove.value = spaceBelow < 180 && spaceAbove > spaceBelow;
+
+    const availableSpace = isDeviceMenuOpenAbove.value ? spaceAbove : spaceBelow;
+    deviceMenuMaxHeight.value = Math.max(120, Math.min(desiredHeight, availableSpace));
+};
+
+const toggleDeviceMenu = () => {
+    if (isBusy.value || !micDevices.value.length) return;
+
+    if (isDeviceMenuOpen.value) {
+        closeDeviceMenu();
+        return;
+    }
+
+    isDeviceMenuOpenAbove.value = false;
+    isDeviceMenuOpen.value = true;
+    void nextTick(updateDeviceMenuLayout);
+};
+
+const selectMic = (deviceId) => {
+    selectedMicId.value = deviceId;
+    closeDeviceMenu();
+};
+
+const setSource = (value) => {
+    source.value = value;
+    closeDeviceMenu();
+};
+
+const handleWindowPointerDown = (event) => {
+    const target = event.target;
+    if (target instanceof Node && deviceSelectRef.value?.contains(target)) return;
+    closeDeviceMenu();
+};
+
+const handleWindowResize = () => {
+    if (!isDeviceMenuOpen.value) return;
+    updateDeviceMenuLayout();
 };
 
 const loadMicDevices = async () => {
@@ -421,6 +530,7 @@ const startRecording = async () => {
         return;
     }
 
+    closeDeviceMenu();
     status.value = 'recording';
     matches.value = [];
     selectedIndex.value = 0;
@@ -471,6 +581,7 @@ const reset = () => {
     stopRecording();
     cancelDrag();
     clearSlideTimer();
+    closeDeviceMenu();
     isSliding.value = false;
     isResetting.value = false;
     dragOffset.value = 0;
@@ -526,9 +637,15 @@ onBeforeUnmount(() => {
     clearSlideTimer();
     if (resetFrame) cancelAnimationFrame(resetFrame);
     stopRecording(false);
+    window.removeEventListener('pointerdown', handleWindowPointerDown);
+    window.removeEventListener('resize', handleWindowResize);
 });
 
-onMounted(() => loadMicDevices());
+onMounted(() => {
+    void loadMicDevices();
+    window.addEventListener('pointerdown', handleWindowPointerDown);
+    window.addEventListener('resize', handleWindowResize);
+});
 </script>
 
 <style lang="scss" scoped>
@@ -559,6 +676,11 @@ onMounted(() => loadMicDevices());
     opacity: 0.9;
     filter: blur(0.2px);
     animation-timing-function: ease-in-out;
+
+    .dark & {
+        color: rgba(255, 255, 255, 0.22);
+        border-color: rgba(255, 255, 255, 0.22);
+    }
 }
 
 .decor-note {
@@ -626,6 +748,10 @@ onMounted(() => loadMicDevices());
         margin: 0;
         color: var(--text-color);
         font-size: 28px;
+
+        .dark & {
+            color: rgba(255, 255, 255, 0.88);
+        }
     }
 
     .status-text-wrap {
@@ -637,6 +763,10 @@ onMounted(() => loadMicDevices());
         color: #666;
         font-size: 15px;
         line-height: 22px;
+
+        .dark & {
+            color: rgba(255, 255, 255, 0.62);
+        }
     }
 }
 
@@ -700,17 +830,25 @@ onMounted(() => loadMicDevices());
 }
 
 .device-select {
-    display: inline-flex;
+    position: relative;
+    display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     min-width: min(320px, 86vw);
-    min-height: 38px;
+    min-height: 42px;
     padding: 0 14px;
+    box-sizing: border-box;
     border: 1px solid var(--border-color);
-    border-radius: 19px;
+    border-radius: 21px;
     color: var(--text-color);
     background: rgba(255, 255, 255, 0.72);
-    transition: opacity 0.18s ease, visibility 0.18s ease;
+    transition: opacity 0.18s ease, visibility 0.18s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+
+    .dark & {
+        color: rgba(255, 255, 255, 0.88);
+        border-color: rgba(255, 255, 255, 0.08);
+        background: rgba(32, 32, 32, 0.92);
+    }
 
     &.hidden {
         opacity: 0;
@@ -718,20 +856,147 @@ onMounted(() => loadMicDevices());
         pointer-events: none;
     }
 
+    &.open {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.12);
+    }
+
+    &.disabled {
+        opacity: 0.58;
+    }
+
     i {
         color: var(--color-primary);
         font-size: 14px;
     }
+}
 
-    select {
-        width: 100%;
-        min-width: 0;
-        border: none;
-        outline: none;
-        color: inherit;
-        background: transparent;
-        cursor: pointer;
+.device-trigger {
+    flex: 1;
+    min-width: 0;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0;
+    border: none;
+    color: inherit;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+
+    &:disabled {
+        cursor: not-allowed;
     }
+}
+
+.device-trigger-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.device-trigger-arrow {
+    flex: none;
+    color: rgba(0, 0, 0, 0.56);
+    font-size: 12px;
+    transition: transform 0.2s ease, color 0.2s ease;
+
+    .dark & {
+        color: rgba(255, 255, 255, 0.65);
+    }
+}
+
+.device-select.open .device-trigger-arrow {
+    color: var(--color-primary);
+    transform: rotate(180deg);
+}
+
+.device-menu {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 10px);
+    max-height: var(--device-menu-max-height, 280px);
+    display: grid;
+    gap: 6px;
+    padding: 8px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border: 1px solid rgba(var(--primary-color-rgb), 0.16);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 16px 34px rgba(18, 18, 18, 0.12);
+    backdrop-filter: blur(18px);
+    z-index: 5;
+
+    .dark & {
+        border-color: rgba(255, 255, 255, 0.08);
+        background: rgba(24, 24, 24, 0.98);
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.36);
+    }
+}
+
+.device-select.open-above .device-menu {
+    top: auto;
+    bottom: calc(100% + 10px);
+}
+
+.device-option {
+    width: 100%;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    border: none;
+    border-radius: 14px;
+    color: var(--text-color);
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: background 0.2s ease, color 0.2s ease;
+
+    .dark & {
+        color: rgba(255, 255, 255, 0.88);
+
+        &:hover,
+        &.active {
+            background: rgba(var(--primary-color-rgb), 0.18);
+        }
+    }
+
+    &:hover,
+    &.active {
+        color: var(--color-primary);
+        background: var(--color-primary-light);
+    }
+
+    &.active {
+        font-weight: 600;
+
+        .dark & {
+            background: rgba(var(--primary-color-rgb), 0.18);
+        }
+    }
+}
+
+.device-menu-enter-active,
+.device-menu-leave-active {
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.device-menu-enter-from,
+.device-menu-leave-to {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.98);
 }
 
 .source-button,
@@ -759,6 +1024,19 @@ onMounted(() => loadMicDevices());
     &:disabled {
         opacity: 0.5;
         cursor: not-allowed;
+    }
+}
+
+.source-button {
+    .dark & {
+        color: rgba(255, 255, 255, 0.88);
+        border-color: rgba(255, 255, 255, 0.08);
+        background: rgba(32, 32, 32, 0.9);
+
+        &:hover:not(:disabled),
+        &.active {
+            background: rgba(var(--primary-color-rgb), 0.2);
+        }
     }
 }
 
@@ -838,6 +1116,10 @@ onMounted(() => loadMicDevices());
         0 18px 36px rgba(0, 0, 0, 0.2),
         0 0 24px rgba(0, 0, 0, 0.12),
         0 1px 0 rgba(255, 255, 255, 0.12) inset;
+
+    .dark & {
+        background: #252525;
+    }
 
     img {
         width: 100%;
@@ -1053,6 +1335,10 @@ onMounted(() => loadMicDevices());
     inset: 0;
     z-index: 2;
     background: linear-gradient(180deg, rgba(0, 0, 0, 0.08) 25%, rgba(52, 21, 16, 0.82) 100%);
+
+    .dark & {
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.12) 24%, rgba(18, 18, 18, 0.88) 100%);
+    }
 }
 
 .hero-play {
@@ -1132,9 +1418,17 @@ onMounted(() => loadMicDevices());
         cursor: pointer;
         transition: 0.2s;
 
+        .dark & {
+            background: rgba(32, 32, 32, 0.9);
+        }
+
         &.active {
             background: rgba(0, 0, 0, 0.28);
             transform: scale(1.2);
+
+            .dark & {
+                background: rgba(255, 255, 255, 0.38);
+            }
         }
     }
 }
@@ -1267,41 +1561,6 @@ onMounted(() => loadMicDevices());
 
     to {
         transform: rotate(360deg) scale(var(--ring-scale));
-    }
-}
-
-:global(html.dark) {
-    .recognize-head p {
-        color: rgba(255, 255, 255, 0.62);
-    }
-
-    .source-button,
-    .device-select,
-    .recognize-actions button,
-    .result-dots button {
-        background: rgba(32, 32, 32, 0.9);
-    }
-
-    .result-dots button.active {
-        background: rgba(255, 255, 255, 0.38);
-    }
-
-    .recognize-actions button {
-        background: transparent;
-    }
-
-    .carousel-card {
-        background: #252525;
-    }
-
-    .hero-shade {
-        background: linear-gradient(180deg, rgba(0, 0, 0, 0.12) 24%, rgba(18, 18, 18, 0.88) 100%);
-    }
-
-    .decor-note,
-    .decor-ring {
-        color: rgba(255, 255, 255, 0.22);
-        border-color: rgba(255, 255, 255, 0.22);
     }
 }
 

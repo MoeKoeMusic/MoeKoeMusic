@@ -39,8 +39,6 @@
 
         <!-- 导航按钮 -->
         <i class="location-arrow fas fa-crosshairs" @click="scrollToItem" :title="t('dang-qian-bo-fang-ge-qu')"></i>
-        <i class="scroll-bottom-img fas fa-angle-double-up" @click="scrollToFirstItem"
-            :title="t('fan-hui-ding-bu')"></i>
 
         <!-- 歌曲列表 -->
         <div class="track-list-container">
@@ -148,12 +146,14 @@
         </div>
     </div>
     <PageScrollbar />
+    <BackToTop bottom="100px" right="12px" />
 </template>
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, computed, nextTick } from 'vue';
 import { RecycleScroller } from 'vue3-virtual-scroller';
 import PageScrollbar from '../components/PageScrollbar.vue';
+import BackToTop from '../components/BackToTop.vue';
 import CommonSkeleton from '../components/CommonSkeleton.vue';
 import { get } from '../utils/request';
 import { useRouter } from 'vue-router';
@@ -527,15 +527,6 @@ const scrollToItem = async () => {
     if (currentIndex !== -1) {
         await scrollToTrackIndex(currentIndex);
     }
-};
-
-// 滚动到顶部
-const scrollToFirstItem = () => {
-    recycleScrollerRef.value?.scrollToItem(0, { behavior: 'smooth' });
-    document.querySelector('.app-main-scroll')?.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-    });
 };
 
 const handleClickOutside = (event) => {
@@ -1176,16 +1167,6 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
     position: fixed;
     bottom: 168px;
     right: 14px;
-    z-index: 110;
-    cursor: pointer;
-    font-size: 20px;
-    color: $primary;
-}
-
-.scroll-bottom-img {
-    position: fixed;
-    bottom: 100px;
-    right: 10px;
     z-index: 110;
     cursor: pointer;
     font-size: 20px;

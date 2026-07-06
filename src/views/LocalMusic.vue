@@ -56,7 +56,6 @@
 
         <!-- 导航按钮 -->
         <i class="location-arrow fas fa-crosshairs" @click="scrollToItem" title="当前播放歌曲"></i>
-        <i class="scroll-bottom-img fas fa-angle-double-up" @click="scrollToFirstItem" title="返回顶部"></i>
 
         <!-- 歌曲列表 -->
         <div class="track-list-container" v-if="!loading">
@@ -178,6 +177,7 @@
         </div>
     </div>
     <PageScrollbar />
+    <BackToTop bottom="100px" right="12px" />
 </template>
 
 <script setup>
@@ -185,6 +185,7 @@ import { ref, shallowRef, onMounted, onBeforeUnmount, computed, toRaw, nextTick 
 import { RecycleScroller } from 'vue3-virtual-scroller';
 import CommonSkeleton from '../components/CommonSkeleton.vue';
 import PageScrollbar from '../components/PageScrollbar.vue';
+import BackToTop from '../components/BackToTop.vue';
 import { parseBlob } from 'music-metadata';
 import { useStickyDetailHeader } from '@/composables/useStickyDetailHeader';
 
@@ -783,15 +784,6 @@ const scrollToItem = async () => {
     if (currentIndex !== -1) {
         await scrollToTrackIndex(currentIndex);
     }
-};
-
-// 滚动到顶部
-const scrollToFirstItem = () => {
-    recycleScrollerRef.value?.scrollToItem(0, { behavior: 'smooth' });
-    document.querySelector('.app-main-scroll')?.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-    });
 };
 
 const handleClickOutside = (event) => {
@@ -1425,16 +1417,6 @@ const getSortIconClass = (field) => {
     position: fixed;
     bottom: 168px;
     right: 14px;
-    z-index: 110;
-    cursor: pointer;
-    font-size: 20px;
-    color: var(--primary-color);
-}
-
-.scroll-bottom-img {
-    position: fixed;
-    bottom: 100px;
-    right: 10px;
     z-index: 110;
     cursor: pointer;
     font-size: 20px;

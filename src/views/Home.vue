@@ -35,6 +35,7 @@
             </div>
         </div>
         <ContextMenu ref="contextMenuRef" :playerControl="playerControl" />
+        <BackToTop />
     </div>
 </template>
 
@@ -42,6 +43,7 @@
 import { ref, onMounted } from "vue";
 import { get } from '../utils/request';
 import ContextMenu from '../components/ContextMenu.vue';
+import BackToTop from '../components/BackToTop.vue';
 import CommonSkeleton from '../components/CommonSkeleton.vue';
 import HomeRecommendations from '../components/home/HomeRecommendations.vue';
 import { useRoute, useRouter } from 'vue-router';

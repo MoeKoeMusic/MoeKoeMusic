@@ -16,6 +16,8 @@
         <DiscoverNewAlbumContent v-else-if="activeDiscoverTab === 'newAlbum'" />
 
         <DiscoverNewSongContent v-else-if="activeDiscoverTab === 'newSong'" :player-control="props.playerControl" />
+
+        <BackToTop />
     </div>
 </template>
 
@@ -26,6 +28,7 @@ import DiscoverNewAlbumContent from '../components/discover/DiscoverNewAlbumCont
 import DiscoverNewSongContent from '../components/discover/DiscoverNewSongContent.vue';
 import DiscoverPlaylistContent from '../components/discover/DiscoverPlaylistContent.vue';
 import RankingContent from '../components/discover/RankingContent.vue';
+import BackToTop from '../components/BackToTop.vue';
 
 const route = useRoute();
 const router = useRouter();

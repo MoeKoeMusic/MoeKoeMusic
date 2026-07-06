@@ -177,12 +177,14 @@
             </transition-group>
         </div>
     </div>
+    <PageScrollbar />
 </template>
 
 <script setup>
 import { ref, shallowRef, onMounted, onBeforeUnmount, computed, toRaw, nextTick } from 'vue';
 import { RecycleScroller } from 'vue3-virtual-scroller';
 import CommonSkeleton from '../components/CommonSkeleton.vue';
+import PageScrollbar from '../components/PageScrollbar.vue';
 import { parseBlob } from 'music-metadata';
 import { useStickyDetailHeader } from '@/composables/useStickyDetailHeader';
 

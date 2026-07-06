@@ -231,6 +231,7 @@
         </div>
     </div>
     <PlaylistSelectModal ref="playlistSelect" :current-song="songs" />
+    <PageScrollbar />
 </template>
 
 <script setup>
@@ -239,6 +240,7 @@ import { RecycleScroller } from 'vue3-virtual-scroller';
 import CommonSkeleton from '../components/CommonSkeleton.vue';
 import ContextMenu from '../components/ContextMenu.vue';
 import PlaylistSelectModal from '../components/PlaylistSelectModal.vue';
+import PageScrollbar from '../components/PageScrollbar.vue';
 import { get } from '../utils/request';
 import { useRoute, useRouter } from 'vue-router';
 import { MoeAuthStore } from '../stores/store';

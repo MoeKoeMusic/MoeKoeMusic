@@ -147,11 +147,13 @@
             </transition-group>
         </div>
     </div>
+    <PageScrollbar />
 </template>
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, computed, nextTick } from 'vue';
 import { RecycleScroller } from 'vue3-virtual-scroller';
+import PageScrollbar from '../components/PageScrollbar.vue';
 import CommonSkeleton from '../components/CommonSkeleton.vue';
 import { get } from '../utils/request';
 import { useRouter } from 'vue-router';

@@ -1,138 +1,124 @@
 <template>
     <div class="recommended-search-page">
-        <section class="search-hero">
-            <div class="hero-copy">
-                <span class="hero-kicker">推荐搜索</span>
-                <h1>今天想听什么？</h1>
-                <div class="hero-stats">
-                    <span><strong>{{ isLoading ? '--' : boards.length }}</strong> 榜单</span>
-                    <span><strong>{{ isLoading ? '--' : hotKeywords.length }}</strong> 热词</span>
-                </div>
-            </div>
+        <div class="ambient" aria-hidden="true">
+            <span class="halo"></span>
+            <span class="orb orb-a"></span>
+            <span class="orb orb-b"></span>
+            <span class="orb orb-c"></span>
+            <i class="fas fa-music float-note note-a"></i>
+            <i class="fas fa-headphones float-note note-b"></i>
+            <i class="fas fa-compact-disc float-note note-c"></i>
+        </div>
 
-            <div class="search-dock">
-                <div ref="searchAreaRef" class="search-area">
-                    <form class="search-box" @submit.prevent="submitSearch(searchKeyword)">
-                        <i class="fas fa-search"></i>
-                        <input v-model.trim="searchKeyword" type="text" placeholder="搜索歌曲、歌手、专辑、歌单"
-                            @focus="handleSearchFocus" autofocus @keydown.down.prevent="highlightNextSuggestion"
-                            @keydown.up.prevent="highlightPrevSuggestion"
-                            @keydown.enter.prevent="submitSearch(searchKeyword, true)" />
-                        <button class="search-submit" type="submit">
-                            <span>搜索</span>
-                            <i class="fas fa-arrow-right"></i>
-                        </button>
-                    </form>
+        <section class="hero">
+            <h1 class="hero-title">今天想听<em>什么</em>？</h1>
+            <p class="hero-subtitle">搜索歌曲、歌手、专辑与歌单，或者从热搜榜单里找点灵感</p>
 
-                    <div v-if="showSuggestions" class="suggestion-dropdown">
-                        <div v-if="isSuggestLoading" class="suggestion-state">
-                            <i class="fas fa-spinner fa-spin"></i>
+            <div ref="searchAreaRef" class="query-area">
+                <form class="query-pill" @submit.prevent="submitSearch(searchKeyword)">
+                    <i class="fas fa-magnifying-glass query-icon"></i>
+                    <input v-model.trim="searchKeyword" type="text" placeholder="搜索歌曲、歌手、专辑、歌单"
+                        @focus="handleSearchFocus" autofocus @keydown.down.prevent="highlightNextSuggestion"
+                        @keydown.up.prevent="highlightPrevSuggestion"
+                        @keydown.enter.prevent="submitSearch(searchKeyword, true)" />
+                    <button v-if="searchKeyword" type="button" class="query-clear" title="清空"
+                        @mousedown.prevent="clearKeyword">
+                        <i class="fas fa-xmark"></i>
+                    </button>
+                    <button class="query-submit" type="submit">
+                        <span>搜索</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </form>
+
+                <transition name="suggest-pop">
+                    <div v-if="showSuggestions" class="suggest-panel">
+                        <div v-if="isSuggestLoading" class="suggest-state">
+                            <i class="fas fa-circle-notch fa-spin"></i>
                             正在获取搜索建议...
                         </div>
-                        <button v-for="(item, index) in suggestions" v-else :key="`${item.keyword}-${index}`"
-                            :class="index === activeSuggestionIndex ? 'suggestion-item active' : 'suggestion-item'"
-                            @mouseenter="activeSuggestionIndex = index"
-                            @mousedown.prevent="applySuggestion(item.keyword)">
-                            <span class="suggestion-icon">
-                                <i class="fas fa-search"></i>
-                            </span>
-                            <div class="suggestion-main">
-                                <span class="suggestion-keyword">{{ item.keyword }}</span>
-                                <span v-if="shouldShowReason(item)" class="suggestion-reason">{{ item.reason }}</span>
-                            </div>
-                            <i class="fas fa-arrow-right suggestion-arrow"></i>
-                        </button>
+                        <template v-else>
+                            <button v-for="(item, index) in suggestions" :key="`${item.keyword}-${index}`"
+                                :class="['suggest-item', { active: index === activeSuggestionIndex }]"
+                                @mouseenter="activeSuggestionIndex = index"
+                                @mousedown.prevent="applySuggestion(item.keyword)">
+                                <span class="suggest-ico"><i class="fas fa-magnifying-glass"></i></span>
+                                <span class="suggest-word">{{ item.keyword }}</span>
+                                <i class="fas fa-arrow-right suggest-go"></i>
+                            </button>
+                        </template>
                     </div>
-                </div>
+                </transition>
+            </div>
 
-                <div v-if="hotKeywords.length" class="quick-tags">
-                    <button v-for="item in hotKeywords" :key="item.keyword" class="quick-tag"
-                        @click="selectKeyword(item.keyword)">
-                        {{ item.keyword }}
-                    </button>
-                </div>
+            <div v-if="hotKeywords.length" class="hot-chips">
+                <span class="chips-label">
+                    <i class="fas fa-fire"></i>
+                    大家都在搜
+                </span>
+                <button v-for="(item, index) in hotKeywords" :key="`${item.keyword}-${index}`"
+                    :class="['hot-chip', { blazing: index < 3 }]" @click="selectKeyword(item.keyword)">
+                    <i v-if="index < 3" class="fas fa-fire"></i>
+                    <span>{{ item.keyword }}</span>
+                </button>
             </div>
         </section>
 
-        <div v-if="isLoading" class="status-card">
-            <i class="fas fa-spinner fa-spin"></i>
-            <span>正在加载热门搜索榜单...</span>
-        </div>
-
-        <div v-else-if="fixedBoard" class="boards-layout">
-            <article class="board-card fixed-board">
-                <div class="board-header">
-                    <div>
-                        <span class="board-label">热度最高</span>
-                        <h2>{{ fixedBoard.name }}</h2>
-                    </div>
-                    <span class="board-count">{{ fixedBoard.keywords.length }} 项</span>
+        <section class="trend-section">
+            <div v-if="isLoading" class="trend-skeleton">
+                <div class="sk-bar sk-title"></div>
+                <div class="sk-tabs">
+                    <span v-for="n in 4" :key="n" class="sk-bar sk-tab"></span>
                 </div>
-
-                <div class="rank-list feature-rank-list">
-                    <button v-for="(item, index) in fixedBoardKeywords"
-                        :key="`${fixedBoard.name}-${item.keyword}-${index}`" class="rank-item"
-                        @click="selectKeyword(item.keyword)">
-                        <span :class="index < 3 ? 'rank-index top' : 'rank-index'">{{ index + 1 }}</span>
-                        <div class="rank-info">
-                            <span class="rank-keyword">{{ item.keyword }}</span>
-                            <span v-if="shouldShowReason(item)" class="rank-meta">{{ item.reason }}</span>
-                        </div>
-                        <span v-if="index < 3" class="rank-badge">HOT</span>
-                        <i class="fas fa-angle-right rank-arrow"></i>
-                    </button>
+                <div class="sk-grid">
+                    <span v-for="n in 10" :key="n" class="sk-bar sk-row"></span>
                 </div>
-            </article>
-
-            <div class="switchable-board-panel">
-                <div v-if="switchableBoards.length" class="side-board-switcher">
-                    <button v-for="(board, boardIndex) in switchableBoards" :key="`${board.name}-${boardIndex}-tab`"
-                        :class="boardIndex === activeSideBoardIndex ? 'switcher-button active' : 'switcher-button'"
-                        @click="activeSideBoardIndex = boardIndex">
-                        <span>{{ board.name }}</span>
-                        <small>{{ board.keywords.length }}</small>
-                    </button>
-                </div>
-
-                <article v-if="activeBoard" class="board-card compact-board">
-                    <div class="board-header compact-header">
-                        <div>
-                            <span class="board-label">榜单切换</span>
-                            <h2>{{ activeBoard.name }}</h2>
-                        </div>
-                        <span class="board-count">{{ activeBoard.keywords.length }} 项</span>
-                    </div>
-
-                    <div class="rank-list">
-                        <button v-for="(item, index) in activeBoardKeywords"
-                            :key="`${activeBoard.name}-${item.keyword}-${index}`" class="rank-item compact-rank-item"
-                            @click="selectKeyword(item.keyword)">
-                            <span :class="index < 3 ? 'rank-index top' : 'rank-index'">{{ index + 1 }}</span>
-                            <div class="rank-info">
-                                <span class="rank-keyword">{{ item.keyword }}</span>
-                                <span v-if="shouldShowReason(item)" class="rank-meta">{{ item.reason }}</span>
-                            </div>
-                            <i class="fas fa-angle-right rank-arrow"></i>
-                        </button>
-                    </div>
-                </article>
-
-                <article v-else class="board-card compact-board empty-board">
-                    <div class="empty-state">
-                        <i class="fas fa-music"></i>
-                        <div>
-                            <h2>暂无可切换榜单</h2>
-                            <span>稍后再来看看</span>
-                        </div>
-                    </div>
-                </article>
             </div>
-        </div>
 
-        <div v-else class="status-card">
-            <i class="fas fa-music"></i>
-            <span>暂无可切换的榜单数据</span>
-        </div>
+            <template v-else-if="boards.length">
+                <div class="trend-head">
+                    <h2>
+                        <span class="trend-head-ico"><i class="fas fa-arrow-trend-up"></i></span>
+                        热搜榜单
+                    </h2>
+                    <span class="live-pill">
+                        <span class="live-dot"></span>
+                        实时更新
+                    </span>
+                </div>
+
+                <div class="trend-tabs">
+                    <button v-for="(board, index) in boards" :key="`${board.name}-${index}`"
+                        :class="['trend-tab', { active: index === activeBoardIndex }]"
+                        @click="activeBoardIndex = index">
+                        {{ board.name }}
+                    </button>
+                </div>
+
+                <div :key="activeBoard?.name ?? 'trend'" class="trend-grid">
+                    <button v-for="(item, index) in activeBoardKeywords" :key="`${item.keyword}-${index}`"
+                        class="trend-item" :style="{ '--i': index }" @click="selectKeyword(item.keyword)">
+                        <span :class="['trend-rank', medalClass(index)]">{{ index + 1 }}</span>
+                        <span class="trend-copy">
+                            <span class="trend-word">{{ item.keyword }}</span>
+                            <span v-if="shouldShowReason(item)" class="trend-note">{{ item.reason }}</span>
+                        </span>
+                        <i v-if="index < 3" class="fas fa-fire trend-flame"></i>
+                        <i class="fas fa-angles-right trend-go"></i>
+                    </button>
+                </div>
+            </template>
+
+            <div v-else class="trend-empty">
+                <span class="empty-ico"><i class="fas fa-headphones"></i></span>
+                <h3>暂无热搜数据</h3>
+                <p>网络似乎开小差了，稍后再试试</p>
+                <button class="retry-btn" @click="fetchHotBoards">
+                    <i class="fas fa-arrow-rotate-right"></i>
+                    重新加载
+                </button>
+            </div>
+        </section>
     </div>
 </template>
 
@@ -151,7 +137,7 @@ const normalizeKeyword = (value) => String(value ?? '').trim();
 const searchKeyword = ref(getRouteKeyword(route.query.q));
 const boards = ref([]);
 const isLoading = ref(false);
-const activeSideBoardIndex = ref(0);
+const activeBoardIndex = ref(0);
 const suggestions = ref([]);
 const isSuggestLoading = ref(false);
 const showSuggestions = ref(false);
@@ -191,20 +177,12 @@ const hotBoard = computed(() => {
     return boards.value.find((board) => board.name.includes('热搜')) || boards.value[0] || null;
 });
 
-const fixedBoard = computed(() => {
-    return boards.value[0] || null;
-});
-
 const hotKeywords = computed(() => {
-    return hotBoard.value?.keywords?.slice(0, 12) || [];
-});
-
-const switchableBoards = computed(() => {
-    return boards.value.slice(1);
+    return hotBoard.value?.keywords?.slice(0, 10) || [];
 });
 
 const activeBoard = computed(() => {
-    return switchableBoards.value[activeSideBoardIndex.value] || null;
+    return boards.value[activeBoardIndex.value] || null;
 });
 
 const normalizeSuggestions = (response) => {
@@ -286,8 +264,9 @@ const getBoardKeywords = (board, limit = null) => {
     return typeof limit === 'number' ? board.keywords.slice(0, limit) : board.keywords;
 };
 
-const fixedBoardKeywords = computed(() => getBoardKeywords(fixedBoard.value, 10));
 const activeBoardKeywords = computed(() => getBoardKeywords(activeBoard.value, 10));
+
+const medalClass = (index) => ['gold', 'silver', 'bronze'][index] || '';
 
 const shouldShowReason = (item) => {
     const reason = normalizeKeyword(item?.reason);
@@ -322,6 +301,12 @@ const selectKeyword = (keyword) => {
 };
 
 const applySuggestion = (keyword) => selectKeyword(keyword);
+
+const clearKeyword = () => {
+    searchKeyword.value = '';
+    setSuggestions([], false);
+    focusSearchInput();
+};
 
 const handleSearchFocus = () => {
     if (suggestions.value.length) {
@@ -375,9 +360,9 @@ watch(searchKeyword, (value) => {
     }, 220);
 });
 
-watch(switchableBoards, (value) => {
-    if (!value.length || activeSideBoardIndex.value >= value.length) {
-        activeSideBoardIndex.value = 0;
+watch(boards, (value) => {
+    if (!value.length || activeBoardIndex.value >= value.length) {
+        activeBoardIndex.value = 0;
     }
 }, { immediate: true });
 
@@ -395,706 +380,940 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 .recommended-search-page {
-    --page-panel: rgba(255, 255, 255, 0.88);
-    --page-panel-strong: #fff;
-    --page-border: rgba(24, 28, 37, 0.08);
-    --page-border-strong: rgba(var(--primary-color-rgb), 0.28);
-    --page-text: var(--text-color);
-    --page-muted: rgba(51, 51, 51, 0.62);
-    --page-subtle: rgba(51, 51, 51, 0.42);
-    --page-shadow: 0 18px 45px rgba(29, 35, 53, 0.1);
-    --page-shadow-strong: 0 22px 55px rgba(29, 35, 53, 0.14);
-    --accent-cyan: #38bfd2;
-    min-height: calc(100vh - 90px);
-    padding: 34px 24px 48px;
+    --rsp-violet: #8b5cf6;
+    --rsp-amber: #ff9f43;
+    --rsp-panel: rgba(255, 255, 255, 0.8);
+    --rsp-panel-solid: #fff;
+    --rsp-border: rgba(31, 24, 40, 0.08);
+    --rsp-border-strong: rgba(var(--primary-color-rgb), 0.4);
+    --rsp-text: var(--text-color);
+    --rsp-muted: rgba(51, 51, 51, 0.58);
+    --rsp-faint: rgba(51, 51, 51, 0.36);
+    --rsp-glow: rgba(var(--primary-color-rgb), 0.24);
+    --rsp-shadow-soft: 0 6px 16px rgba(63, 32, 72, 0.05);
+    --rsp-shadow-hover: 0 14px 30px rgba(var(--primary-color-rgb), 0.14);
     position: relative;
-    overflow-x: hidden;
-    color: var(--page-text);
-    letter-spacing: 0;
-    background: linear-gradient(180deg, #fbfcff 0%, #f7f8fb 46%, #f3f0f7 100%);
+    min-height: calc(100vh - 240px);
+    padding: 42px 24px 64px;
+    color: var(--rsp-text);
 
     .dark & {
-        --page-panel: rgba(25, 25, 30, 0.84);
-        --page-panel-strong: rgba(32, 32, 38, 0.96);
-        --page-border: rgba(255, 255, 255, 0.08);
-        --page-border-strong: rgba(var(--primary-color-rgb), 0.36);
-        --page-text: rgba(255, 255, 255, 0.9);
-        --page-muted: rgba(255, 255, 255, 0.62);
-        --page-subtle: rgba(255, 255, 255, 0.38);
-        --page-shadow: 0 18px 45px rgba(0, 0, 0, 0.24);
-        --page-shadow-strong: 0 22px 55px rgba(0, 0, 0, 0.34);
-        background: linear-gradient(180deg, #121214 0%, #18191d 56%, #121316 100%);
+        --rsp-panel: rgba(30, 30, 36, 0.76);
+        --rsp-panel-solid: #212127;
+        --rsp-border: rgba(255, 255, 255, 0.08);
+        --rsp-border-strong: rgba(var(--primary-color-rgb), 0.5);
+        --rsp-text: rgba(255, 255, 255, 0.92);
+        --rsp-muted: rgba(255, 255, 255, 0.58);
+        --rsp-faint: rgba(255, 255, 255, 0.34);
+        --rsp-shadow-soft: 0 6px 16px rgba(0, 0, 0, 0.22);
+        --rsp-shadow-hover: 0 14px 30px rgba(0, 0, 0, 0.36);
     }
 }
 
-.search-hero,
-.status-card,
-.boards-layout {
+/* ---------- 背景氛围 ---------- */
+.ambient {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.halo {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(940px, 100%);
+    height: 520px;
+    background: radial-gradient(closest-side, rgba(var(--primary-color-rgb), 0.14), transparent);
+
+    .dark & {
+        background: radial-gradient(closest-side, rgba(var(--primary-color-rgb), 0.13), transparent);
+    }
+}
+
+.orb {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.55;
+    animation: orb-drift 18s ease-in-out infinite alternate;
+
+    .dark & {
+        opacity: 0.3;
+    }
+}
+
+.orb-a {
+    top: 30px;
+    left: 3%;
+    width: min(440px, 56vw);
+    height: min(440px, 56vw);
+    background: radial-gradient(circle closest-side, rgba(var(--primary-color-rgb), 0.34), transparent);
+}
+
+.orb-b {
+    top: 120px;
+    right: 4%;
+    width: min(380px, 52vw);
+    height: min(380px, 52vw);
+    background: radial-gradient(circle closest-side, rgba(139, 92, 246, 0.26), transparent);
+    animation-delay: -6s;
+}
+
+.orb-c {
+    top: 56%;
+    left: 26%;
+    width: min(360px, 48vw);
+    height: min(360px, 48vw);
+    background: radial-gradient(circle closest-side, rgba(56, 191, 210, 0.22), transparent);
+    animation-delay: -12s;
+}
+
+@keyframes orb-drift {
+    from {
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+
+    to {
+        transform: translate3d(-28px, 22px, 0) scale(1.06);
+    }
+}
+
+.float-note {
+    position: absolute;
+    color: rgba(var(--primary-color-rgb), 0.3);
+    animation: note-bob 6s ease-in-out infinite;
+}
+
+.note-a {
+    top: 18%;
+    left: 11%;
+    font-size: 20px;
+    animation-delay: -1s;
+}
+
+.note-b {
+    top: 30%;
+    right: 13%;
+    font-size: 24px;
+    animation-delay: -3s;
+}
+
+.note-c {
+    top: 60%;
+    left: 7%;
+    font-size: 18px;
+    animation-delay: -5s;
+}
+
+@keyframes note-bob {
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(-8deg);
+    }
+
+    50% {
+        transform: translateY(-14px) rotate(8deg);
+    }
+}
+
+/* ---------- Hero ---------- */
+.hero {
     position: relative;
-    z-index: 1;
-}
-
-.search-hero {
-    width: min(1120px, 100%);
-    margin: 0 auto 22px;
-    display: grid;
-    grid-template-columns: minmax(240px, 0.72fr) minmax(0, 1.28fr);
-    gap: 22px;
-    align-items: end;
-    z-index: 3;
-}
-
-.hero-copy {
-    display: grid;
-    gap: 14px;
-    padding-bottom: 8px;
-
-    h1 {
-        margin: 0;
-        color: var(--page-text);
-        font-size: 38px;
-        font-weight: 800;
-        line-height: 1.12;
-        letter-spacing: 0;
-    }
-}
-
-.hero-kicker {
-    width: fit-content;
-    padding: 5px 10px;
-    border-left: 3px solid var(--primary-color);
-    border-radius: 4px;
-    background: rgba(var(--primary-color-rgb), 0.08);
-    color: var(--primary-color);
-    font-size: 13px;
-    font-weight: 800;
-    line-height: 1.2;
-}
-
-.hero-stats {
+    z-index: 2;
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-
-    span {
-        display: inline-flex;
-        align-items: baseline;
-        gap: 5px;
-        padding: 7px 10px;
-        border: 1px solid var(--page-border);
-        border-radius: 8px;
-        background: rgba(255, 255, 255, 0.5);
-        color: var(--page-muted);
-        font-size: 13px;
-        line-height: 1;
-
-        .dark & {
-            background: rgba(255, 255, 255, 0.04);
-        }
-    }
-
-    strong {
-        color: var(--page-text);
-        font-size: 18px;
-        font-variant-numeric: tabular-nums;
-    }
-}
-
-.search-dock,
-.board-card,
-.status-card {
-    border: 1px solid var(--page-border);
-    border-radius: 8px;
-    background: var(--page-panel);
-    box-shadow: var(--page-shadow);
-    backdrop-filter: blur(14px);
-}
-
-.search-dock {
-    min-width: 0;
-    padding: 16px;
-    box-shadow: var(--page-shadow-strong);
-}
-
-.search-box {
-    display: grid;
-    grid-template-columns: 38px minmax(0, 1fr) auto;
+    flex-direction: column;
     align-items: center;
-    gap: 10px;
-    min-height: 58px;
-    padding: 6px 6px 6px 14px;
-    border: 1px solid var(--page-border);
-    border-radius: 8px;
-    background: var(--page-panel-strong);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    width: min(820px, 100%);
+    margin: 0 auto;
+    text-align: center;
+}
+
+.hero-title {
+    margin: 18px 0 0;
+    font-size: clamp(32px, 5vw, 46px);
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: 1px;
+    color: var(--rsp-text);
+    animation: rise-in 0.55s 0.06s ease both;
+
+    em {
+        font-style: normal;
+        background: linear-gradient(120deg, var(--primary-color), var(--rsp-violet));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+}
+
+.hero-subtitle {
+    margin: 14px 0 0;
+    color: var(--rsp-muted);
+    font-size: 15px;
+    line-height: 1.6;
+    animation: rise-in 0.55s 0.12s ease both;
+}
+
+/* ---------- 搜索 ---------- */
+.query-area {
+    position: relative;
+    z-index: 20;
+    width: min(680px, 100%);
+    margin-top: 30px;
+    animation: rise-in 0.55s 0.18s ease both;
+}
+
+.query-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-sizing: border-box;
+    height: 62px;
+    padding: 7px 7px 7px 24px;
+    border: 1.5px solid var(--rsp-border);
+    border-radius: 999px;
+    background: var(--rsp-panel-solid);
+    box-shadow: 0 18px 44px rgba(63, 32, 72, 0.12);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+
+    .dark & {
+        box-shadow: 0 18px 44px rgba(0, 0, 0, 0.4);
+    }
 
     &:focus-within {
-        border-color: var(--page-border-strong);
-        box-shadow: 0 0 0 4px rgba(var(--primary-color-rgb), 0.1);
+        border-color: var(--rsp-border-strong);
+        box-shadow: 0 18px 44px var(--rsp-glow), 0 0 0 5px rgba(var(--primary-color-rgb), 0.12);
+        transform: translateY(-1px);
     }
 
-    > i {
+    .query-icon {
+        flex: 0 0 auto;
         color: var(--primary-color);
         font-size: 17px;
-        text-align: center;
     }
 
     input {
+        flex: 1;
         min-width: 0;
-        height: 44px;
+        height: 100%;
         border: none !important;
-        background: transparent !important;
-        color: var(--page-text);
-        font-size: 16px;
         outline: none;
+        background: transparent !important;
+        color: var(--rsp-text) !important;
+        font-size: 16px;
 
         &::placeholder {
-            color: var(--page-subtle);
+            color: var(--rsp-faint);
         }
     }
 }
 
-.search-submit {
-    min-width: 104px;
-    height: 46px;
-    border: none !important;
-    border-radius: 8px;
-    padding: 0 16px;
+.query-clear {
+    flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    background: linear-gradient(135deg, var(--primary-color), var(--accent-cyan)) !important;
-    color: #fff !important;
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--rsp-faint);
     font-size: 14px;
-    font-weight: 800;
     cursor: pointer;
-    box-shadow: 0 12px 24px rgba(var(--primary-color-rgb), 0.24);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
+
+    &:hover {
+        background: rgba(var(--primary-color-rgb), 0.1);
+        color: var(--primary-color);
+    }
+}
+
+.query-submit {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 48px;
+    padding: 0 26px;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(130deg, var(--primary-color) 20%, var(--rsp-violet) 120%);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    cursor: pointer;
+    box-shadow: 0 10px 24px var(--rsp-glow);
+    transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease;
 
     i {
-        font-size: 12px;
+        font-size: 13px;
+        transition: transform 0.22s ease;
     }
 
     &:hover {
         transform: translateY(-1px);
-        box-shadow: 0 16px 28px rgba(var(--primary-color-rgb), 0.28);
+        filter: brightness(1.06);
+        box-shadow: 0 14px 30px var(--rsp-glow);
+
+        i {
+            transform: translateX(3px);
+        }
     }
 
     &:active {
-        transform: translateY(0);
-        opacity: 0.9;
+        transform: translateY(0) scale(0.98);
     }
 }
 
-.search-area {
-    position: relative;
-    width: 100%;
-    z-index: 2;
-}
-
-.suggestion-dropdown {
+.suggest-panel {
     position: absolute;
-    top: calc(100% + 10px);
-    left: 0;
-    right: 0;
-    z-index: 30;
-    max-height: 330px;
+    top: calc(100% + 12px);
+    right: 10px;
+    left: 10px;
+    z-index: 40;
+    max-height: 340px;
     overflow-y: auto;
     padding: 8px;
-    border: 1px solid var(--page-border);
-    border-radius: 8px;
-    background: var(--page-panel-strong);
-    box-shadow: var(--page-shadow-strong);
-    backdrop-filter: blur(18px);
+    border: 1px solid var(--rsp-border);
+    border-radius: 22px;
+    background: var(--rsp-panel-solid);
+    box-shadow: 0 24px 56px rgba(63, 32, 72, 0.18);
+
+    .dark & {
+        box-shadow: 0 24px 56px rgba(0, 0, 0, 0.5);
+    }
 }
 
-.suggestion-state {
+.suggest-pop-enter-active,
+.suggest-pop-leave-active {
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.suggest-pop-enter-from,
+.suggest-pop-leave-to {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.99);
+}
+
+.suggest-state {
     display: flex;
     align-items: center;
     gap: 10px;
     padding: 14px 12px;
-    color: var(--page-muted);
+    color: var(--rsp-muted);
     font-size: 13px;
-}
-
-.suggestion-item {
-    width: 100%;
-    min-height: 48px;
-    display: grid;
-    grid-template-columns: 32px minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 10px;
-    border: 1px solid transparent !important;
-    border-radius: 8px;
-    background: transparent !important;
-    text-align: left;
-    cursor: pointer;
-    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
-
-    &:hover,
-    &.active {
-        transform: translateX(2px);
-        background: rgba(var(--primary-color-rgb), 0.08) !important;
-        border-color: var(--page-border-strong) !important;
-    }
-}
-
-.suggestion-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(var(--primary-color-rgb), 0.1);
-    color: var(--primary-color);
-    font-size: 12px;
-}
-
-.suggestion-main {
-    min-width: 0;
-    display: grid;
-    gap: 3px;
-}
-
-.suggestion-keyword {
-    overflow: hidden;
-    color: var(--page-text);
-    font-size: 14px;
-    font-weight: 700;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.suggestion-reason {
-    overflow: hidden;
-    color: var(--page-muted);
-    font-size: 12px;
-    line-height: 1.4;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.suggestion-arrow {
-    color: var(--page-subtle);
-    font-size: 12px;
-}
-
-.quick-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 12px;
-}
-
-.quick-tag {
-    max-width: 176px;
-    overflow: hidden;
-    border: 1px solid var(--page-border) !important;
-    border-radius: 8px;
-    padding: 8px 10px;
-    background: rgba(255, 255, 255, 0.58) !important;
-    color: var(--page-text) !important;
-    font-size: 13px;
-    font-weight: 700;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: transform 0.22s ease, background-color 0.22s ease, border-color 0.22s ease;
-
-    .dark & {
-        background: rgba(255, 255, 255, 0.05) !important;
-    }
-
-    &:hover {
-        transform: translateY(-1px);
-        background: rgba(var(--primary-color-rgb), 0.1) !important;
-        border-color: var(--page-border-strong) !important;
-        color: var(--primary-color) !important;
-    }
-}
-
-.status-card {
-    width: min(1120px, 100%);
-    min-height: 220px;
-    margin: 0 auto;
-    padding: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    color: var(--page-muted);
-    font-weight: 700;
 
     i {
         color: var(--primary-color);
     }
 }
 
-.boards-layout {
-    width: min(1120px, 100%);
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
-    gap: 18px;
-    align-items: start;
-}
-
-.switchable-board-panel {
-    min-width: 0;
-    display: grid;
-    gap: 14px;
-}
-
-.side-board-switcher {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-}
-
-.switcher-button {
-    min-width: 0;
-    min-height: 46px;
+.suggest-item {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    border: 1px solid var(--page-border) !important;
-    border-radius: 8px;
-    padding: 10px;
-    background: var(--page-panel) !important;
-    color: var(--page-text) !important;
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 1.35;
+    gap: 12px;
+    width: 100%;
+    min-height: 46px;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 14px;
+    background: transparent;
+    color: var(--rsp-text);
     text-align: left;
     cursor: pointer;
-    transition: transform 0.22s ease, border-color 0.22s ease, background-color 0.22s ease, color 0.22s ease;
+    transition: background-color 0.16s ease;
+}
+
+.suggest-ico {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    background: rgba(var(--primary-color-rgb), 0.1);
+    color: var(--primary-color);
+    font-size: 12px;
+    transition: background-color 0.16s ease, color 0.16s ease;
+}
+
+.suggest-word {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 14px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.suggest-go {
+    flex: 0 0 auto;
+    color: var(--primary-color);
+    font-size: 12px;
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.suggest-item.active {
+    background: rgba(var(--primary-color-rgb), 0.1);
+
+    .suggest-ico {
+        background: var(--primary-color);
+        color: #fff;
+    }
+
+    .suggest-go {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ---------- 热搜词 ---------- */
+.hot-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 26px;
+    animation: rise-in 0.55s 0.26s ease both;
+}
+
+.chips-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-right: 2px;
+    color: var(--rsp-muted);
+    font-size: 13px;
+    font-weight: 700;
+
+    i {
+        color: var(--rsp-amber);
+    }
+}
+
+.hot-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 190px;
+    padding: 8px 16px;
+    border: 1px solid var(--rsp-border);
+    border-radius: 999px;
+    background: var(--rsp-panel);
+    backdrop-filter: blur(8px);
+    color: var(--rsp-text);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 
     span {
-        min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
     }
 
-    small {
+    i {
         flex: 0 0 auto;
-        color: var(--page-subtle);
+        color: var(--rsp-amber);
         font-size: 12px;
-        font-variant-numeric: tabular-nums;
     }
 
     &:hover {
-        transform: translateY(-1px);
-        background: rgba(var(--primary-color-rgb), 0.1) !important;
-        border-color: var(--page-border-strong) !important;
+        transform: translateY(-2px);
+        border-color: var(--rsp-border-strong);
+        color: var(--primary-color);
+        box-shadow: 0 10px 22px rgba(var(--primary-color-rgb), 0.16);
     }
 
-    &.active {
-        background: rgba(var(--primary-color-rgb), 0.12) !important;
-        color: var(--primary-color) !important;
-        border-color: var(--page-border-strong) !important;
+    &.blazing {
+        border-color: rgba(255, 159, 67, 0.4);
+        background: linear-gradient(135deg, rgba(255, 159, 67, 0.12), rgba(var(--primary-color-rgb), 0.12));
 
-        small {
-            color: var(--primary-color);
+        &:hover {
+            border-color: var(--rsp-amber);
+            color: #e8590c;
+            box-shadow: 0 10px 22px rgba(255, 159, 67, 0.24);
+
+            .dark & {
+                color: #ffb066;
+            }
         }
     }
 }
 
-.board-card {
-    min-width: 0;
-    padding: 18px;
-    overflow: hidden;
+/* ---------- 热搜榜单 ---------- */
+.trend-section {
+    position: relative;
+    z-index: 1;
+    width: min(880px, 100%);
+    margin: 46px auto 0;
+    animation: rise-in 0.55s 0.34s ease both;
 }
 
-.fixed-board {
-    background:
-        linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(var(--primary-color-rgb), 0.06)),
-        var(--page-panel);
-
-    .dark & {
-        background:
-            linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(var(--primary-color-rgb), 0.12)),
-            var(--page-panel);
-    }
-}
-
-.compact-board {
-    background: var(--page-panel);
-}
-
-.board-header {
+.trend-head {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
-    gap: 14px;
-    margin-bottom: 14px;
+    gap: 12px;
+    margin-bottom: 16px;
 
     h2 {
-        margin: 4px 0 0;
-        color: var(--page-text);
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+        color: var(--rsp-text);
         font-size: 22px;
         font-weight: 800;
-        line-height: 1.18;
-        letter-spacing: 0;
     }
 }
 
-.compact-header h2 {
-    font-size: 18px;
-}
-
-.board-label {
-    display: inline-flex;
-    color: var(--page-muted);
-    font-size: 12px;
-    font-weight: 800;
-    line-height: 1;
-}
-
-.board-count {
-    flex: 0 0 auto;
-    padding: 6px 8px;
-    border: 1px solid var(--page-border);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.48);
-    color: var(--page-muted);
-    font-size: 12px;
-    font-weight: 800;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-
-    .dark & {
-        background: rgba(255, 255, 255, 0.05);
-    }
-}
-
-.rank-list {
-    display: grid;
-    gap: 8px;
-}
-
-.feature-rank-list {
-    gap: 9px;
-}
-
-.rank-item {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 38px minmax(0, 1fr) auto auto;
-    align-items: center;
-    gap: 12px;
-    min-height: 56px;
-    padding: 10px 12px;
-    border: 1px solid transparent !important;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.68) !important;
-    text-align: left;
-    cursor: pointer;
-    transition: transform 0.22s ease, border-color 0.22s ease, background-color 0.22s ease, box-shadow 0.22s ease;
-
-    .dark & {
-        background: rgba(255, 255, 255, 0.05) !important;
-    }
-
-    &:hover {
-        transform: translateY(-1px);
-        border-color: var(--page-border-strong) !important;
-        background: rgba(var(--primary-color-rgb), 0.08) !important;
-        box-shadow: 0 12px 24px rgba(29, 35, 53, 0.08);
-
-        .dark & {
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
-        }
-    }
-}
-
-.compact-rank-item {
-    grid-template-columns: 34px minmax(0, 1fr) auto;
-    min-height: 52px;
-}
-
-.rank-index {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
+.trend-head-ico {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: rgba(var(--primary-color-rgb), 0.1);
-    color: var(--primary-color);
-    font-weight: 800;
-    font-size: 13px;
-    font-variant-numeric: tabular-nums;
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+    background: linear-gradient(135deg, var(--primary-color), var(--rsp-violet));
+    color: #fff;
+    font-size: 14px;
+    box-shadow: 0 8px 18px var(--rsp-glow);
+}
 
-    &.top {
-        background: linear-gradient(135deg, var(--primary-color), var(--accent-cyan));
-        color: #fff;
-        box-shadow: 0 8px 18px rgba(var(--primary-color-rgb), 0.22);
+.live-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 12px;
+    border: 1px solid var(--rsp-border);
+    border-radius: 999px;
+    background: var(--rsp-panel);
+    color: var(--rsp-muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #2ecc71;
+    animation: live-pulse 2s ease-out infinite;
+}
+
+@keyframes live-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.5);
+    }
+
+    70% {
+        box-shadow: 0 0 0 6px rgba(46, 204, 113, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
     }
 }
 
-.rank-info {
+.trend-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.trend-tab {
+    flex: 0 0 auto;
+    padding: 9px 18px;
+    border: 1px solid var(--rsp-border);
+    border-radius: 999px;
+    background: var(--rsp-panel);
+    color: var(--rsp-muted);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover:not(.active) {
+        transform: translateY(-1px);
+        border-color: var(--rsp-border-strong);
+        color: var(--primary-color);
+    }
+
+    &.active {
+        border-color: transparent;
+        background: linear-gradient(130deg, var(--primary-color) 20%, var(--rsp-violet) 120%);
+        color: #fff;
+        box-shadow: 0 10px 22px var(--rsp-glow);
+    }
+}
+
+.trend-grid {
     display: grid;
-    gap: 3px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(5, auto);
+    grid-auto-flow: column;
+    gap: 10px 14px;
+}
+
+.trend-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 62px;
+    padding: 10px 16px 10px 12px;
+    border: 1px solid var(--rsp-border);
+    border-radius: 16px;
+    background: var(--rsp-panel);
+    backdrop-filter: blur(8px);
+    text-align: left;
+    cursor: pointer;
+    box-shadow: var(--rsp-shadow-soft);
+    transition: transform 0.22s ease, border-color 0.22s ease, background-color 0.22s ease, box-shadow 0.22s ease;
+    animation: rise-in 0.4s ease both;
+    animation-delay: calc(var(--i, 0) * 45ms);
+
+    &:hover {
+        transform: translateY(-2px);
+        border-color: var(--rsp-border-strong);
+        background: var(--rsp-panel-solid);
+        box-shadow: var(--rsp-shadow-hover);
+
+        .trend-word {
+            color: var(--primary-color);
+        }
+
+        .trend-go {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+}
+
+.trend-rank {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+    background: rgba(var(--primary-color-rgb), 0.08);
+    color: var(--rsp-muted);
+    font-size: 14px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+
+    &.gold {
+        background: linear-gradient(135deg, #ffd76f, #ff9f43);
+        color: #7a4a00;
+        box-shadow: 0 6px 14px rgba(255, 159, 67, 0.35);
+    }
+
+    &.silver {
+        background: linear-gradient(135deg, #f0f3f9, #bfc9da);
+        color: #4a5568;
+        box-shadow: 0 6px 14px rgba(148, 163, 184, 0.35);
+    }
+
+    &.bronze {
+        background: linear-gradient(135deg, #f3c3a2, #d98850);
+        color: #6b3c12;
+        box-shadow: 0 6px 14px rgba(217, 136, 80, 0.35);
+    }
+}
+
+.trend-copy {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
     min-width: 0;
 }
 
-.rank-keyword {
+.trend-word {
     overflow: hidden;
-    color: var(--page-text);
+    color: var(--rsp-text);
     font-size: 15px;
     font-weight: 700;
-    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: color 0.2s ease;
+}
+
+.trend-note {
+    overflow: hidden;
+    color: var(--rsp-muted);
+    font-size: 12px;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.rank-meta {
-    overflow: hidden;
-    color: var(--page-muted);
-    font-size: 12px;
-    line-height: 1.4;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+.trend-flame {
+    flex: 0 0 auto;
+    color: var(--rsp-amber);
+    font-size: 13px;
+    animation: flame-flicker 1.6s ease-in-out infinite;
 }
 
-.rank-badge {
-    padding: 5px 7px;
-    border: 1px solid rgba(240, 179, 66, 0.34);
-    border-radius: 6px;
-    background: rgba(240, 179, 66, 0.13);
-    color: #9a6500;
-    font-size: 11px;
-    font-weight: 900;
-    line-height: 1;
+@keyframes flame-flicker {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.18);
+        opacity: 0.8;
+    }
+}
+
+.trend-go {
+    flex: 0 0 auto;
+    color: var(--primary-color);
+    font-size: 12px;
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* ---------- 骨架屏 ---------- */
+.trend-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.sk-bar {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    background: rgba(63, 32, 72, 0.06);
 
     .dark & {
-        color: #ffd783;
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        transform: translateX(-100%);
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+        animation: shimmer 1.4s ease infinite;
+    }
+
+    .dark &::after {
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
     }
 }
 
-.rank-arrow {
-    color: var(--page-subtle);
-    font-size: 12px;
-}
-
-.empty-board {
-    min-height: 240px;
-    display: flex;
-    align-items: center;
-}
-
-.empty-state {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: var(--page-muted);
-
-    i {
-        width: 42px;
-        height: 42px;
-        border-radius: 8px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(var(--primary-color-rgb), 0.1);
-        color: var(--primary-color);
+@keyframes shimmer {
+    to {
+        transform: translateX(100%);
     }
+}
 
-    h2 {
-        margin: 0 0 4px;
-        color: var(--page-text);
+.sk-title {
+    width: 190px;
+    height: 32px;
+}
+
+.sk-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    .sk-tab {
+        width: 96px;
+        height: 38px;
+        border-radius: 999px;
+    }
+}
+
+.sk-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 14px;
+
+    .sk-row {
+        height: 62px;
+        border-radius: 16px;
+    }
+}
+
+/* ---------- 空状态 ---------- */
+.trend-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 52px 20px;
+    border: 1px dashed rgba(var(--primary-color-rgb), 0.3);
+    border-radius: 22px;
+    background: var(--rsp-panel);
+    text-align: center;
+
+    h3 {
+        margin: 0;
+        color: var(--rsp-text);
         font-size: 18px;
-        line-height: 1.2;
+        font-weight: 800;
     }
 
-    span {
+    p {
+        margin: 0;
+        color: var(--rsp-muted);
         font-size: 13px;
     }
 }
 
-@media (max-width: 980px) {
-    .search-hero,
-    .boards-layout {
-        grid-template-columns: 1fr;
+.empty-ico {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 68px;
+    height: 68px;
+    margin-bottom: 8px;
+    border-radius: 50%;
+    background: rgba(var(--primary-color-rgb), 0.1);
+    color: var(--primary-color);
+    font-size: 26px;
+}
+
+.retry-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    padding: 10px 22px;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(130deg, var(--primary-color) 20%, var(--rsp-violet) 120%);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 10px 22px var(--rsp-glow);
+    transition: transform 0.2s ease, filter 0.2s ease;
+
+    &:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.06);
+    }
+}
+
+/* ---------- 通用动画 ---------- */
+@keyframes rise-in {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
     }
 
-    .hero-copy {
-        padding-bottom: 0;
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spin-slow {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 860px) {
+    .trend-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: none;
+        grid-auto-flow: row;
+    }
+
+    .sk-grid {
+        grid-template-columns: 1fr;
     }
 }
 
 @media (max-width: 640px) {
     .recommended-search-page {
-        padding: 22px 12px 34px;
+        padding: 28px 14px 48px;
     }
 
-    .search-hero {
-        gap: 14px;
-        margin-bottom: 16px;
-    }
-
-    .hero-copy {
-        gap: 12px;
-    }
-
-    .hero-copy h1 {
-        font-size: 30px;
-    }
-
-    .search-dock,
-    .board-card,
-    .status-card {
-        padding: 12px;
-    }
-
-    .status-card {
-        min-height: 180px;
-    }
-
-    .search-box {
-        grid-template-columns: 32px minmax(0, 1fr);
-        gap: 8px;
-        padding: 8px;
-    }
-
-    .search-submit {
-        grid-column: 1 / -1;
-        width: 100%;
-    }
-
-    .quick-tags {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        padding-bottom: 2px;
-    }
-
-    .quick-tag {
-        flex: 0 0 auto;
-        max-width: 150px;
-    }
-
-    .side-board-switcher {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .board-header {
-        gap: 10px;
-    }
-
-    .rank-item {
-        grid-template-columns: 34px minmax(0, 1fr) auto;
-        gap: 10px;
-        padding: 10px;
-    }
-
-    .rank-badge {
+    .float-note {
         display: none;
+    }
+
+    .query-pill {
+        height: 56px;
+        padding-left: 18px;
+    }
+
+    .query-submit {
+        height: 44px;
+        padding: 0 16px;
+        letter-spacing: 0;
+
+        span {
+            display: none;
+        }
+
+        i {
+            font-size: 15px;
+        }
+    }
+
+    .hot-chips {
+        gap: 8px;
+
+        .chips-label {
+            width: 100%;
+            justify-content: center;
+            margin-right: 0;
+        }
+    }
+
+    .hot-chip {
+        max-width: 150px;
+        padding: 7px 13px;
+    }
+
+    .trend-section {
+        margin-top: 36px;
+    }
+
+    .trend-head h2 {
+        font-size: 19px;
+    }
+
+    .trend-item {
+        gap: 11px;
+        min-height: 56px;
+        padding: 9px 13px 9px 10px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
     }
 }
 </style>

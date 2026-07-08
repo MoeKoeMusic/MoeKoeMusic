@@ -255,10 +255,9 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
                 defaultValue: '',
                 defaultDisplayText: t('mo-ren-zi-ti'),
                 itemIcon: 'fas fa-font',
-                selectionTitle: t('zhuo-mian-ge-ci-zi-ti-she-zhi'),
+                selectionTitle: t('ge-ci-zi-ti-she-zhi'),
                 keepOpen: true,
-                available: 'client',
-                label: t('zhuo-mian-ge-ci-zi-ti-she-zhi'),
+                label: t('ge-ci-zi-ti-she-zhi'),
                 helpLink: 'https://music.moekoe.cn/guide/font-settings.html'
             },
             {

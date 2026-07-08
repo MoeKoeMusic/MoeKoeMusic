@@ -935,6 +935,7 @@ const getSortIconClass = (field) => {
 
 .detail-sliver-spacer {
     pointer-events: none;
+    background: #fff;
 }
 
 .cover-art {
@@ -1476,7 +1477,6 @@ const getSortIconClass = (field) => {
     background: #fff;
     border-bottom: 1px solid var(--primary-color);
     font-weight: bold;
-    border-radius: 5px 5px 0 0;
 }
 
 .track-checkbox-header {

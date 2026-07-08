@@ -157,10 +157,10 @@
             </div>
 
             <RecycleScroller v-else ref="recycleScrollerRef" :items="filteredTracks"
-                :item-size="viewMode === 'list' ? 50 : 70" class="track-list" key-field="hash" page-mode
+                :item-size="viewMode === 'list' ? 50 : 70" class="track-list" key-field="trackKey" page-mode
                 :buffer="400" :emit-update="true" @update="handleVirtualUpdate">
                         <template #default="{ item, index }">
-                        <div class="li" :key="item.hash"
+                        <div class="li" :key="item.trackKey"
                             :class="{ 'cover-view': viewMode === 'grid', 'selected': batchSelectionMode && selectedTracks.includes(index) }"
                             @click="batchSelectionMode ? selectTrack(index, $event) : playSong(item.hash, item.name, item.cover, item.author)"
                             @contextmenu.prevent="showContextMenu($event, item)">
@@ -437,6 +437,7 @@ const formatArtistTracks = (rawSongs) => {
     return rawSongs
         .filter(track => !!track.hash)
         .map(track => ({
+            trackKey: track.sort ?? track.hash ?? '',
             hash: track.hash || '',
             remark: track.remark || '',
             OriSongName: track.audio_name + ' - ' + track.author_name,
@@ -463,6 +464,7 @@ const formatAlbumTracks = (rawSongs) => {
             const mvHash = track.mvdata && track.mvdata.length > 0 ? track.mvdata[0].hash : '';
 
             return {
+                trackKey: track.sort ?? audioInfo.hash ?? '',
                 hash: audioInfo.hash || '',
                 remark: track.extra?.remark || '',
                 OriSongName: base.audio_name + ' - ' + base.author_name,
@@ -486,6 +488,7 @@ const formatPlaylistTracks = (rawSongs) => {
         .map(track => {
             const nameParts = track.name.split(' - ');
             return {
+                trackKey: track.sort ?? track.hash ?? '',
                 hash: track.hash || '',
                 remark: track.remark || '',
                 OriSongName: track.name,
@@ -1131,6 +1134,7 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 
 .detail-sliver-spacer {
     pointer-events: none;
+    background: #fff;
 }
 
 .cover-art {
@@ -1886,7 +1890,6 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
     background: #fff;
     border-bottom: 1px solid $primary;
     font-weight: bold;
-    border-radius: 5px 5px 0 0;
 }
 
 .track-checkbox-header {

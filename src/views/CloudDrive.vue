@@ -722,6 +722,7 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 
 .detail-sliver-spacer {
     pointer-events: none;
+    background: #fff;
 }
 
 .cover-art {
@@ -1255,7 +1256,6 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
     background: #fff;
     border-bottom: 1px solid $primary;
     font-weight: bold;
-    border-radius: 5px 5px 0 0;
 }
 
 .track-checkbox-header {

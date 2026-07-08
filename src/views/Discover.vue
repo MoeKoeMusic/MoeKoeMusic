@@ -81,7 +81,8 @@ const handleDiscoverTabClick = (tab) => {
 <style lang="scss" scoped>
 .discover-page {
     position: relative;
-    padding: 40px 20px 20px;
+    --discover-switch-top: 40px;
+    padding: var(--discover-switch-top) 20px 20px;
     --discover-switch-bg: #f3f4f7;
     --discover-switch-border: #e8eaf0;
     --discover-switch-text: #8b8f9c;
@@ -99,12 +100,12 @@ const handleDiscoverTabClick = (tab) => {
 
 .discover-floating-arona {
     position: absolute;
-    top: -75px;
+    top: calc(var(--discover-switch-top) + 1px);
     left: 50%;
     z-index: 26;
     width: clamp(128px, 20vw, 200px);
     height: auto;
-    transform: translateX(-50%);
+    transform: translate(-50%, -89%);
     pointer-events: none;
     user-select: none;
 }

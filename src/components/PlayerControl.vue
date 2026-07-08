@@ -234,7 +234,7 @@
                     <template v-if="lyricsData.length > 0">
                         <div v-if="lyricsDisplayMode === 'single'" id="lyrics" class="single-lyrics" :class="{ 'line-highlight-mode': lyricsHighlightMode === 'line' }"
                             :style="{ fontSize: lyricsFontSize, fontFamily: lyricsFontFamily }">
-                            <transition name="single-lyric-fade">
+                            <transition name="single-lyric-fade" appear>
                                 <div class="line-group" v-if="currentSingleLyricsLine" :key="singleLyricsLineIndex">
                                     <div class="line" @click="handleLyricsClick(singleLyricsLineIndex)" :class="{ click: lyricsFlag, 'line-highlight': isCurrentLyricsLine(singleLyricsLineIndex), [lyricsAlign]: true }">
                                         <span v-for="(charData, charIndex) in currentSingleLyricsLine.characters" :key="charIndex" class="char"

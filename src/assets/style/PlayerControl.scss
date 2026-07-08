@@ -55,28 +55,34 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
     .line-group {
         margin-bottom: 0;
     }
-}
 
-.single-lyric-fade-enter-active,
-.single-lyric-fade-leave-active {
-    transition: opacity 0.18s ease, transform 0.18s ease;
-}
+    .single-lyric-fade-enter-active,
+    .single-lyric-fade-leave-active {
+        transition: opacity 0.22s ease, transform 0.22s ease;
+    }
 
-.single-lyric-fade-leave-active {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-}
+    .single-lyric-fade-leave-active {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+    }
 
-.single-lyric-fade-enter-from {
-    opacity: 0;
-    transform: translateY(8px);
-}
+    .single-lyric-fade-enter-from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.98);
+    }
 
-.single-lyric-fade-leave-to {
-    opacity: 0;
-    transform: translateY(-8px);
+    .single-lyric-fade-enter-to,
+    .single-lyric-fade-leave-from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    .single-lyric-fade-leave-to {
+        opacity: 0;
+        transform: translateY(-14px) scale(0.98);
+    }
 }
 
 .line-group {

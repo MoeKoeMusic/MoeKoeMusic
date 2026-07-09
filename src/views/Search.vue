@@ -62,7 +62,7 @@
     <ContextMenu ref="contextMenuRef" :playerControl="playerControl" />
 </template>
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import ContextMenu from '../components/ContextMenu.vue';
 import CommonSkeleton from '../components/CommonSkeleton.vue';
 import SongSearchList from '../components/search/SongSearchList.vue';
@@ -119,13 +119,18 @@ const showContextMenu = (event, song) => {
     }
 };
 
-onMounted(() => {
-    syncSearchFromRoute(true);
-});
+// onMounted(() => {
+//     syncSearchFromRoute(true);
+// });
 
-useActivatedWatch(() => [route.name, route.query.q, route.query.type], () => {
-    syncSearchFromRoute();
-});
+// useActivatedWatch(() => [route.name, route.query.q, route.query.type], () => {
+//     syncSearchFromRoute();
+// });
+
+// 如果有更完美并且能正常使用的解决方案就改了吧
+watch(route, (newRoute) => {
+    syncSearchFromRoute(true);
+}, { immediate: true, deep: true });
 
 const syncSearchFromRoute = (force = false) => {
     if (route.name !== 'Search') return;

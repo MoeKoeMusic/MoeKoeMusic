@@ -62,7 +62,7 @@
     <ContextMenu ref="contextMenuRef" :playerControl="playerControl" />
 </template>
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onActivated, computed } from 'vue';
 import ContextMenu from '../components/ContextMenu.vue';
 import CommonSkeleton from '../components/CommonSkeleton.vue';
 import SongSearchList from '../components/search/SongSearchList.vue';
@@ -121,6 +121,10 @@ const showContextMenu = (event, song) => {
 
 onMounted(() => {
     syncSearchFromRoute(true);
+});
+
+onActivated(() => {
+    syncSearchFromRoute();
 });
 
 useActivatedWatch(() => [route.name, route.query.q, route.query.type], () => {

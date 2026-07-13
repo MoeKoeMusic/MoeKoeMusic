@@ -1276,7 +1276,9 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .description.expanded .description-popover {
-    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    max-height: min(50vh, 360px);
     padding: 10px 12px 34px;
     box-sizing: border-box;
     overflow: hidden;
@@ -1292,7 +1294,10 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .description.expanded .description-content {
+    min-height: 0;
     padding-bottom: 26px;
+    overflow-y: auto;
+    mask-image: linear-gradient(to bottom, transparent, #000 15px, #000 calc(100% - 10px), transparent);
 }
 
 .description-toggle {

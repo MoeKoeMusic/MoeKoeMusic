@@ -1124,7 +1124,7 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 
 .detail-sliver-header {
     position: sticky;
-    z-index: 10;
+    z-index: 116;
     box-sizing: border-box;
     overflow: visible;
     align-items: flex-start;

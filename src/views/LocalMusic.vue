@@ -924,7 +924,7 @@ const getSortIconClass = (field) => {
 
 .detail-sliver-header {
     position: sticky;
-    z-index: 10;
+    z-index: 116;
     box-sizing: border-box;
     overflow: visible;
     align-items: flex-start;

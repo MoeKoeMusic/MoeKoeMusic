@@ -535,6 +535,7 @@ const startHoverPolling = () => {
 }
 
 window.electron.ipcRenderer.on('lyrics-data', (_event, data) => {
+    isPlaying.value = data.playing
     if (data.currentTime < 1) {
         lyrics.value = processLyricsData(data.lyricsData);
     }

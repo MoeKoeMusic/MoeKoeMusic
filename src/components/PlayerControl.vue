@@ -473,6 +473,7 @@ const updateCurrentTime = throttle(() => {
                     const lyricsPayload = hasLyricsData ? JSON.parse(JSON.stringify(lyricsData.value)) : [];
                     window.electron.ipcRenderer.send('lyrics-data', {
                         currentTime: audio.currentTime,
+                        playing: playing.value,
                         lyricsData: lyricsPayload,
                         currentSongHash: currentSong.value?.hash || '',
                         currentLyric: currentLine
@@ -481,6 +482,7 @@ const updateCurrentTime = throttle(() => {
                     // 如果序列化失败，只发送必要的数据
                     window.electron.ipcRenderer.send('lyrics-data', {
                         currentTime: audio.currentTime,
+                        playing: playing.value,
                         lyricsData: [],
                         currentSongHash: currentSong.value?.hash || '',
                         currentLyric: currentLine

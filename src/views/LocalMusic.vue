@@ -109,9 +109,9 @@
             </div>
 
             <RecycleScroller ref="recycleScrollerRef" :items="filteredTracks" :item-size="listMode === 'list' ? 50 : 70"
-                class="track-list" key-field="name" page-mode :buffer="400" v-if="musicFiles.length > 0">
+                class="track-list" key-field="cacheKey" page-mode :buffer="400" v-if="musicFiles.length > 0">
                 <template #default="{ item, index }">
-                    <div class="li" :key="item.name"
+                    <div class="li" :key="item.cacheKey"
                         :class="{ 'cover-view': listMode === 'grid', 'selected': batchSelectionMode && selectedTracks.includes(index) }"
                         @click="batchSelectionMode ? selectTrack(index, $event) : playSong(item)">
 
@@ -124,7 +124,7 @@
 
                         <!-- 网格模式封面 -->
                         <div class="track-cover" v-if="listMode === 'grid'">
-                            <img :src="item.cover || './assets/images/ico.png'" alt="Cover">
+                            <img :src="item.cover || DEFAULT_COVER" alt="Cover" @error="handleCoverError(item, $event)">
                             <div class="track-cover-overlay"
                                 :class="{ 'playing': props.playerControl?.currentSong.name == item.name }">
                                 <i
@@ -152,8 +152,8 @@
             <!-- 空状态 -->
             <div v-if="musicFiles.length === 0 && currentFolder" class="empty-state">
                 <img src="/assets/images/empty1.png">
-                <p>该文件夹中没有找到音乐文件</p>
-                <p class="hint">支持的格式: MP3, FLAC, WAV, AAC, OGG, M4A</p>
+                <p>{{ hasMusicCache ? '该文件夹中没有找到音乐文件' : '该文件夹尚未建立本地音乐缓存' }}</p>
+                <p class="hint">{{ hasMusicCache ? '支持的格式: MP3, FLAC, WAV, AAC, OGG, M4A' : '点击刷新按钮扫描音乐文件' }}</p>
             </div>
 
             <!-- 欢迎状态 -->
@@ -167,7 +167,7 @@
         <!-- 加载状态 -->
         <div v-if="loading" class="loading-state">
             <div class="loading-spinner"></div>
-            <p>正在扫描音乐文件...</p>
+            <p>正在加载本地音乐...</p>
         </div>
 
         <div class="note-container">
@@ -196,12 +196,14 @@ const props = defineProps({
 
 // 通用状态
 const currentFolder = shallowRef(null);
+const currentFolderId = ref('');
 const musicFiles = ref([]);
 const filteredTracks = ref([]);
 const searchQuery = ref('');
 const recycleScrollerRef = ref(null);
 const loading = ref(false);
 const refreshing = ref(false);
+const hasMusicCache = ref(false);
 const flyingNotes = ref([]);
 const folderHistory = shallowRef([]);
 const isFolderHistoryVisible = ref(false);
@@ -222,14 +224,19 @@ const listMode = ref(localStorage.getItem('localMusicListMode') || 'list');
 
 // 支持的音乐文件格式
 const supportedFormats = ['.mp3', '.flac', '.wav', '.aac', '.ogg', '.m4a', '.wma'];
+const DEFAULT_COVER = './assets/images/ico.png';
 
 // IndexedDB 相关
 const DB_NAME = 'LocalMusicDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_NAME = 'folderHandles';
+const TRACK_STORE_NAME = 'musicTracks';
+const TRACK_FOLDER_INDEX = 'folderId';
 const LAST_FOLDER_ID = 'lastSelectedFolder';
 const FOLDER_HISTORY_ID = 'folderHistory';
+const MUSIC_CACHE_KEY_PREFIX = 'musicCache:';
 const MAX_FOLDER_HISTORY = 10;
+const coverUrls = new Map();
 
 // 判断是否全选
 const isAllSelected = computed(() => {
@@ -256,6 +263,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
     document.removeEventListener('click', handleClickOutside);
+    releaseCoverUrls();
 });
 
 // 初始化 IndexedDB
@@ -264,12 +272,20 @@ const initDB = () => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
 
         request.onerror = () => reject(request.error);
-        request.onsuccess = () => resolve(request.result);
+        request.onsuccess = () => {
+            const db = request.result;
+            db.onversionchange = () => db.close();
+            resolve(db);
+        };
 
         request.onupgradeneeded = (event) => {
             const db = event.target.result;
             if (!db.objectStoreNames.contains(STORE_NAME)) {
                 db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+            }
+            if (!db.objectStoreNames.contains(TRACK_STORE_NAME)) {
+                const trackStore = db.createObjectStore(TRACK_STORE_NAME, { keyPath: 'cacheKey' });
+                trackStore.createIndex(TRACK_FOLDER_INDEX, 'folderId', { unique: false });
             }
         };
     });
@@ -281,6 +297,156 @@ const getStoreItem = (store, key) => {
         request.onsuccess = () => resolve(request.result);
         request.onerror = () => reject(request.error);
     });
+};
+
+const waitForTransaction = (transaction) => {
+    return new Promise((resolve, reject) => {
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () => reject(transaction.error);
+        transaction.onabort = () => reject(transaction.error);
+    });
+};
+
+const getMusicCacheRecords = async (folderId) => {
+    if (!folderId) return [];
+    const db = await initDB();
+    const transaction = db.transaction([TRACK_STORE_NAME], 'readonly');
+    const store = transaction.objectStore(TRACK_STORE_NAME);
+    return new Promise((resolve, reject) => {
+        const request = store.index(TRACK_FOLDER_INDEX).getAll(folderId);
+        request.onsuccess = () => resolve(request.result || []);
+        request.onerror = () => reject(request.error);
+    });
+};
+
+const getMusicCacheInfo = async (folderId) => {
+    if (!folderId) return null;
+    const db = await initDB();
+    const transaction = db.transaction([STORE_NAME], 'readonly');
+    return getStoreItem(transaction.objectStore(STORE_NAME), `${MUSIC_CACHE_KEY_PREFIX}${folderId}`);
+};
+
+const releaseCoverUrls = () => {
+    coverUrls.forEach(url => URL.revokeObjectURL(url));
+    coverUrls.clear();
+};
+
+const createRuntimeTrack = (track) => {
+    let cover = DEFAULT_COVER;
+    if (track.coverBlob instanceof Blob && track.coverBlob.size > 0) {
+        cover = URL.createObjectURL(track.coverBlob);
+        coverUrls.set(track.cacheKey, cover);
+    }
+
+    return {
+        ...track,
+        handle: toRaw(track.handle),
+        filesize: formatFileSize(track.size),
+        cover
+    };
+};
+
+const sortMusicFiles = (files) => {
+    files.sort((a, b) => {
+        const artistCompare = a.author.localeCompare(b.author);
+        if (artistCompare !== 0) return artistCompare;
+        return a.displayName.localeCompare(b.displayName);
+    });
+    return files;
+};
+
+const applyMusicFiles = (tracks) => {
+    releaseCoverUrls();
+    const files = sortMusicFiles(tracks.map(createRuntimeTrack));
+    musicFiles.value = files;
+    filteredTracks.value = files;
+};
+
+const loadMusicCache = async (folderId) => {
+    const cacheInfo = await getMusicCacheInfo(folderId);
+    hasMusicCache.value = Boolean(cacheInfo);
+    if (!cacheInfo) {
+        applyMusicFiles([]);
+        return false;
+    }
+
+    applyMusicFiles(await getMusicCacheRecords(folderId));
+    return true;
+};
+
+const saveMusicCache = async (folderId, tracks) => {
+    const cachedTracks = await getMusicCacheRecords(folderId);
+    const db = await initDB();
+    const transaction = db.transaction([STORE_NAME, TRACK_STORE_NAME], 'readwrite');
+    const folderStore = transaction.objectStore(STORE_NAME);
+    const trackStore = transaction.objectStore(TRACK_STORE_NAME);
+
+    cachedTracks.forEach(track => trackStore.delete(track.cacheKey));
+    tracks.forEach(track => trackStore.put({
+        ...track,
+        handle: toRaw(track.handle)
+    }));
+    folderStore.put({
+        id: `${MUSIC_CACHE_KEY_PREFIX}${folderId}`,
+        folderId,
+        trackCount: tracks.length,
+        timestamp: Date.now()
+    });
+
+    await waitForTransaction(transaction);
+    hasMusicCache.value = true;
+};
+
+const deleteMusicCache = async (folderId) => {
+    if (!folderId) return;
+    const cachedTracks = await getMusicCacheRecords(folderId);
+    const db = await initDB();
+    const transaction = db.transaction([STORE_NAME, TRACK_STORE_NAME], 'readwrite');
+    const folderStore = transaction.objectStore(STORE_NAME);
+    const trackStore = transaction.objectStore(TRACK_STORE_NAME);
+
+    cachedTracks.forEach(track => trackStore.delete(track.cacheKey));
+    folderStore.delete(`${MUSIC_CACHE_KEY_PREFIX}${folderId}`);
+    await waitForTransaction(transaction);
+};
+
+const markCoverCacheStale = async (track) => {
+    try {
+        const cacheTrack = { ...toRaw(track) };
+        delete cacheTrack.cover;
+        delete cacheTrack.file;
+        delete cacheTrack.filesize;
+        const db = await initDB();
+        const transaction = db.transaction([TRACK_STORE_NAME], 'readwrite');
+        transaction.objectStore(TRACK_STORE_NAME).put({
+            ...cacheTrack,
+            handle: toRaw(track.handle),
+            coverBlob: null,
+            coverState: 'stale'
+        });
+        await waitForTransaction(transaction);
+    } catch (error) {
+        console.error('更新封面缓存状态失败:', error);
+    }
+};
+
+const handleCoverError = (track, event) => {
+    const coverUrl = coverUrls.get(track.cacheKey);
+    const defaultCoverUrl = new URL(DEFAULT_COVER, window.location.href).href;
+    if (!coverUrl && event.currentTarget.src === defaultCoverUrl) return;
+
+    if (coverUrl) {
+        URL.revokeObjectURL(coverUrl);
+        coverUrls.delete(track.cacheKey);
+    }
+    event.currentTarget.src = DEFAULT_COVER;
+    track.cover = DEFAULT_COVER;
+
+    if (track.coverState === 'ready') {
+        track.coverState = 'stale';
+        track.coverBlob = null;
+        markCoverCacheStale(track);
+    }
 };
 
 const normalizeFolder = (folder) => {
@@ -303,7 +469,10 @@ const findSameFolderIndex = async (folders, handle) => {
     for (let i = 0; i < folders.length; i++) {
         const folderHandle = toRaw(folders[i].handle);
         if (!folderHandle) continue;
-        if (typeof folderHandle.isSameEntry === 'function' && await folderHandle.isSameEntry(rawHandle)) return i;
+        if (typeof folderHandle.isSameEntry === 'function') {
+            if (await folderHandle.isSameEntry(rawHandle)) return i;
+            continue;
+        }
         if (folderHandle.name === rawHandle.name) return i;
     }
     return -1;
@@ -344,8 +513,10 @@ const saveFolderHandle = async (handle) => {
         folderHistory.value = nextFolders;
 
         console.log('文件夹句柄已保存');
+        return nextFolder;
     } catch (error) {
         console.error('保存文件夹句柄失败:', error);
+        return null;
     }
 };
 
@@ -447,23 +618,12 @@ const loadLastFolder = async () => {
         await loadFolderHistory();
         const savedHandle = await loadFolderHandle();
         if (savedHandle) {
-            // 验证句柄是否仍然有效
-            const permission = await savedHandle.queryPermission({ mode: 'read' });
-            if (permission === 'granted') {
-                currentFolder.value = savedHandle;
-                await saveFolderHandle(savedHandle);
-                await scanMusicFiles(savedHandle);
-                console.log('已自动加载上次选择的文件夹:', savedHandle.name);
-            } else {
-                // 请求权限
-                const newPermission = await savedHandle.requestPermission({ mode: 'read' });
-                if (newPermission === 'granted') {
-                    currentFolder.value = savedHandle;
-                    await saveFolderHandle(savedHandle);
-                    await scanMusicFiles(savedHandle);
-                    console.log('已重新获取权限并加载文件夹:', savedHandle.name);
-                }
-            }
+            currentFolder.value = savedHandle;
+            const folderIndex = await findSameFolderIndex(folderHistory.value, savedHandle);
+            const folder = folderHistory.value[folderIndex] || await saveFolderHandle(savedHandle);
+            currentFolderId.value = folder?.id || '';
+            await loadMusicCache(currentFolderId.value);
+            console.log('已加载上次选择的文件夹缓存:', savedHandle.name);
         }
     } catch (error) {
         console.error('自动加载文件夹失败:', error);
@@ -482,19 +642,10 @@ const switchFolder = async (folder) => {
         const handle = toRaw(folder.handle);
         loading.value = true;
         isFolderHistoryVisible.value = false;
-        const permission = await handle.queryPermission({ mode: 'read' });
-        const nextPermission = permission === 'granted'
-            ? permission
-            : await handle.requestPermission({ mode: 'read' });
-
-        if (nextPermission !== 'granted') {
-            window.$modal?.alert('没有该文件夹的读取权限，请重新授权');
-            return;
-        }
-
         currentFolder.value = handle;
-        await saveFolderHandle(handle);
-        await scanMusicFiles(handle);
+        const savedFolder = await saveFolderHandle(handle);
+        currentFolderId.value = savedFolder?.id || folder.id;
+        await loadMusicCache(currentFolderId.value);
         console.log('已切换文件夹:', folder.name);
     } catch (error) {
         console.error('切换文件夹失败:', error);
@@ -507,6 +658,7 @@ const removeFolderHistory = async (folderId) => {
     const folders = normalizeFolderHistory(folderHistory.value.filter(folder => folder.id !== folderId));
     await saveFolderHistory(folders);
     await saveLastFolderHandle(folders[0]?.handle || null);
+    await deleteMusicCache(folderId);
     if (folders.length === 0) {
         isFolderHistoryVisible.value = false;
     }
@@ -522,10 +674,13 @@ const selectFolder = async () => {
         currentFolder.value = dirHandle;
 
         // 保存句柄到 IndexedDB
-        await saveFolderHandle(dirHandle);
+        const folder = await saveFolderHandle(dirHandle);
+        currentFolderId.value = folder?.id || '';
 
-        // 扫描音乐文件
-        await scanMusicFiles(dirHandle);
+        const cacheLoaded = await loadMusicCache(currentFolderId.value);
+        if (!cacheLoaded) {
+            await scanMusicFiles(dirHandle, currentFolderId.value);
+        }
 
         console.log(`已选择文件夹: ${dirHandle.name}`);
     } catch (error) {
@@ -543,7 +698,21 @@ const refreshFolder = async () => {
 
     try {
         refreshing.value = true;
-        await scanMusicFiles(currentFolder.value);
+        const handle = toRaw(currentFolder.value);
+        const permission = await handle.queryPermission({ mode: 'read' });
+        const nextPermission = permission === 'granted'
+            ? permission
+            : await handle.requestPermission({ mode: 'read' });
+        if (nextPermission !== 'granted') {
+            window.$modal?.alert('没有该文件夹的读取权限，请重新授权');
+            return;
+        }
+
+        if (!currentFolderId.value) {
+            const folder = await saveFolderHandle(handle);
+            currentFolderId.value = folder?.id || '';
+        }
+        await scanMusicFiles(handle, currentFolderId.value);
         console.log('刷新完成');
     } catch (error) {
         console.error('刷新失败:', error);
@@ -558,13 +727,12 @@ const readAudioMetadata = async (file) => {
     try {
         const metadata = await parseBlob(file);
 
-        let coverUrl = './assets/images/ico.png';
+        let coverBlob = null;
 
         // 提取封面图片
         if (metadata.common.picture && metadata.common.picture.length > 0) {
             const picture = metadata.common.picture[0];
-            const blob = new Blob([picture.data], { type: picture.format });
-            coverUrl = URL.createObjectURL(blob);
+            coverBlob = new Blob([picture.data], { type: picture.format });
         }
 
         return {
@@ -577,7 +745,8 @@ const readAudioMetadata = async (file) => {
             duration: metadata.format.duration || 0,
             bitrate: metadata.format.bitrate || null,
             sampleRate: metadata.format.sampleRate || null,
-            cover: coverUrl
+            coverBlob,
+            coverState: coverBlob ? 'ready' : 'none'
         };
     } catch (error) {
         console.warn('parseBlob读取失败，跳过该歌曲:', error);
@@ -586,73 +755,95 @@ const readAudioMetadata = async (file) => {
 };
 
 // 递归扫描目录
-const scanDirectory = async (dirHandle, files = []) => {
+const scanDirectory = async (dirHandle, folderId, cachedTracks, files = [], parentPath = '') => {
     try {
         for await (const entry of dirHandle.values()) {
             if (entry.kind === 'file') {
+                const extension = '.' + getFileExtension(entry.name).toLowerCase();
+                if (!supportedFormats.includes(extension)) continue;
+
                 const file = await entry.getFile();
-                const extension = '.' + getFileExtension(file.name).toLowerCase();
+                const relativePath = parentPath ? `${parentPath}/${file.name}` : file.name;
+                const cacheKey = `${folderId}:${relativePath}`;
+                const cachedTrack = cachedTracks.get(cacheKey);
+                const canReuseCache = cachedTrack
+                    && cachedTrack.size === file.size
+                    && cachedTrack.lastModified === file.lastModified
+                    && cachedTrack.coverState !== 'stale';
 
-                if (supportedFormats.includes(extension)) {
-                    // 读取音频元数据
-                    const metadata = await readAudioMetadata(file);
-
-                    if (metadata === null) {
-                        console.log(`跳过无法解析的歌曲: ${file.name}`);
-                        continue;
-                    }
-
+                if (canReuseCache) {
                     files.push({
-                        name: file.name,
-                        displayName: metadata.title,
-                        author: metadata.artist,
-                        album: metadata.album,
-                        year: metadata.year,
-                        genre: metadata.genre,
-                        track: metadata.track,
-                        size: file.size,
-                        filesize: formatFileSize(file.size),
-                        type: file.type,
-                        file: file,
+                        ...cachedTrack,
                         handle: entry,
-                        duration: metadata.duration,
-                        timelen: metadata.duration * 1000, // 转换为毫秒
-                        bitrate: metadata.bitrate,
-                        sampleRate: metadata.sampleRate,
-                        cover: metadata.cover,
-                        qualityInfo: getQualityInfo(extension, metadata.bitrate, metadata.sampleRate)
+                        type: file.type || cachedTrack.type
                     });
+                    continue;
                 }
+
+                // 读取音频元数据
+                const metadata = await readAudioMetadata(file);
+
+                if (metadata === null) {
+                    console.log(`跳过无法解析的歌曲: ${file.name}`);
+                    continue;
+                }
+
+                files.push({
+                    cacheKey,
+                    folderId,
+                    relativePath,
+                    hash: cachedTrack?.hash || `local_${cacheKey}`,
+                    name: file.name,
+                    displayName: metadata.title,
+                    author: metadata.artist,
+                    album: metadata.album,
+                    year: metadata.year,
+                    genre: metadata.genre,
+                    track: metadata.track,
+                    size: file.size,
+                    lastModified: file.lastModified,
+                    type: file.type,
+                    handle: entry,
+                    duration: metadata.duration,
+                    timelen: metadata.duration * 1000, // 转换为毫秒
+                    bitrate: metadata.bitrate,
+                    sampleRate: metadata.sampleRate,
+                    coverBlob: metadata.coverBlob,
+                    coverState: metadata.coverState,
+                    qualityInfo: getQualityInfo(extension, metadata.bitrate, metadata.sampleRate)
+                });
             } else if (entry.kind === 'directory') {
                 // 递归扫描子文件夹
-                await scanDirectory(entry, files);
+                const relativePath = parentPath ? `${parentPath}/${entry.name}` : entry.name;
+                await scanDirectory(entry, folderId, cachedTracks, files, relativePath);
             }
         }
     } catch (error) {
         console.error('扫描目录失败:', error);
+        throw error;
     }
 
     return files;
 };
 
 // 扫描音乐文件
-const scanMusicFiles = async (dirHandle) => {
+const scanMusicFiles = async (dirHandle, folderId) => {
     try {
+        if (!folderId) throw new Error('无法确定本地音乐文件夹标识');
+        const cachedTracks = await getMusicCacheRecords(folderId);
+
         // 递归扫描所有子文件夹
-        const files = await scanDirectory(dirHandle);
+        const files = await scanDirectory(
+            dirHandle,
+            folderId,
+            new Map(cachedTracks.map(track => [track.cacheKey, track]))
+        );
 
-        // 按艺术家和标题排序
-        files.sort((a, b) => {
-            const artistCompare = a.author.localeCompare(b.author);
-            if (artistCompare !== 0) return artistCompare;
-            return a.displayName.localeCompare(b.displayName);
-        });
-
-        musicFiles.value = files;
-        filteredTracks.value = files;
-
+        await saveMusicCache(folderId, files);
+        applyMusicFiles(files);
     } catch (error) {
         console.error('扫描文件失败:', error);
+        throw error;
     }
 };
 

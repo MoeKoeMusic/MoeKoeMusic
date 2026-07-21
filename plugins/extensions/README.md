@@ -16,10 +16,13 @@ plugin-name/
 └── icons/           # 图标文件夹（可选）
 ```
 
-## 示例插件
+## 开发指导
 
 前往 [https://github.com/MoeKoeMusic](https://github.com/MoeKoeMusic) 查看其他用户编写的插件示例，获取更多灵感和参考。
-开发文档正在规划中...
+
+- [插件开发 [基础]](https://music.moekoe.cn/guide/basic-plugin-development.html)
+- [插件开发 [进阶]](https://music.moekoe.cn/guide/advanced-plugin-development.html)
+- [插件市场](https://music.moekoe.cn/plugins.html)
 
 ## 插件开发指南
 

@@ -503,6 +503,20 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
                 available: 'client',
                 label: '日志',
                 customText: '操作'
+            },
+            {
+                key: 'backgroundThrottling',
+                defaultValue: 'off',
+                itemIcon: 'fas fa-bolt',
+                selectionTitle: '禁用后台节流',
+                options: [
+                    { displayText: '打开', value: 'on' },
+                    { displayText: '关闭', value: 'off' }
+                ],
+                available: 'client',
+                label: '禁用后台节流',
+                showRefreshHint: true,
+                refreshHintText: '重启后生效'    
             }
         ]
     }

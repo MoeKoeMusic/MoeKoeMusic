@@ -229,13 +229,52 @@ class NativeHostManager {
         }
     }
 
-    stopAll() {
+    async stopAll() {
         // 应用退出或插件系统清理时调用，统一关闭所有托管进程和 bridge。
+        // 异步等待所有进程真正退出后再返回，防止 restartExtensions 中
+        // 旧进程未退出时新进程竞态启动导致端口冲突。
+        const waiters = [];
+
         for (const key of [...this.processes.keys()]) {
-            this.stopHostByKey(key, true);
+            const processInfo = this.processes.get(key);
+            if (!processInfo?.process) continue;
+
+            const child = processInfo.process;
+
+            // 删除 Map 记录，但保留 child 引用用于等待退出
+            if (this.processes.get(key) === processInfo) {
+                this.processes.delete(key);
+            }
+
+            this.writeToHost(processInfo, { type: 'shutdown' }, true);
+
+            // 等待进程退出（exit 事件 或 SHUTDOWN_TIMEOUT + 500ms 兜底）
+            waiters.push(new Promise(resolve => {
+                let settled = false;
+                const done = () => { if (!settled) { settled = true; resolve(); } };
+
+                child.on('exit', done);
+                child.on('error', done);
+
+                setTimeout(() => {
+                    if (!settled) {
+                        if (!child.killed && child.exitCode === null) {
+                            treeKill(child.pid, 'SIGKILL', err => {
+                                if (err) log.warn(`强制结束本地程序失败 ${key}:`, err);
+                            });
+                        }
+                        done();
+                    }
+                }, SHUTDOWN_TIMEOUT + 500);
+            }));
         }
+
         for (const key of [...this.bridgeWindows.keys()]) {
             this.closeBridge(key);
+        }
+
+        if (waiters.length > 0) {
+            await Promise.all(waiters);
         }
     }
 

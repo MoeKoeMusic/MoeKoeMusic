@@ -181,7 +181,8 @@ export function registerExtensionIPC() {
     // 重新加载插件
     ipcMain.handle('reload-extensions', async () => {
         try {
-            nativeHostManager.stopAll();
+            // 先停止所有本地程序并等待退出，防止旧进程未退出时新进程竞态启动导致端口冲突
+            await nativeHostManager.stopAll();
             const result = await extensionManager.reloadExtensions();
             syncNativeHosts();
             return result;

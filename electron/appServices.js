@@ -64,6 +64,8 @@ export function createWindow() {
             sandbox: false,
             webSecurity: false, // 禁用 CORS、同源策略
             allowRunningInsecureContent: true, // 允许混合内容
+            // 默认开启节流；用户在设置中开启该选项时禁用，以修复后台/最小化时 Web Audio 音效失效
+            backgroundThrottling: savedConfig?.backgroundThrottling !== 'on',
             zoomFactor: 1.0
         },
         icon: getIconPath('icon.ico')
@@ -870,3 +872,4 @@ export function sendHashAfterLoad(mainWindow) {
         });
     }
 }
+

@@ -31,10 +31,12 @@ export async function initializeExtensions() {
 /**
  * 清理插件系统
  */
-export function cleanupExtensions() {
+export async function cleanupExtensions() {
     try {
-        // 卸载所有插件
-        nativeHostManager.stopAll();
+        // 先停止所有本地程序并等待其退出，再卸载扩展
+        // 顺序至关重要：若先卸载扩展，WebSocket 断开后 EXE 会自行退出，
+        // 但 stopAll 的 await 可保证 restartExtensions 不会在旧进程存活时启动新进程。
+        await nativeHostManager.stopAll();
         extensionManager.unloadChromeExtensions();
         
         // 注销 IPC 处理程序

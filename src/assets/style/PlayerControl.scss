@@ -15,15 +15,17 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
 #lyrics-container {
     --lyrics-edge-fade-size: clamp(72px, 12vh, 140px);
 
-    height: 75vh;
+    height: auto;
+    align-self: stretch;
     overflow: hidden;
     display: flex;
     justify-content: center;
     padding: 20px;
     border-radius: $radius-lg;
-    margin-top: 80px;
+    margin-top: clamp(48px, 10vh, 80px);
     position: relative;
     width: 60%;
+    min-width: 0;
     -webkit-mask-image: linear-gradient(to bottom,
             transparent 0,
             #fff var(--lyrics-edge-fade-size),
@@ -621,6 +623,7 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
 }
 
 .lyrics-screen {
+    --fs-cover-size: max(120px, min(400px, 33vw, calc(100vh - 330px)));
     position: fixed;
     bottom: 0;
     left: 0;
@@ -706,8 +709,10 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     width: 40%;
-    margin-top: 135px;
+    min-width: 0;
+    min-height: 0;
     margin-left: 20px;
 }
 
@@ -728,8 +733,8 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
     border-radius: 10px;
 
     img {
-        width: 400px;
-        height: 400px;
+        width: var(--fs-cover-size);
+        height: var(--fs-cover-size);
         border-radius: $radius-lg;
         z-index: 9;
         transition: all 0.3s ease;
@@ -737,26 +742,27 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
 
     .miku {
         position: absolute;
-        height: 419px;
-        width: 401px;
+        width: 100.25%;
+        height: 104.75%;
     }
 
     .miku2 {
         position: absolute;
-        height: 452px;
-        width: 404px;
+        width: 101%;
+        height: 113%;
     }
 
     .miku3 {
         position: absolute;
-        height: 563px;
+        width: auto;
+        height: 140.75%;
     }
 }
 
 .vinyl-player {
     position: relative;
-    width: 450px;
-    height: 450px;
+    width: calc(var(--fs-cover-size) * 1.125);
+    height: calc(var(--fs-cover-size) * 1.125);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -777,8 +783,8 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
 
 .vinyl-disc {
     position: relative;
-    width: 400px;
-    height: 400px;
+    width: var(--fs-cover-size);
+    height: var(--fs-cover-size);
     border-radius: 50%;
     background: radial-gradient(circle at center, #1a1a1a 0%, #1a1a1a 35%, #2a2a2a 35%, #2a2a2a 36%, #1a1a1a 36%, #1a1a1a 100%);
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 0, 0, 0.5);
@@ -813,8 +819,8 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
 }
 
 .vinyl-cover {
-    width: 240px;
-    height: 240px;
+    width: calc(var(--fs-cover-size) * 0.6);
+    height: calc(var(--fs-cover-size) * 0.6);
     border-radius: 50%;
     object-fit: cover;
     z-index: 5;
@@ -822,10 +828,10 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
 
 .tonearm {
     position: absolute;
-    top: -50px;
-    right: 20px;
-    width: 160px;
-    height: 198px;
+    top: calc(var(--fs-cover-size) * -0.125);
+    right: calc(var(--fs-cover-size) * 0.05);
+    width: calc(var(--fs-cover-size) * 0.4);
+    height: calc(var(--fs-cover-size) * 0.495);
     background: url('../assets/images/head.png') no-repeat center;
     background-size: contain;
     transform-origin: 85% 15%;
@@ -855,6 +861,8 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
 .song-details {
     text-align: center;
     margin-top: 20px;
+    width: 100%;
+    min-width: 0;
 }
 
 .player-controls {
@@ -863,6 +871,7 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
     margin-top: 20px;
     justify-content: center;
     align-items: center;
+    flex-shrink: 0;
 
     .control-btn {
         color: #fff;
@@ -874,6 +883,7 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
     align-items: center;
     width: 100%;
     margin: 10px 0;
+    flex-shrink: 0;
 }
 
 .current-time,
@@ -1074,4 +1084,47 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
 .cover-fade-leave-from {
     opacity: 1;
     transform: scale(1) translateY(0);
+}
+
+// 窄窗口（Web 端）：全屏歌词改为上下布局，歌词在上、控制区固定在底部，
+// 隐藏封面以保证进度条和控制按钮始终可见
+@media (max-width: 768px) {
+    .lyrics-screen {
+        flex-direction: column;
+        padding: 16px;
+    }
+
+    .lyrics-screen .left-section {
+        order: 2;
+        width: 100%;
+        margin-left: 0;
+        flex: 0 0 auto;
+    }
+
+    .lyrics-screen .album-art-container {
+        display: none;
+    }
+
+    .lyrics-screen .song-details {
+        margin-top: 0;
+    }
+
+    .lyrics-screen .player-controls {
+        margin-top: 8px;
+    }
+
+    #lyrics-container {
+        order: 1;
+        width: 100%;
+        flex: 1 1 auto;
+        min-height: 0;
+        align-self: auto;
+        margin-top: 44px;
+        padding: 10px;
+    }
+
+    .close-btn {
+        top: 16px;
+        right: 16px;
+    }
 }

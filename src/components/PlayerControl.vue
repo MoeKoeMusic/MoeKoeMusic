@@ -1264,6 +1264,21 @@ const handleLyricsWheel = (event) => {
     restoreLyricsScroll();
 };
 
+// 窗口尺寸变化后重新居中当前歌词行（scrollAmount 基于旧容器高度计算，需重算）
+let lyricsResizeTimer = null;
+const handleWindowResize = () => {
+    if (lyricsResizeTimer) clearTimeout(lyricsResizeTimer);
+    lyricsResizeTimer = setTimeout(() => {
+        lyricsResizeTimer = null;
+        if (!showLyrics.value || lyricsFlag.value || lyricsDisplayMode.value !== 'scroll') return;
+        const lyricsContainer = document.getElementById('lyrics-container');
+        const lineIndex = getCurrentLineIndex(audio.currentTime);
+        const lineElement = document.querySelectorAll('.line-group')[lineIndex];
+        if (!lyricsContainer || !lineElement) return;
+        scrollAmount.value = -lineElement.offsetTop + (lyricsContainer.offsetHeight / 2) - (lineElement.offsetHeight / 2);
+    }, 150);
+};
+
 const handleLyricsClick = (lineIndex) => {
     // if (!lyricsFlag.value) return;
     console.log('[PlayerControl] 点击歌词:', lineIndex);
@@ -1653,6 +1668,7 @@ onMounted(() => {
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('click', handleDocumentClick);
     window.addEventListener('settings-change', handleSettingsChange);
+    window.addEventListener('resize', handleWindowResize);
 
     // 设置特定于PlayerControl的监听器
     audio.addEventListener('pause', () => {
@@ -1741,6 +1757,11 @@ onUnmounted(() => {
     document.removeEventListener('keydown', handleKeyDown);
     document.removeEventListener('click', handleDocumentClick);
     window.removeEventListener('settings-change', handleSettingsChange);
+    window.removeEventListener('resize', handleWindowResize);
+    if (lyricsResizeTimer) {
+        clearTimeout(lyricsResizeTimer);
+        lyricsResizeTimer = null;
+    }
 });
 
 // 对外暴露接口

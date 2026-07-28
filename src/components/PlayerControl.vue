@@ -114,9 +114,12 @@
                 <!-- 音量控制 -->
                 <div class="volume-control" @wheel="handleVolumeScroll">
                     <i :class="isMuted ? 'fas fa-volume-mute' : 'fas fa-volume-up'" @click="toggleMute"></i>
-                    <div class="volume-slider" @mousedown="onDragStart">
-                        <div class="volume-progress" :style="{ width: volume + '%' }"></div>
-                        <input type="range" min="0" max="100" v-model="volume" @input="changeVolume" />
+                    <div class="volume-slider-wrap" :class="{ 'show-volume-value': isDragging }">
+                        <div class="volume-value" :style="volumeValueStyle">{{ volumePercentText }}</div>
+                        <div class="volume-slider" @mousedown="onDragStart">
+                            <div class="volume-progress" :style="{ width: volume + '%' }"></div>
+                            <input type="range" min="0" max="100" v-model="volume" @input="changeVolume" />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -522,6 +525,18 @@ const updateCurrentTime = throttle(() => {
 // 初始化各个模块
 const audioController = useAudioController({ onSongEnd, updateCurrentTime });
 const { playing, isMuted, volume, changeVolume, audio, playbackRate, setPlaybackRate, applyLoudnessNormalization, ensureAudioContextRunning, toggleLoudnessNormalization, loudnessNormalizationEnabled, currentLoudnessGain, webAudioInitialized } = audioController;
+const volumePercentText = computed(() => `${Math.round(volume.value)}%`);
+const volumeValueStyle = computed(() => {
+    const percent = Math.round(volume.value);
+    const offset = percent < 16 ? 0 : percent > 84 ? -100 : -50;
+    const arrowOffset = percent < 16 ? '10px' : percent > 84 ? 'calc(100% - 10px)' : '50%';
+
+    return {
+        left: `${percent}%`,
+        '--volume-value-offset': `${offset}%`,
+        '--volume-arrow-offset': arrowOffset
+    };
+});
 
 const lyricsHandler = useLyricsHandler(t);
 const { lyricsData, originalLyrics, showLyrics, scrollAmount, SongTips, lyricsMode, toggleLyrics, getLyrics, highlightCurrentChar, resetLyricsHighlight, getCurrentLineText, scrollToCurrentLine, toggleLyricsMode } = lyricsHandler;

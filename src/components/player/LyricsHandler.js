@@ -220,7 +220,7 @@ export default function useLyricsHandler(t) {
         const lineElement = document.querySelectorAll('.line-group')[lineIndex];
         if (lineElement) {
             const lineHeight = lineElement.offsetHeight;
-            scrollAmount.value = -lineElement.offsetTop + (containerHeight / 2) - (lineHeight / 2);
+            scrollAmount.value = -lineElement.offsetTop + (containerHeight / 2) - (lineHeight / 2) - 32;
         }
     };
 

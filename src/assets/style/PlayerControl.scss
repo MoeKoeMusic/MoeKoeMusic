@@ -22,7 +22,7 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
     justify-content: center;
     padding: 20px;
     border-radius: $radius-lg;
-    margin-top: clamp(48px, 10vh, 80px);
+    margin-top: clamp(12px, 4vh, 32px);
     position: relative;
     width: 60%;
     min-width: 0;
@@ -46,6 +46,18 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
     white-space: pre-wrap;
     color: $text-muted;
     transition: transform 0.6s ease;
+    width: 100%;
+    min-width: 0;
+
+    &.lyrics-align-left {
+        .line-group {
+            transform-origin: left center;
+        }
+
+        .line {
+            margin-right: auto;
+        }
+    }
 }
 
 .single-lyrics {

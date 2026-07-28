@@ -232,7 +232,7 @@
                 </div>
                 <div id="lyrics-container" @wheel="handleLyricsWheel">
                     <template v-if="lyricsData.length > 0">
-                        <div v-if="lyricsDisplayMode === 'single'" id="lyrics" class="single-lyrics" :class="{ 'line-highlight-mode': lyricsHighlightMode === 'line' }"
+                        <div v-if="lyricsDisplayMode === 'single'" id="lyrics" class="single-lyrics" :class="{ 'line-highlight-mode': lyricsHighlightMode === 'line', 'lyrics-align-left': lyricsAlign === 'left' }"
                             :style="{ fontSize: lyricsFontSize, fontFamily: lyricsFontFamily }">
                             <transition name="single-lyric-fade" appear>
                                 <div class="line-group" v-if="currentSingleLyricsLine" :key="singleLyricsLineIndex">
@@ -247,7 +247,7 @@
                                 </div>
                             </transition>
                         </div>
-                        <div v-else id="lyrics" :class="{ 'line-highlight-mode': lyricsHighlightMode === 'line' }"
+                        <div v-else id="lyrics" :class="{ 'line-highlight-mode': lyricsHighlightMode === 'line', 'lyrics-align-left': lyricsAlign === 'left' }"
                             :style="{ fontSize: lyricsFontSize, fontFamily: lyricsFontFamily, transform: `translateY(${scrollAmount ? scrollAmount + 'px' : '50%'})` }">
                             <div class="line-group" :class="{ 'current-line-group': currentLyricsLineIndex === lineIndex }" v-for="(lineData, lineIndex) in lyricsData" :key="lineIndex">
                                 <div class="line" @click="handleLyricsClick(lineIndex)" :class="{ click: lyricsFlag, 'line-highlight': isCurrentLyricsLine(lineIndex), [lyricsAlign]: true }">
@@ -1275,7 +1275,7 @@ const handleWindowResize = () => {
         const lineIndex = getCurrentLineIndex(audio.currentTime);
         const lineElement = document.querySelectorAll('.line-group')[lineIndex];
         if (!lyricsContainer || !lineElement) return;
-        scrollAmount.value = -lineElement.offsetTop + (lyricsContainer.offsetHeight / 2) - (lineElement.offsetHeight / 2);
+        scrollAmount.value = -lineElement.offsetTop + (lyricsContainer.offsetHeight / 2) - (lineElement.offsetHeight / 2) - 32;
     }, 150);
 };
 

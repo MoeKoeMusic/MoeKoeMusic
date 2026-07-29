@@ -28,6 +28,7 @@
   "engines": {
     "node": ">=20"
   },
+  "desktopName": "cn.MoeKoe.Music",
   "build": {
     "publish": {
       "provider": "github",

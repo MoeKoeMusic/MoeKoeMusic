@@ -8,7 +8,7 @@
                 {{ MoeAuth.isAuthenticated ? $t('tian-jia-ge-dan') : $t('qing-xian-deng-lu') }} <i
                     class="fa-solid fa-chevron-right"></i>
                 <ul v-if="MoeAuth.isAuthenticated && showSubMenu" class="submenu">
-                    <li v-for="playlist in playlists" :key="playlist.listid"
+                    <li v-for="playlist in playlists" :key="playlist.listid" :title="playlist.name"
                         @click="addToPlaylist(playlist.listid, contextSong)">
                         {{ playlist.name }}
                     </li>
@@ -212,9 +212,15 @@ defineExpose({ openContextMenu });
     border-radius: 10px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
     padding: 5px 0;
+    max-height: 320px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
 
     li {
         width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 }
 </style>

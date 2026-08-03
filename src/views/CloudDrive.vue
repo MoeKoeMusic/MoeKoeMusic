@@ -23,9 +23,13 @@
                         <button class="primary-btn" @click="addPlaylistToQueue($event)">
                             <i class="fas fa-play"></i> {{ $t('bo-fang') }}
                         </button>
-                        <button class="upload-btn" @click="uploadMusic">
-                            <i class="fas fa-upload"></i> {{ $t('shang-chuan-yin-le') }}
+                        <button class="upload-btn" :class="{ 'uploading': isUploading }" @click="uploadMusic">
+                            <i class="fas" :class="isUploading ? 'fa-spinner fa-spin' : 'fa-upload'"></i>
+                            {{ isUploading ? `上传中 ${uploadProgress.current}/${uploadProgress.total} (${uploadProgress.percent}%)` : $t('shang-chuan-yin-le') }}
                         </button>
+                        <input ref="uploadInputRef" type="file" multiple
+                            accept=".mp3,.flac,.wav,.m4a,.aac,.ogg,.ape,.wma" style="display: none"
+                            @change="handleFileSelect" />
                     </div>
                 </div>
             </div>
@@ -155,7 +159,7 @@ import { RecycleScroller } from 'vue3-virtual-scroller';
 import PageScrollbar from '../components/PageScrollbar.vue';
 import BackToTop from '../components/BackToTop.vue';
 import CommonSkeleton from '../components/CommonSkeleton.vue';
-import { get } from '../utils/request';
+import { get, post } from '../utils/request';
 import { useRouter } from 'vue-router';
 import { MoeAuthStore } from '../stores/store';
 import { useI18n } from 'vue-i18n';
@@ -181,6 +185,15 @@ const loading = ref(true);
 const isSearching = ref(false);
 const flyingNotes = ref([]);
 let noteId = 0;
+
+// 上传相关状态
+const uploadInputRef = ref(null);
+const isUploading = ref(false);
+const uploadProgress = ref({ current: 0, total: 0, percent: 0 });
+const MAX_UPLOAD_SIZE = 100 * 1024 * 1024; // 服务端请求体上限 100MB
+// 上传成功后绕过 api 的 2 分钟响应缓存
+let cacheBust = 0;
+const cacheBustParams = () => (cacheBust ? { timestamp: cacheBust } : {});
 
 // 云盘存储空间信息
 const storageInfo = ref({
@@ -263,7 +276,8 @@ const fetchCloudTracks = async () => {
         const curPage = currentPage.value;
         const firstPageResponse = await get('/user/cloud', {
             page: curPage,
-            pagesize: pageSize
+            pagesize: pageSize,
+            ...cacheBustParams()
         });
 
         applyCloudResponse(firstPageResponse, true, curPage, pageSize);
@@ -280,7 +294,8 @@ const fetchCloudPage = async (page) => {
     try {
         const response = await get('/user/cloud', {
             page,
-            pagesize: pageSize
+            pagesize: pageSize,
+            ...cacheBustParams()
         });
 
         return response;
@@ -350,7 +365,8 @@ const loadAllRemainingTracks = async (onAppend) => {
         while (hasMore.value) {
             const response = await get('/user/cloud', {
                 page,
-                pagesize: maxPageSize
+                pagesize: maxPageSize,
+                ...cacheBustParams()
             });
 
             if (!response || response.status !== 1) break;
@@ -490,7 +506,104 @@ const addPlaylistToQueue = async (event, append = false) => {
 };
 
 const uploadMusic = () => {
-    $message.info('上传功能正在开发中...');
+    if (isUploading.value) return;
+    uploadInputRef.value?.click();
+};
+
+// 读取音频时长（毫秒），失败返回 0
+const getAudioDuration = (file) => new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const audio = new Audio();
+    const done = (ms) => {
+        URL.revokeObjectURL(url);
+        resolve(ms);
+    };
+    audio.preload = 'metadata';
+    audio.onloadedmetadata = () => done(Number.isFinite(audio.duration) ? Math.round(audio.duration * 1000) : 0);
+    audio.onerror = () => done(0);
+    audio.src = url;
+});
+
+// 估算音质等级（3=HQ 4=SQ，与云盘列表 bitrate 字段一致），无法判断时返回 0
+const getUploadQuality = (file, extendname, timelen) => {
+    if (['flac', 'ape', 'wav'].includes(extendname)) return 4;
+    if (!timelen) return 0;
+    const kbps = (file.size * 8) / (timelen / 1000) / 1000;
+    return kbps >= 300 ? 3 : 0;
+};
+
+// 上传单个文件到云盘，元数据通过 query 传递，文件二进制作为请求体
+const uploadFile = async (file) => {
+    const dotIndex = file.name.lastIndexOf('.');
+    const extendname = dotIndex > -1 ? file.name.slice(dotIndex + 1).toLowerCase() : 'mp3';
+    const baseName = dotIndex > -1 ? file.name.slice(0, dotIndex) : file.name;
+    const separatorIndex = baseName.indexOf(' - ');
+    const authorName = separatorIndex > -1 ? baseName.slice(0, separatorIndex).trim() : '';
+    const timelen = await getAudioDuration(file);
+    const quality = getUploadQuality(file, extendname, timelen);
+
+    return post('/user/cloud/upload', file, {
+        params: {
+            name: file.name,
+            author_name: authorName,
+            extendname,
+            timelen,
+            // 音质不确定时不传，由服务端使用默认值
+            ...(quality ? { bitrate: quality } : {})
+        },
+        headers: { 'Content-Type': 'application/octet-stream' },
+        timeout: 0,
+        onUploadProgress: (e) => {
+            // 上传到本地 API 后服务端还需分片转传酷狗，进度封顶 99% 等待响应
+            if (e.total) uploadProgress.value.percent = Math.min(99, Math.round((e.loaded / e.total) * 100));
+        }
+    });
+};
+
+const handleFileSelect = async (event) => {
+    const files = Array.from(event.target.files || []);
+    event.target.value = '';
+    if (!files.length || isUploading.value) return;
+
+    isUploading.value = true;
+    uploadProgress.value = { current: 0, total: files.length, percent: 0 };
+    let successCount = 0;
+
+    for (const [index, file] of files.entries()) {
+        uploadProgress.value.current = index + 1;
+        uploadProgress.value.percent = 0;
+
+        if (file.size > MAX_UPLOAD_SIZE) {
+            $message.error(`${file.name} 超过 100MB 大小限制`);
+            continue;
+        }
+        if (storageInfo.value.availableSize > 0 && file.size > storageInfo.value.availableSize) {
+            $message.error('云盘可用空间不足');
+            break;
+        }
+
+        try {
+            const response = await uploadFile(file);
+            if (response?.status === 1) {
+                successCount++;
+                uploadProgress.value.percent = 100;
+            } else {
+                console.error('上传云盘失败:', response);
+                $message.error(`${file.name} 上传失败`);
+            }
+        } catch (error) {
+            console.error('上传云盘失败:', error);
+            const msg = error?.response?.data?.msg;
+            $message.error(`${file.name} 上传失败${msg ? `：${msg}` : ''}`);
+        }
+    }
+
+    isUploading.value = false;
+    if (successCount > 0) {
+        $message.success(`成功上传 ${successCount} 首歌曲`);
+        cacheBust = Date.now();
+        fetchCloudTracks();
+    }
 };
 
 // 滚动到当前播放歌曲
@@ -852,6 +965,11 @@ $shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
 
 .upload-btn {
     background-color: #4caf50;
+
+    &.uploading {
+        opacity: 0.75;
+        cursor: not-allowed;
+    }
 }
 
 .track-list-container {

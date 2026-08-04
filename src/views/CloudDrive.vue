@@ -718,17 +718,22 @@ const deleteSelectedFromCloud = async () => {
     if (selectedTracks.value.length === 0) return;
     const result = await window.$modal.confirm(t('que-ren-shan-chu-yun-pan-ge-qu'));
     if (result) {
-        $message.info('删除功能正在开发中...');
-
-        // selectedTracks.value.sort((a, b) => b - a).forEach(index => {
-        //     filteredTracks.value.splice(index, 1);
-        //     tracks.value = tracks.value.filter((_, i) => 
-        //         !selectedTracks.value.includes(i)
-        //     );
-        // });
-        // filteredTracks.value = [...tracks.value];
-        // selectedTracks.value = [];
-        // $message.success(t('shan-chu-cheng-gong'));
+        const hashes = [];
+        selectedTracks.value.sort((a, b) => b - a).forEach(index => {
+            filteredTracks.value.splice(index, 1);
+            tracks.value = tracks.value.filter((_, i) => 
+                !selectedTracks.value.includes(i)
+            );
+            hashes.push(filteredTracks.value[index].hash);
+        });
+        const res = await get(`/user/cloud/del?hash=${hashes.join(',')}`);
+        if(!res.status) {
+            $modal.alert(`删除失败! 错误码: ${res.error_code}`);
+            return;
+        }
+        filteredTracks.value = [...tracks.value];
+        selectedTracks.value = [];
+        $message.success(t('shan-chu-cheng-gong'));
     }
     isBatchMenuVisible.value = false;
 };

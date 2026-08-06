@@ -431,6 +431,7 @@ const formatTrackList = (songList) => {
             album: track.album_name || '云盘音乐',
             timelen: track.timelen || 0,
             qualityInfo: qualityInfo,
+            fileid: track?.fileid || track?.kv_id || 0,
             filesize: formatStorageSize(track.size) || 0,
             bitrate: track.bitrate || 0,
             cover: track?.album_info?.sizable_cover?.replace("{size}", 480) || track?.authors?.[0]?.sizable_avatar?.replace("{size}", 480)
@@ -713,22 +714,46 @@ const appendSelectedToQueue = async () => {
     isBatchMenuVisible.value = false;
 };
 
+const deleteFilesFromCloud = async (fileids = []) => {
+    if(!fileids || !fileids.length) return;
+    return await get(`/user/cloud/del?fileid=${fileids.join(',')}`);
+}
+
 // 从云盘中删除选中的歌曲
 const deleteSelectedFromCloud = async () => {
     if (selectedTracks.value.length === 0) return;
     const result = await window.$modal.confirm(t('que-ren-shan-chu-yun-pan-ge-qu'));
     if (result) {
-        $message.info('删除功能正在开发中...');
-
-        // selectedTracks.value.sort((a, b) => b - a).forEach(index => {
-        //     filteredTracks.value.splice(index, 1);
-        //     tracks.value = tracks.value.filter((_, i) => 
-        //         !selectedTracks.value.includes(i)
-        //     );
-        // });
-        // filteredTracks.value = [...tracks.value];
-        // selectedTracks.value = [];
-        // $message.success(t('shan-chu-cheng-gong'));
+        const fileids = [], skipped = [];
+        selectedTracks.value.sort((a, b) => b - a).forEach(index => {
+            if(filteredTracks.value[index].fileid)
+                fileids.push(filteredTracks.value[index].fileid);
+            else
+                skipped.push(filteredTracks.value[index].name);
+            filteredTracks.value.splice(index, 1);
+            tracks.value = tracks.value.filter((_, i) => 
+                !selectedTracks.value.includes(i)
+            );
+        });
+        if(fileids.length) {
+            const res = await deleteFilesFromCloud(fileids);
+            if(!res.status) {
+                $modal.alert(`删除失败! 错误码: ${res.error_code}`);
+                return;
+            }
+            storageInfo.value = {
+                availableSize: res.data.availble_size,
+                usedSize: res.data.used_size,
+                totalSize: res.data.max_size
+            }
+        }
+        if(skipped.length) {
+            $modal.alert(`${t('shan-chu-cheng-gong')}, 部分已跳过, 请在官方 app 删除以下歌曲:\n${skipped.join('\n')}`);
+            return;
+        }
+        filteredTracks.value = [...tracks.value];
+        selectedTracks.value = [];
+        $message.success(t('shan-chu-cheng-gong'));
     }
     isBatchMenuVisible.value = false;
 };

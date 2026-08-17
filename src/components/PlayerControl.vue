@@ -1490,19 +1490,35 @@ const setAudioOutputDeviceWatcherEnabled = (enabled) => {
 let audioOutputDeviceWatchChangeHandler = null;
 
 const applyAudioOutputDevice = async (deviceId) => {
-    if (typeof audio?.setSinkId !== 'function') {
-        console.warn('[PlayerControl] 当前环境不支持切换音频输出设备（setSinkId不可用）');
-        return false;
+    const requested = deviceId || 'default';
+
+    if (requested === 'default' && !audio.sinkId) {
+        return true;
     }
 
-    const sinkId = deviceId || 'default';
+    if (typeof audio?.setSinkId !== 'function') {
+        if (requested !== 'default') {
+            console.warn('[PlayerControl] 当前环境不支持切换音频输出设备（setSinkId不可用）');
+        }
+        return requested === 'default';
+    }
+
+    const sinkId = requested === 'default' ? '' : requested;
+
+    if (audio.sinkId === sinkId) {
+        return true;
+    }
+
     try {
         await audio.setSinkId(sinkId);
-        console.log('[PlayerControl] 已切换音频输出设备:', sinkId);
         return true;
     } catch (error) {
-        console.warn('[PlayerControl] 切换音频输出设备失败:', error);
-        window.$modal.alert('切换音频输出设备失败,请刷新页面后重试');
+        if (requested !== 'default') {
+            console.error('[PlayerControl] 切换音频输出设备失败:', error);
+            window.$modal.alert('切换音频输出设备失败,请刷新页面后重试');
+        } else {
+            console.warn('[PlayerControl] 切回默认音频输出设备失败:', error);
+        }
         return false;
     }
 };

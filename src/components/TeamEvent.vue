@@ -217,6 +217,7 @@ onMounted(async () => {
         }
     }
     >.close-btn {
+        color: var(--text-color);
         cursor: pointer;
         border: none;
         background-color: transparent;

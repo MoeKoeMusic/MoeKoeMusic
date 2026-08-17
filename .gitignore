@@ -13,7 +13,6 @@ dist_electron
 dist
 dist-ssr
 *.local
-test
 bin/*
 .serena/*
 api/.serena/*

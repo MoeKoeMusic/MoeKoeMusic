@@ -71,35 +71,33 @@ onMounted(async () => {
 </script>
 
 <template>
-    <Teleport to="body">
-        <div class="mask" @click="closePopup"></div>
-        <div class="popup">
-            <div class="my-info">
-                <img class="avatar" draggable="false" :src="moeAuthStore.UserInfo?.pic" />
-                <span class="info">
-                    <span class="nick">{{ moeAuthStore.UserInfo?.nickname }}</span>
-                    <span class="badge">{{ badgeLabel }}</span>
+    <div class="mask" @click="closePopup"></div>
+    <div class="popup">
+        <div class="my-info">
+            <img class="avatar" draggable="false" :src="moeAuthStore.UserInfo?.pic" />
+            <span class="info">
+                <span class="nick">{{ moeAuthStore.UserInfo?.nickname }}</span>
+                <span class="badge">{{ badgeLabel }}</span>
+            </span>
+        </div>
+        <div v-if="myTeam" class="my-team">
+            <span class="title">我的队伍 ({{ myTeam.member_list.length }})</span>
+            <div class="members">
+                <img draggable="false" v-for="m in myTeam.member_list" :src="m.user_pic" :title="m.nick_name" />
+                <span class="invite" title="复制邀请码"><i class="fas fa-plus" /></span>
+            </div>
+        </div>
+        <template v-if="eventStatus.periodInfo" v-for="(info, period) in eventStatus.periodInfo" :key="period">
+            <div v-if="info.name" class="period-card" :class="period">
+                <span class="title">
+                    {{ info.name }} {{ info.status_name }}
+                </span>
+                <span class="time">
+                    活动时间: {{ info.start_time }} - {{ info.end_time }}
                 </span>
             </div>
-            <div v-if="myTeam" class="my-team">
-                <span class="title">我的队伍 ({{ myTeam.member_list.length }})</span>
-                <div class="members">
-                    <img draggable="false" v-for="m in myTeam.member_list" :src="m.user_pic" :title="m.nick_name" />
-                    <span class="invite"><i class="fas fa-plus" /></span>
-                </div>
-            </div>
-            <template v-if="eventStatus.periodInfo" v-for="(info, period) in eventStatus.periodInfo" :key="period">
-                <div v-if="info.name" class="period-card" :class="period">
-                    <span class="title">
-                        {{ info.name }} {{ info.status_name }}
-                    </span>
-                    <span class="time">
-                        活动时间: {{ info.start_time }} - {{ info.end_time }}
-                    </span>
-                </div>
-            </template>
-        </div>
-    </Teleport>
+        </template>
+    </div>
 </template>
 
 <style lang="scss" scoped>

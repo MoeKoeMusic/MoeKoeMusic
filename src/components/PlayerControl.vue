@@ -296,6 +296,7 @@ import {
     useSongQueue,
     useHelpers
 } from './player';
+import { setAudioOutputDevice } from './player/AudioOutput';
 
 // 基础设置
 const queueList = ref(null);
@@ -1490,37 +1491,19 @@ const setAudioOutputDeviceWatcherEnabled = (enabled) => {
 let audioOutputDeviceWatchChangeHandler = null;
 
 const applyAudioOutputDevice = async (deviceId) => {
-    const requested = deviceId || 'default';
+    const result = await setAudioOutputDevice(audio, deviceId);
+    if (result.ok) return true;
 
-    if (requested === 'default' && !audio.sinkId) {
-        return true;
+    if (result.reason === 'UNSUPPORTED') {
+        console.warn('[PlayerControl] 当前环境不支持切换音频输出设备（setSinkId不可用）');
+    } else if (result.requested !== 'default') {
+        console.error('[PlayerControl] 切换音频输出设备失败:', result.error);
+        window.$modal.alert('切换音频输出设备失败,请刷新页面后重试');
+    } else {
+        console.warn('[PlayerControl] 切回默认音频输出设备失败:', result.error);
     }
 
-    if (typeof audio?.setSinkId !== 'function') {
-        if (requested !== 'default') {
-            console.warn('[PlayerControl] 当前环境不支持切换音频输出设备（setSinkId不可用）');
-        }
-        return requested === 'default';
-    }
-
-    const sinkId = requested === 'default' ? '' : requested;
-
-    if (audio.sinkId === sinkId) {
-        return true;
-    }
-
-    try {
-        await audio.setSinkId(sinkId);
-        return true;
-    } catch (error) {
-        if (requested !== 'default') {
-            console.error('[PlayerControl] 切换音频输出设备失败:', error);
-            window.$modal.alert('切换音频输出设备失败,请刷新页面后重试');
-        } else {
-            console.warn('[PlayerControl] 切回默认音频输出设备失败:', error);
-        }
-        return false;
-    }
+    return false;
 };
 
 // 切换速度菜单

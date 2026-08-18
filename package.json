@@ -5,7 +5,6 @@
   "main": "electron/main.js",
   "scripts": {
     "install-all": "npm install && cd api && npm install",
-    "test": "node --test",
     "serve": "vite",
     "build": "vite build",
     "build:docker": "cross-env VITE_APP_API_URL=/api vite build",

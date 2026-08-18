@@ -524,7 +524,7 @@ const updateCurrentTime = throttle(() => {
 
 // 初始化各个模块
 const audioController = useAudioController({ onSongEnd, updateCurrentTime });
-const { playing, isMuted, volume, changeVolume, audio, playbackRate, setPlaybackRate, applyLoudnessNormalization, ensureAudioContextRunning, toggleLoudnessNormalization, loudnessNormalizationEnabled, currentLoudnessGain, webAudioInitialized } = audioController;
+const { playing, isMuted, volume, changeVolume, audio, playbackRate, setPlaybackRate, applyLoudnessNormalization, ensureAudioContextRunning, toggleLoudnessNormalization, loudnessNormalizationEnabled, currentLoudnessGain, webAudioInitialized, amplitudeToSlider } = audioController;
 const volumePercentText = computed(() => `${Math.round(volume.value)}%`);
 const volumeValueStyle = computed(() => {
     const percent = Math.round(volume.value);
@@ -1414,7 +1414,7 @@ const toggleMute = () => {
     isMuted.value = !isMuted.value;
     audio.muted = isMuted.value;
     if (isMuted.value) volume.value = 0;
-    else volume.value = audio.volume * 100;
+    else volume.value = amplitudeToSlider(audio.volume);
     localStorage.setItem('player_volume', volume.value);
     console.log('[PlayerControl] 切换静音:', isMuted.value, '音量:', volume.value, '实际audio.volume:', audio.volume);
 };

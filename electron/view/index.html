@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MoeKoe Tray Menu</title>
+    <script>
+        document.documentElement.dataset.theme =
+            new URLSearchParams(location.search).get('theme') === 'dark' ? 'dark' : 'light';
+    </script>
     <style>
         :root {
             color-scheme: light dark;
@@ -167,6 +171,9 @@
             width: 0;
             border-radius: inherit;
             background: var(--button-strong);
+        }
+
+        .progress-fill.animated {
             transition: width 0.18s ease;
         }
 
@@ -452,7 +459,7 @@
             song.currentTime = nextTime;
             song.currentTimeText = formatTime(nextTime);
             song.progressPercent = duration > 0 ? Math.max(0, Math.min((nextTime / duration) * 100, 100)) : 0;
-            renderSong();
+            renderSong(true);
 
             if (duration > 0 && nextTime >= duration) {
                 stopProgressTimer();
@@ -471,16 +478,18 @@
             document.getElementById('nextControl').innerHTML = iconSvg('forward');
         };
 
-        const renderSong = () => {
+        const renderSong = (animateProgress = false) => {
             const song = currentState?.song;
             const labels = currentState?.labels || {};
             const coverEl = document.getElementById('cover');
+            const progressFill = document.getElementById('progressFill');
+            progressFill.classList.toggle('animated', animateProgress);
 
             if (!song) {
                 coverEl.innerHTML = iconSvg('music');
                 document.getElementById('songTitle').textContent = labels.noSong || 'MoeKoe Music';
                 document.getElementById('songArtist').textContent = 'MoeKoe Music';
-                document.getElementById('progressFill').style.width = '0%';
+                progressFill.style.width = '0%';
                 document.getElementById('currentTime').textContent = '00:00';
                 document.getElementById('durationTime').textContent = '00:00';
                 return;
@@ -494,7 +503,7 @@
 
             document.getElementById('songTitle').textContent = song.title || 'MoeKoe Music';
             document.getElementById('songArtist').textContent = song.artist || 'MoeJue';
-            document.getElementById('progressFill').style.width = `${song.progressPercent || 0}%`;
+            progressFill.style.width = `${song.progressPercent || 0}%`;
             document.getElementById('currentTime').textContent = song.currentTimeText || '00:00';
             document.getElementById('durationTime').textContent = song.durationText || '00:00';
         };
@@ -550,9 +559,7 @@
             render();
             syncProgressTimer();
             if (state?.renderToken) {
-                requestAnimationFrame(() => {
-                    window.electron?.ipcRenderer.send('tray-menu-rendered', state.renderToken);
-                });
+                window.electron?.ipcRenderer.send('tray-menu-rendered', state.renderToken);
             }
         });
 

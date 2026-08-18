@@ -935,10 +935,12 @@ const playSong = async (song) => {
                 ...savedLocalSong,
                 url: ''
             }));
+            window.electron?.ipcRenderer?.send('current-song-updated');
             return;
         }
         // 保存当前歌曲到本地存储
         localStorage.setItem('current_song', JSON.stringify(currentSong.value));
+        window.electron?.ipcRenderer?.send('current-song-updated');
 
         getVip();
         // 获取歌词

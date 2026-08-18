@@ -327,7 +327,6 @@ ipcMain.on('open-url', (event, url) => {
 ipcMain.on('set-tray-title', (event, title) => {
     createTray(mainWindow, t('now-playing') + title);
     mainWindow.setTitle(title);
-    void customTrayMenuService.refresh();
 })
 
 

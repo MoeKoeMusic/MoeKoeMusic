@@ -954,12 +954,14 @@ const playSong = async (song) => {
     }
 };
 
-// 切换播放/暂停
-const togglePlayPause = async () => {
+// 恢复播放（不创建新 Audio，复用现有 src / 队列 URL 的恢复逻辑）
+const resumePlayback = async () => {
+    if (!audio.paused) return true;
+
     if (!currentSong.value.hash) {
         console.log('[PlayerControl] 没有当前歌曲，尝试播放队列中的下一首');
         playSongFromQueue('next');
-        return;
+        return false;
     } else if (!audio.src) {
         console.log('[PlayerControl] 音频源为空，尝试重新设置');
         if (currentSong.value.url && !isLocalSong(currentSong.value)) {
@@ -978,8 +980,9 @@ const togglePlayPause = async () => {
                     });
                     if (result && result.song) {
                         await playSong(result.song);
+                        return true;
                     }
-                    return;
+                    return false;
                 } else if (song.url) {
                     console.log('[PlayerControl] 从队列中的歌曲获取URL:', song.url);
                     currentSong.value.url = song.url;
@@ -987,47 +990,53 @@ const togglePlayPause = async () => {
                 } else if (song.isCloud) {
                     console.log('[PlayerControl] 云音乐没有URL，重新获取');
                     addCloudMusicToQueue(song.hash, song.name, song.author, song.timeLength, song.img);
-                    return;
+                    return false;
                 } else {
                     console.log('[PlayerControl] 歌曲没有URL，重新获取');
                     const result = await addSongToQueue(song.hash, song.name, song.img, song.author);
                     if (result && result.song) {
                         playSong(result.song);
+                        return true;
                     }
-                    return;
+                    return false;
                 }
             } else {
                 console.log('[PlayerControl] 歌曲不在队列中，播放下一首');
                 playSongFromQueue('next');
-                return;
+                return false;
             }
         }
     }
 
-    if (playing.value) {
-        console.log('[PlayerControl] 暂停播放');
-        audio.pause();
-        playing.value = false;
-    } else {
+    try {
+        mediaSession.changeMediaSession(currentSong.value);
+        // 更新SMTC位置状态
+        if (audio.duration) {
+            mediaSession.updatePositionState(audio.currentTime, audio.duration, currentSpeed.value);
+        }
+    } catch(smtcErr) {
+        console.warn('[PlayerControl] 更新 SMTC 信息失败:', smtcErr);
+    }
+
+    try {
+        await audio.play();
+        playing.value = true;
+        return true;
+    } catch (retryError) {
+        console.error('[PlayerControl] 播放失败:', retryError);
+        window.$modal.alert(t('bo-fang-shi-bai'));
+        return false;
+    }
+};
+
+// 切换播放/暂停（状态以 audio.paused 为准）
+const togglePlayPause = async () => {
+    if (audio.paused) {
         console.log('[PlayerControl] 开始播放');
-
-        try {
-            mediaSession.changeMediaSession(currentSong.value);
-            // 更新SMTC位置状态
-            if (audio.duration) {
-                mediaSession.updatePositionState(audio.currentTime, audio.duration, currentSpeed.value);
-            }
-        } catch(smtcErr) {
-            console.warn('[PlayerControl] 更新 SMTC 信息失败:', smtcErr);
-        }
-
-        try {
-            await audio.play();
-            playing.value = true;
-        } catch (retryError) {
-            console.error('[PlayerControl] 播放失败:', retryError);
-            window.$modal.alert(t('bo-fang-shi-bai'));
-        }
+        await resumePlayback();
+    } else {
+        console.log('[PlayerControl] 暂停播放');
+        pausePlayback();
     }
 };
 
@@ -1635,7 +1644,8 @@ onMounted(() => {
 
     // 设置媒体会话
     mediaSession.initMediaSession({
-        togglePlayPause,
+        play: resumePlayback,
+        pause: pausePlayback,
         playPrevious: () => playSongFromQueue('previous'),
         playNext: () => playSongFromQueue('next'),
         seekBackward: (seekOffset) => {

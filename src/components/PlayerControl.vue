@@ -294,9 +294,9 @@ import {
     usePlaybackMode,
     useMediaSession,
     useSongQueue,
-    useHelpers
+    useHelpers,
+    setAudioOutputDevice
 } from './player';
-import { setAudioOutputDevice } from './player/AudioOutput';
 
 // 基础设置
 const queueList = ref(null);
@@ -1019,6 +1019,8 @@ const resumePlayback = async () => {
     }
 
     try {
+        // 响度规格化开启时 AudioContext 可能处于 suspended，恢复播放前先确保其运行
+        await ensureAudioContextRunning();
         await audio.play();
         playing.value = true;
         return true;

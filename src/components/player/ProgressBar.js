@@ -1,5 +1,6 @@
 import { ref } from 'vue';
 import { get } from '../../utils/request';
+import { createClimaxPointLoader } from './ClimaxPoints';
 
 export default function useProgressBar(audio, resetLyricsHighlight) {
     const progressWidth = ref(0);
@@ -10,6 +11,7 @@ export default function useProgressBar(audio, resetLyricsHighlight) {
     const tooltipTime = ref('0:00');
     const activeProgressBar = ref(null);
     const climaxPoints = ref([]);
+    const climaxPointLoader = createClimaxPointLoader(hash => get(`/song/climax?hash=${hash}`));
 
     // 格式化时间
     const formatTime = (seconds) => {
@@ -20,19 +22,23 @@ export default function useProgressBar(audio, resetLyricsHighlight) {
     };
 
     // 获取歌曲高潮点
-    const getMusicHighlights = async (hash) => {
-        try {
-            const response = await get(`/song/climax?hash=${hash}`);
-            if (response.status !== 1) {
-                climaxPoints.value = [];
-                return;
-            }
-            climaxPoints.value = response.data.map(point => ({
-                position: (parseInt(point.start_time) / 1000 / audio.duration) * 100,
-                duration: parseInt(point.timelength) / 1000
-            }));
-        } catch (error) {
-            climaxPoints.value = [];
+    const clearMusicHighlights = () => {
+        climaxPointLoader.invalidate();
+        climaxPoints.value = [];
+    };
+
+    const getMusicHighlights = async (hash, isCurrentSong = () => true) => {
+        if (!isCurrentSong()) return;
+
+        climaxPoints.value = [];
+
+        const result = await climaxPointLoader.load(hash, {
+            isCurrent: isCurrentSong,
+            getDuration: () => audio.duration
+        });
+
+        if (result.apply) {
+            climaxPoints.value = result.points;
         }
     };
 
@@ -154,9 +160,10 @@ export default function useProgressBar(audio, resetLyricsHighlight) {
         climaxPoints,
         formatTime,
         getMusicHighlights,
+        clearMusicHighlights,
         onProgressDragStart,
         updateProgressFromEvent,
         updateTimeTooltip,
         hideTimeTooltip
     };
-} 
+}

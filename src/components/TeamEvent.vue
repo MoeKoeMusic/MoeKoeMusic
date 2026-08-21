@@ -72,10 +72,9 @@ const joinTeam = async (team_code) => {
     return await post('/team/join', { team_code });
 }
 
-const copyTeamCode = async () => {
+const copyTeamCode = async (teamCode) => {
     try {
-        const teamCode = myTeam.value?.team_code || getMyTeam()?.team_code;
-        if(!teamCode) throw new Error('can not get team code');
+        if(!teamCode) throw new Error('team code can\'t be empty');
         await navigator.clipboard.writeText(teamCode);
         $message.success('已复制邀请码, 快去发给好友吧~');
     } catch(e) {
@@ -158,14 +157,14 @@ onMounted(async () => {
                 <span class="sub-title">我创建的队伍 ({{ eventStatus.my.teams.created?.member_list.length || 0 }}/3)</span>
                 <div class="members">
                     <img draggable="false" v-for="m in eventStatus.my.teams.created?.member_list" :src="m.user_pic" :title="m.nick_name" />
-                    <span v-if="eventStatus.my.teams.created?.member_list.length < 3" class="invite" title="复制邀请码" @click="copyTeamCode"><i class="fas fa-plus" /></span>
+                    <span v-if="eventStatus.my.teams.created?.member_list.length < 3" class="invite" title="复制邀请码" @click="() => copyTeamCode(eventStatus.my.teams.created?.team_code)"><i class="fas fa-plus" /></span>
                 </div>
             </div>
             <div v-if="!!eventStatus.my.status?.is_join_team" class="my-team">
                 <span class="sub-title">我加入的队伍 ({{ eventStatus.my.teams.joined?.member_list.length || 0 }}/3)</span>
                 <div class="members">
                     <img draggable="false" v-for="m in eventStatus.my.teams.joined?.member_list" :src="m.user_pic" :title="m.nick_name" />
-                    <span v-if="eventStatus.my.teams.joined?.member_list.length < 3" class="invite" title="复制邀请码" @click="copyTeamCode"><i class="fas fa-plus" /></span>
+                    <span v-if="eventStatus.my.teams.joined?.member_list.length < 3" class="invite" title="复制邀请码" @click="() => copyTeamCode(eventStatus.my.teams.joined?.team_code)"><i class="fas fa-plus" /></span>
                 </div>
             </div>
         </template>

@@ -87,7 +87,7 @@ const copyTeamCode = async () => {
 const createTeamFromUi = async () => {
     try {
         const res = await createTeam();
-        if(!res.status) {
+        if(res.data?.team_id) {
             $message.success('已成功创建队伍!');
             await refreshStatus();
         } else {
@@ -95,6 +95,11 @@ const createTeamFromUi = async () => {
             console.error('[组队活动] 创建队伍失败:', res);
         }
     } catch(e) {
+        if(e.response?.data?.team_id) {
+            $message.success('创建队伍成功!');
+            await refreshStatus();
+            return;
+        }
         $message.error(e.response?.data?.error_msg || '创建队伍失败');
         console.error('[组队活动] 创建队伍失败:', e);
     }
@@ -127,7 +132,7 @@ const refreshStatusFromUi = () => {
 
 onMounted(async () => {
     await refreshStatus();
-    console.log('[team-event] on-mounted', eventStatus);
+    // console.log('[team-event] on-mounted', eventStatus);
 });
 </script>
 

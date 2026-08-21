@@ -87,7 +87,7 @@ const joinTeamWithToast = async (code = null) => {
     if(!team_code) return;
     try {
         const res = await joinTeam(team_code);
-        if(!res.status) {
+        if(!res.error_code) {
             $message.success('已成功加入队伍!');
             await refreshStatus();
         } else {

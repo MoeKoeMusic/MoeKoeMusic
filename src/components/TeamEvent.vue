@@ -283,7 +283,7 @@ onMounted(async () => {
     position: absolute;
     top: 0;
     right: 0;
-    width: min(25%, 350px);
+    width: max(20%, 350px);
     height: 100%;
     border: 1px solid var(--border-color);
     border-radius: 8px;

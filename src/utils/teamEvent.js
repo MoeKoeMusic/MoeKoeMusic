@@ -50,10 +50,16 @@ const joinTeam = async (team_code) => {
     return await post('/team/join', { team_code });
 }
 
+const generateShareText = (teamCode) => {
+    return window.electron?
+        `快来参与萌音组队领取VIP活动, 这是我的组队链接喵: moekoe://team/join?code=${teamCode}`:
+        `快来参与萌音组队领取VIP活动, 我的组队码是 ${teamCode} 谢谢喵`;
+}
+
 const copyTeamCode = async (teamCode) => {
     try {
         if(!teamCode) throw new Error('team code can\'t be empty');
-        await navigator.clipboard.writeText(teamCode);
+        await navigator.clipboard.writeText(generateShareText(teamCode));
         $message.success('已复制邀请码, 快去发给好友吧~');
     } catch(e) {
         $message.error('复制失败!');

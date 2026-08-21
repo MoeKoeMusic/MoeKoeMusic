@@ -153,16 +153,16 @@ onMounted(async () => {
             </div>
         </div>
         <span class="title">我的队伍</span>
-        <template v-if="!!eventStatus.my.info?.is_create_team || !!eventStatus.my.info?.is_join_team">
-            <div v-if="!!eventStatus.my.info?.is_create_team" class="my-team">
-                <span class="sub-title">我创建的队伍</span>
+        <template v-if="!!eventStatus.my.status?.is_create_team || !!eventStatus.my.status?.is_join_team">
+            <div v-if="!!eventStatus.my.status?.is_create_team" class="my-team">
+                <span class="sub-title">我创建的队伍 ({{ eventStatus.my.teams.created?.member_list.length || 0 }}/3)</span>
                 <div class="members">
                     <img draggable="false" v-for="m in eventStatus.my.teams.created?.member_list" :src="m.user_pic" :title="m.nick_name" />
                     <span v-if="eventStatus.my.teams.created?.member_list.length < 3" class="invite" title="复制邀请码" @click="copyTeamCode"><i class="fas fa-plus" /></span>
                 </div>
             </div>
-            <div v-if="!!eventStatus.my.info?.is_join_team" class="my-team">
-                <span class="sub-title">我加入的队伍</span>
+            <div v-if="!!eventStatus.my.status?.is_join_team" class="my-team">
+                <span class="sub-title">我加入的队伍 ({{ eventStatus.my.teams.joined?.member_list.length || 0 }}/3)</span>
                 <div class="members">
                     <img draggable="false" v-for="m in eventStatus.my.teams.joined?.member_list" :src="m.user_pic" :title="m.nick_name" />
                     <span v-if="eventStatus.my.teams.joined?.member_list.length < 3" class="invite" title="复制邀请码" @click="copyTeamCode"><i class="fas fa-plus" /></span>
@@ -179,8 +179,8 @@ onMounted(async () => {
                 <div class="banner">
                     <div v-if="period === 'current_period_info'">
                         <div class="btns">
-                            <button class="primary" type="button" :disabled="!!eventStatus.my.info?.is_create_team" @click="createTeamFromUi">创建队伍</button>
-                            <button type="button" :disabled="!!eventStatus.my.info?.is_join_team" @click="joinTeamFromUi">加入队伍</button>
+                            <button class="primary" type="button" :disabled="!!eventStatus.my.status?.is_create_team" @click="createTeamFromUi">创建队伍</button>
+                            <button type="button" :disabled="!!eventStatus.my.status?.is_join_team" @click="joinTeamFromUi">加入队伍</button>
                         </div>
                     </div>
                     <span class="text" v-else>该期活动已结束~</span>
@@ -259,6 +259,12 @@ onMounted(async () => {
 }
 
 .my-team {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    >.sub-title {
+        font-size: 0.8rem;
+    }
     >.members {
         display: flex;
         >img {
@@ -341,6 +347,10 @@ onMounted(async () => {
                         color: #fff;
                         background-color: var(--primary-color);
                         box-shadow: 2px 2px 2px var(--color-box-shadow);
+                    }
+                    &:disabled {
+                        opacity: 0.2;
+                        cursor: not-allowed;
                     }
                 }
             }

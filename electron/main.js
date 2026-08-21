@@ -215,7 +215,7 @@ ipcMain.on('custom-shortcut', (event) => {
 
 ipcMain.on('lyrics-data', (event, lyricsData) => {
     const lyricsWindow = mainWindow?.lyricsWindow;
-    if (lyricsWindow) {
+    if (lyricsWindow && !lyricsWindow.isDestroyed()) {
         lyricsWindow.webContents.send('lyrics-data', lyricsData);
     }
 
@@ -327,7 +327,6 @@ ipcMain.on('open-url', (event, url) => {
 ipcMain.on('set-tray-title', (event, title) => {
     createTray(mainWindow, t('now-playing') + title);
     mainWindow.setTitle(title);
-    void customTrayMenuService.refresh();
 })
 
 

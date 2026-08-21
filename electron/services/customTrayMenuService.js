@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, screen, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, nativeTheme, screen, shell } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { checkForUpdates } from './updater.js';
@@ -18,6 +18,8 @@ class CustomTrayMenuService {
         this.renderToken = 0;
         this.pendingRenderResolve = null;
         this.pendingRenderTimer = null;
+        this.refreshTimer = null;
+        this.idleDestroyTimer = null;
         this.playbackState = {
             isPlaying: false,
             currentTime: 0
@@ -52,6 +54,14 @@ class CustomTrayMenuService {
             this.finishRenderWait();
         });
 
+        ipcMain.on('current-song-updated', () => {
+            void this.refresh();
+        });
+
+        nativeTheme.on('updated', () => {
+            void this.refresh();
+        });
+
     }
 
     isVisible() {
@@ -72,8 +82,9 @@ class CustomTrayMenuService {
 
         if (!tray || !mainWindow || mainWindow.isDestroyed()) return;
 
-        await this.ensureWindow();
+        clearTimeout(this.idleDestroyTimer);
         this.pendingState = await this.getMenuState(mainWindow);
+        await this.ensureWindow(this.pendingState.theme);
         const renderPromise = this.waitForRender();
         this.pushState({
             ...this.pendingState,
@@ -90,10 +101,16 @@ class CustomTrayMenuService {
 
     hide() {
         if (this.menuWindow && !this.menuWindow.isDestroyed()) {
-            this.menuWindow.destroy();
+            this.menuWindow.hide();
         }
-        this.menuWindow = null;
+        this.pendingState = null;
+        clearTimeout(this.refreshTimer);
         this.finishRenderWait();
+        // 闲置 5 分钟后销毁窗口释放内存
+        clearTimeout(this.idleDestroyTimer);
+        this.idleDestroyTimer = setTimeout(() => {
+            if (!this.isVisible()) this.cleanup();
+        }, 5 * 60 * 1000);
     }
 
     cleanup() {
@@ -101,6 +118,8 @@ class CustomTrayMenuService {
             this.menuWindow.destroy();
         }
         this.menuWindow = null;
+        clearTimeout(this.refreshTimer);
+        clearTimeout(this.idleDestroyTimer);
     }
 
     updatePlaybackState(isPlaying, currentTime = 0) {
@@ -123,7 +142,7 @@ class CustomTrayMenuService {
         this.pushState(this.pendingState);
     }
 
-    async ensureWindow() {
+    async ensureWindow(theme) {
         if (this.menuWindow && !this.menuWindow.isDestroyed()) return;
 
         this.menuWindow = new BrowserWindow({
@@ -163,7 +182,9 @@ class CustomTrayMenuService {
             this.finishRenderWait();
         });
 
-        await this.menuWindow.loadFile(path.join(__dirname, '../view/index.html'));
+        await this.menuWindow.loadFile(path.join(__dirname, '../view/index.html'), {
+            query: { theme: theme === 'dark' ? 'dark' : 'light' }
+        });
     }
 
     positionWindow(tray) {
@@ -289,7 +310,9 @@ class CustomTrayMenuService {
     }
 
     getTheme(themeCache) {
-        return themeCache === 'dark' ? 'dark' : 'light';
+        if (themeCache === 'dark') return 'dark';
+        if (themeCache === 'light') return 'light';
+        return nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
     }
 
     getLabels() {
@@ -365,9 +388,9 @@ class CustomTrayMenuService {
         }
 
         if (keepOpenActions.has(action)) {
-            setTimeout(() => {
-                void this.refresh();
-            }, 180);
+            // 兜底刷新,正常情况下由 current-song-updated 事件驱动
+            clearTimeout(this.refreshTimer);
+            this.refreshTimer = setTimeout(() => void this.refresh(), 250);
             return;
         }
 

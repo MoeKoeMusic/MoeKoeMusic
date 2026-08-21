@@ -10,6 +10,11 @@ export default function useAudioController({ onSongEnd, updateCurrentTime }) {
     const volume = ref(66);
     const playbackRate = ref(1.0);
 
+    // 音量滑块采用平方映射,贴近人耳对数听感,低音量区(1%~10%)调节更细腻
+    const VOLUME_CURVE = 2;
+    const sliderToAmplitude = (value) => Math.pow(Math.max(0, Math.min(100, value)) / 100, VOLUME_CURVE);
+    const amplitudeToSlider = (amplitude) => Math.round(Math.pow(Math.max(0, Math.min(1, amplitude)), 1 / VOLUME_CURVE) * 100);
+
     // Web Audio API 用于动态增益
     const audioContext = ref(null);
     const sourceNode = ref(null);
@@ -115,8 +120,8 @@ export default function useAudioController({ onSongEnd, updateCurrentTime }) {
                 console.log('[AudioController] 限制增益以防止削波');
             }
 
-            // 限制增益范围 (0.1 到 3.0，即 -20dB 到 +9.5dB)
-            currentLoudnessGain.value = Math.max(0.1, Math.min(3.0, gainAdjustment));
+            // 限制增益范围 (0.01 到 3.0，即 -40dB 到 +9.5dB)，适配高响度母带音源
+            currentLoudnessGain.value = Math.max(0.01, Math.min(3.0, gainAdjustment));
 
             console.log('[AudioController] 响度规格化:', {
                 volume: volume + ' LUFS',
@@ -208,7 +213,7 @@ export default function useAudioController({ onSongEnd, updateCurrentTime }) {
         const savedVolume = localStorage.getItem('player_volume');
         if (savedVolume !== null) volume.value = parseFloat(savedVolume);
         isMuted.value = volume.value === 0;
-        audio.volume = volume.value / 100;
+        audio.volume = sliderToAmplitude(volume.value);
         audio.muted = isMuted.value;
 
         // 初始化播放速度
@@ -275,14 +280,14 @@ export default function useAudioController({ onSongEnd, updateCurrentTime }) {
         if (isMuted.value) {
             volume.value = 0;
         } else {
-            volume.value = audio.volume * 100;
+            volume.value = amplitudeToSlider(audio.volume);
         }
         localStorage.setItem('player_volume', volume.value);
     };
 
     // 修改音量
     const changeVolume = () => {
-        audio.volume = volume.value / 100;
+        audio.volume = sliderToAmplitude(volume.value);
         localStorage.setItem('player_volume', volume.value);
         isMuted.value = volume.value === 0;
         audio.muted = isMuted.value;
@@ -340,6 +345,7 @@ export default function useAudioController({ onSongEnd, updateCurrentTime }) {
         setCurrentTime,
         setPlaybackRate,
         destroy,
+        amplitudeToSlider,
         // 响度规格化相关
         applyLoudnessNormalization,
         ensureAudioContextRunning,

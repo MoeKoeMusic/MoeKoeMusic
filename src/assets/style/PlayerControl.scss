@@ -50,10 +50,6 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
     min-width: 0;
 
     &.lyrics-align-left {
-        .line-group {
-            transform-origin: left center;
-        }
-
         .line {
             margin-right: auto;
         }
@@ -101,18 +97,19 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
 
 .line-group {
     margin-bottom: 12px;
-    transform: translateY(0) scale(1);
+    font-size: 1em;
     transform-origin: center;
     transition:
-        transform 0.42s cubic-bezier(0.18, 1.35, 0.28, 1),
+        font-size 0.42s cubic-bezier(0.18, 1.35, 0.28, 1),
         filter 0.32s ease;
-    will-change: transform;
+    will-change: font-size;
 }
 
 .line-group.current-line-group {
     position: relative;
     z-index: 1;
-    transform: translateY(0px) scale(1.25);
+    // 用 font-size 放大而非 transform: scale，让放大参与布局、按真实尺寸重新折行，避免长歌词溢出裁切
+    font-size: 1.25em;
     filter: drop-shadow(0 10px 20px rgba(255, 255, 255, 0.16));
 }
 

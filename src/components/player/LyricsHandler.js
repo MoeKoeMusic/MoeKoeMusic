@@ -212,16 +212,19 @@ export default function useLyricsHandler(t) {
     // 滚动到当前歌词行
     const scrollToCurrentLine = (lineIndex) => {
         if (currentLineIndex === lineIndex) return;
-        
+
         currentLineIndex = lineIndex;
-        const lyricsContainer = document.getElementById('lyrics-container');
-        if (!lyricsContainer) return false;
-        const containerHeight = lyricsContainer.offsetHeight;
-        const lineElement = document.querySelectorAll('.line-group')[lineIndex];
-        if (lineElement) {
-            const lineHeight = lineElement.offsetHeight;
-            scrollAmount.value = -lineElement.offsetTop + (containerHeight / 2) - (lineHeight / 2) - 32;
-        }
+        // 当前行用 font-size 放大会改变各行高度，须等 DOM 应用放大后再测量，否则用旧布局定位会偏移
+        nextTick(() => {
+            const lyricsContainer = document.getElementById('lyrics-container');
+            if (!lyricsContainer) return;
+            const containerHeight = lyricsContainer.offsetHeight;
+            const lineElement = document.querySelectorAll('.line-group')[lineIndex];
+            if (lineElement) {
+                const lineHeight = lineElement.offsetHeight;
+                scrollAmount.value = -lineElement.offsetTop + (containerHeight / 2) - (lineHeight / 2) - 32;
+            }
+        });
     };
 
     // 高亮当前字符

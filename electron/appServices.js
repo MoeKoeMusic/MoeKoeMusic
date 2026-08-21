@@ -72,6 +72,9 @@ export function createWindow() {
     });
     bindExternalLinkHandler(mainWindow);
 
+    // 移除默认菜单，防止原生窗口装饰器下按 Alt 键弹出菜单栏
+    mainWindow.setMenu(null);
+
     if (store.get('maximize')) {
         mainWindow.maximize();
     }

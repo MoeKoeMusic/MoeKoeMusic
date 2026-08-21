@@ -294,7 +294,8 @@ import {
     usePlaybackMode,
     useMediaSession,
     useSongQueue,
-    useHelpers
+    useHelpers,
+    setAudioOutputDevice
 } from './player';
 
 // 基础设置
@@ -524,7 +525,7 @@ const updateCurrentTime = throttle(() => {
 
 // 初始化各个模块
 const audioController = useAudioController({ onSongEnd, updateCurrentTime });
-const { playing, isMuted, volume, changeVolume, audio, playbackRate, setPlaybackRate, applyLoudnessNormalization, ensureAudioContextRunning, toggleLoudnessNormalization, loudnessNormalizationEnabled, currentLoudnessGain, webAudioInitialized } = audioController;
+const { playing, isMuted, volume, changeVolume, audio, playbackRate, setPlaybackRate, applyLoudnessNormalization, ensureAudioContextRunning, toggleLoudnessNormalization, loudnessNormalizationEnabled, currentLoudnessGain, webAudioInitialized, amplitudeToSlider } = audioController;
 const volumePercentText = computed(() => `${Math.round(volume.value)}%`);
 const volumeValueStyle = computed(() => {
     const percent = Math.round(volume.value);
@@ -583,7 +584,7 @@ const getCurrentLineIndex = (currentTime) => {
 };
 
 const progressBar = useProgressBar(audio, resetLyricsHighlight);
-const { progressWidth, isProgressDragging, showTimeTooltip, tooltipPosition, tooltipTime, climaxPoints, formatTime, getMusicHighlights, onProgressDragStart, updateProgressFromEvent, updateTimeTooltip, hideTimeTooltip } = progressBar;
+const { progressWidth, isProgressDragging, showTimeTooltip, tooltipPosition, tooltipTime, climaxPoints, formatTime, getMusicHighlights, clearMusicHighlights, onProgressDragStart, updateProgressFromEvent, updateTimeTooltip, hideTimeTooltip } = progressBar;
 
 const playbackMode = usePlaybackMode(t, audio);
 const { playbackModes, currentPlaybackModeIndex, currentPlaybackMode, playedSongsStack, currentStackIndex, togglePlaybackMode, setPlaybackMode } = playbackMode;
@@ -592,6 +593,21 @@ const mediaSession = useMediaSession();
 
 const songQueue = useSongQueue(t, musicQueueStore, queueList);
 const { currentSong, NextSong, addSongToQueue, addCloudMusicToQueue, addLocalMusicToQueue, addLocalPlaylistToQueue, addToNext, getPlaylistAllSongs, addPlaylistToQueue, addCloudPlaylistToQueue, restoreLocalSongCover } = songQueue;
+
+const resetTrackTimeline = () => {
+    currentTime.value = 0;
+    progressWidth.value = 0;
+    clearMusicHighlights();
+    resetLyricsHighlight(0);
+    localStorage.setItem('player_progress', '0');
+};
+
+watch(
+    () => currentSong.value?.hash || '',
+    (hash, previousHash) => {
+        if (previousHash && hash !== previousHash) resetTrackTimeline();
+    }
+);
 
 let lyricsBackgroundCarouselTimer = null;
 let lyricsCoverImagesRequestId = 0;
@@ -866,6 +882,8 @@ const playSong = async (song) => {
             return;
         }
 
+        resetTrackTimeline();
+
         currentSong.value = structuredClone(toPlayerSong(song));
 
         // 应用响度规格化（如果已启用 Web Audio）
@@ -935,15 +953,18 @@ const playSong = async (song) => {
                 ...savedLocalSong,
                 url: ''
             }));
+            window.electron?.ipcRenderer?.send('current-song-updated');
             return;
         }
         // 保存当前歌曲到本地存储
         localStorage.setItem('current_song', JSON.stringify(currentSong.value));
+        window.electron?.ipcRenderer?.send('current-song-updated');
 
         getVip();
         // 获取歌词
         getCurrentLyrics();
-        getMusicHighlights(currentSong.value.hash);
+        const highlightHash = currentSong.value.hash;
+        getMusicHighlights(highlightHash, () => currentSong.value?.hash === highlightHash);
     } catch (error) {
         console.error('[PlayerControl] 播放音乐时发生错误:', error);
         playing.value = false;
@@ -951,12 +972,14 @@ const playSong = async (song) => {
     }
 };
 
-// 切换播放/暂停
-const togglePlayPause = async () => {
+// 恢复播放（不创建新 Audio，复用现有 src / 队列 URL 的恢复逻辑）
+const resumePlayback = async () => {
+    if (!audio.paused) return true;
+
     if (!currentSong.value.hash) {
         console.log('[PlayerControl] 没有当前歌曲，尝试播放队列中的下一首');
         playSongFromQueue('next');
-        return;
+        return false;
     } else if (!audio.src) {
         console.log('[PlayerControl] 音频源为空，尝试重新设置');
         if (currentSong.value.url && !isLocalSong(currentSong.value)) {
@@ -975,8 +998,9 @@ const togglePlayPause = async () => {
                     });
                     if (result && result.song) {
                         await playSong(result.song);
+                        return true;
                     }
-                    return;
+                    return false;
                 } else if (song.url) {
                     console.log('[PlayerControl] 从队列中的歌曲获取URL:', song.url);
                     currentSong.value.url = song.url;
@@ -984,47 +1008,55 @@ const togglePlayPause = async () => {
                 } else if (song.isCloud) {
                     console.log('[PlayerControl] 云音乐没有URL，重新获取');
                     addCloudMusicToQueue(song.hash, song.name, song.author, song.timeLength, song.img);
-                    return;
+                    return false;
                 } else {
                     console.log('[PlayerControl] 歌曲没有URL，重新获取');
                     const result = await addSongToQueue(song.hash, song.name, song.img, song.author);
                     if (result && result.song) {
                         playSong(result.song);
+                        return true;
                     }
-                    return;
+                    return false;
                 }
             } else {
                 console.log('[PlayerControl] 歌曲不在队列中，播放下一首');
                 playSongFromQueue('next');
-                return;
+                return false;
             }
         }
     }
 
-    if (playing.value) {
-        console.log('[PlayerControl] 暂停播放');
-        audio.pause();
-        playing.value = false;
-    } else {
+    try {
+        mediaSession.changeMediaSession(currentSong.value);
+        // 更新SMTC位置状态
+        if (audio.duration) {
+            mediaSession.updatePositionState(audio.currentTime, audio.duration, currentSpeed.value);
+        }
+    } catch(smtcErr) {
+        console.warn('[PlayerControl] 更新 SMTC 信息失败:', smtcErr);
+    }
+
+    try {
+        // 响度规格化开启时 AudioContext 可能处于 suspended，恢复播放前先确保其运行
+        await ensureAudioContextRunning();
+        await audio.play();
+        playing.value = true;
+        return true;
+    } catch (retryError) {
+        console.error('[PlayerControl] 播放失败:', retryError);
+        window.$modal.alert(t('bo-fang-shi-bai'));
+        return false;
+    }
+};
+
+// 切换播放/暂停（状态以 audio.paused 为准）
+const togglePlayPause = async () => {
+    if (audio.paused) {
         console.log('[PlayerControl] 开始播放');
-
-        try {
-            mediaSession.changeMediaSession(currentSong.value);
-            // 更新SMTC位置状态
-            if (audio.duration) {
-                mediaSession.updatePositionState(audio.currentTime, audio.duration, currentSpeed.value);
-            }
-        } catch(smtcErr) {
-            console.warn('[PlayerControl] 更新 SMTC 信息失败:', smtcErr);
-        }
-
-        try {
-            await audio.play();
-            playing.value = true;
-        } catch (retryError) {
-            console.error('[PlayerControl] 播放失败:', retryError);
-            window.$modal.alert(t('bo-fang-shi-bai'));
-        }
+        await resumePlayback();
+    } else {
+        console.log('[PlayerControl] 暂停播放');
+        pausePlayback();
     }
 };
 
@@ -1412,7 +1444,7 @@ const toggleMute = () => {
     isMuted.value = !isMuted.value;
     audio.muted = isMuted.value;
     if (isMuted.value) volume.value = 0;
-    else volume.value = audio.volume * 100;
+    else volume.value = amplitudeToSlider(audio.volume);
     localStorage.setItem('player_volume', volume.value);
     console.log('[PlayerControl] 切换静音:', isMuted.value, '音量:', volume.value, '实际audio.volume:', audio.volume);
 };
@@ -1490,21 +1522,19 @@ const setAudioOutputDeviceWatcherEnabled = (enabled) => {
 let audioOutputDeviceWatchChangeHandler = null;
 
 const applyAudioOutputDevice = async (deviceId) => {
-    if (typeof audio?.setSinkId !== 'function') {
+    const result = await setAudioOutputDevice(audio, deviceId);
+    if (result.ok) return true;
+
+    if (result.reason === 'UNSUPPORTED') {
         console.warn('[PlayerControl] 当前环境不支持切换音频输出设备（setSinkId不可用）');
-        return false;
+    } else if (result.requested !== 'default') {
+        console.error('[PlayerControl] 切换音频输出设备失败:', result.error);
+        window.$modal.alert('切换音频输出设备失败,请刷新页面后重试');
+    } else {
+        console.warn('[PlayerControl] 切回默认音频输出设备失败:', result.error);
     }
 
-    const sinkId = deviceId || 'default';
-    try {
-        await audio.setSinkId(sinkId);
-        console.log('[PlayerControl] 已切换音频输出设备:', sinkId);
-        return true;
-    } catch (error) {
-        console.warn('[PlayerControl] 切换音频输出设备失败:', error);
-        window.$modal.alert('切换音频输出设备失败,请刷新页面后重试');
-        return false;
-    }
+    return false;
 };
 
 // 切换速度菜单
@@ -1634,7 +1664,8 @@ onMounted(() => {
 
     // 设置媒体会话
     mediaSession.initMediaSession({
-        togglePlayPause,
+        play: resumePlayback,
+        pause: pausePlayback,
         playPrevious: () => playSongFromQueue('previous'),
         playNext: () => playSongFromQueue('next'),
         seekBackward: (seekOffset) => {

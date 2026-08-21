@@ -2,13 +2,18 @@ export default function useMediaSession() {
   // 初始化媒体会话
   const initMediaSession = (handlers) => {
     if (!("mediaSession" in navigator) || !navigator.mediaSession) return;
-    
-    // 基本播放控制
-    navigator.mediaSession.setActionHandler('play', handlers.togglePlayPause);
-    navigator.mediaSession.setActionHandler('pause', handlers.togglePlayPause);
+
+    // play / pause 使用明确的恢复/暂停操作，绝不使用 toggle 以避免误判
+    if (typeof handlers.play === 'function') {
+      navigator.mediaSession.setActionHandler('play', () => handlers.play());
+    }
+    if (typeof handlers.pause === 'function') {
+      navigator.mediaSession.setActionHandler('pause', () => handlers.pause());
+    }
+
     navigator.mediaSession.setActionHandler('previoustrack', handlers.playPrevious);
     navigator.mediaSession.setActionHandler('nexttrack', handlers.playNext);
-    
+
     // SMTC 时间轴控制
     navigator.mediaSession.setActionHandler('seekbackward', (details) => {
       if (handlers.seekBackward) {
@@ -16,21 +21,21 @@ export default function useMediaSession() {
         handlers.seekBackward(seekOffset);
       }
     });
-    
+
     navigator.mediaSession.setActionHandler('seekforward', (details) => {
       if (handlers.seekForward) {
         const seekOffset = details.seekOffset || 10; // 默认快进10秒
         handlers.seekForward(seekOffset);
       }
     });
-    
+
     navigator.mediaSession.setActionHandler('seekto', (details) => {
       if (handlers.seekTo && details.seekTime !== undefined) {
         handlers.seekTo(details.seekTime);
       }
     });
   };
-  
+
   // 更新媒体会话信息
   const changeMediaSession = (song) => {
     if (!("mediaSession" in navigator) || !navigator.mediaSession) return;
@@ -58,16 +63,16 @@ export default function useMediaSession() {
         console.error("Failed to update media session metadata:", error);
       }
     };
-    
+
     updateMediaSession();
   };
 
   // 更新播放位置状态
   const updatePositionState = (currentTime, duration, playbackRate = 1.0) => {
     if (!("mediaSession" in navigator) || !navigator.mediaSession) return;
-    
+
     try {
-      if (typeof currentTime === 'number' && typeof duration === 'number' && 
+      if (typeof currentTime === 'number' && typeof duration === 'number' &&
           currentTime >= 0 && duration > 0 && currentTime <= duration) {
         navigator.mediaSession.setPositionState({
           duration: duration,
@@ -83,18 +88,18 @@ export default function useMediaSession() {
   // 清除位置状态
   const clearPositionState = () => {
     if (!("mediaSession" in navigator) || !navigator.mediaSession) return;
-    
+
     try {
       navigator.mediaSession.setPositionState(null);
     } catch (error) {
       console.error("Failed to clear position state:", error);
     }
   };
-  
+
   return {
     initMediaSession,
     changeMediaSession,
     updatePositionState,
     clearPositionState
   };
-} 
+}

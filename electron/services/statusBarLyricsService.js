@@ -41,6 +41,13 @@ class StatusBarLyricsService {
         });
     }
 
+    // 主窗口可能已销毁,访问 webContents 前必须检查,否则抛 "Object has been destroyed"
+    getLiveWebContents() {
+        const win = this.mainWindow;
+        if (!win || win.isDestroyed()) return null;
+        return win.webContents;
+    }
+
     // 处理歌词数据 (供 main.js 调用)
     handleLyricsData(lyricsData) {
         if (!this.isStatusBarLyricsEnabled()) {
@@ -58,9 +65,7 @@ class StatusBarLyricsService {
             }
 
             if (currentLyric !== this.lastStatusBarLyric) {
-                if (this.mainWindow?.webContents) {
-                    this.mainWindow.webContents.send('generate-statusbar-image', currentLyric);
-                }
+                this.getLiveWebContents()?.send('generate-statusbar-image', currentLyric);
                 this.lastStatusBarLyric = currentLyric;
             }
         } else {
@@ -69,9 +74,7 @@ class StatusBarLyricsService {
                 this.clearLyricsTimeout = setTimeout(() => {
                     // 再次检查设置，确保这段时间没被关闭
                     if (this.isStatusBarLyricsEnabled()) {
-                        if (this.mainWindow?.webContents) {
-                            this.mainWindow.webContents.send('generate-statusbar-image', ''); // 发送空字符触发占位符
-                        }
+                        this.getLiveWebContents()?.send('generate-statusbar-image', ''); // 发送空字符触发占位符
                         this.lastStatusBarLyric = '';
                     }
                     this.clearLyricsTimeout = null;
@@ -94,7 +97,7 @@ class StatusBarLyricsService {
                 tray.setImage(nativeImage.createEmpty()); // 清除图片
 
                 // 如果需要恢复原始 Tray 图标，这里可能需要重新调用 createTray
-                if (this.createTrayCallback) {
+                if (this.createTrayCallback && this.mainWindow && !this.mainWindow.isDestroyed()) {
                     this.createTrayCallback(this.mainWindow);
                 }
 
@@ -155,9 +158,10 @@ class StatusBarLyricsService {
         // 等待窗口准备好后触发渲染
         this.mainWindow.webContents.once('did-finish-load', () => {
             setTimeout(() => {
-                if (this.mainWindow?.webContents) {
+                const webContents = this.getLiveWebContents();
+                if (webContents) {
                     console.log('[StatusBarLyricsService] 启动时主动触发状态栏歌词渲染');
-                    this.mainWindow.webContents.send('generate-statusbar-image', '');
+                    webContents.send('generate-statusbar-image', '');
                 }
             }, 1000);
         });

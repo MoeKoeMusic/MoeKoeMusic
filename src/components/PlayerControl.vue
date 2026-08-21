@@ -285,6 +285,7 @@ import FullscreenLyricsSettings from './FullscreenLyricsSettings.vue';
 import { useRouter } from 'vue-router';
 import { getCover, getAudioOutputDeviceSignature, share } from '../utils/utils';
 import { get } from '../utils/request';
+import { createTeamEventPopup, actions as teamEventActions } from '@/utils/teamEvent';
 
 // 从统一入口导入所有模块
 import {
@@ -1416,7 +1417,7 @@ const setupMediaShortcuts = () => {
     window.electron.ipcRenderer.on('toggle-mute', toggleMute);
     window.electron.ipcRenderer.on('toggle-like', () => playlistSelect.value.toLike());
     window.electron.ipcRenderer.on('toggle-mode', togglePlaybackMode);
-    window.electron.ipcRenderer.on('url-params', (_event, data) => {
+    window.electron.ipcRenderer.on('url-params', async (_event, data) => {
         console.log('[PlayerControl] 接收到URL参数:', data);
 
         // 处理歌曲哈希参数
@@ -1435,6 +1436,10 @@ const setupMediaShortcuts = () => {
                 path: '/PlaylistDetail',
                 query: { global_collection_id: data.listid }
             });
+        } else if(data.teamcode) {
+            console.log('[PlayerControl] 从URL启动打开组队活动并加入队伍:', data.teamcode);
+            await createTeamEventPopup();
+            await teamEventActions.joinTeam(data.teamcode);
         }
     });
 };

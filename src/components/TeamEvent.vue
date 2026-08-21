@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, useTemplateRef, onMounted } from 'vue';
+import { computed, useTemplateRef } from 'vue';
 import { MoeAuthStore } from '@/stores/store';
 
 const moeAuthStore = MoeAuthStore();
@@ -20,6 +20,7 @@ const closeWithAnimation = () => {
 
 const popupRef = useTemplateRef('popup');
 const badgeLabel = computed(() => {
+    if(!moeAuthStore.isAuthenticated) return '';
     const periodName = status.my.info?.period_info.name;
     const roleName = status.my.status?.is_create_team && '队长' ||
                      status.my.status?.is_join_team && '队员' ||
@@ -33,9 +34,9 @@ const badgeLabel = computed(() => {
     <div class="popup" ref="popup">
         <div class="my-info">
             <div class="avatar-and-info">
-                <img class="avatar" draggable="false" :src="moeAuthStore.UserInfo?.pic" />
+                <img class="avatar" draggable="false" :src="moeAuthStore.UserInfo?.pic || './assets/images/profile.jpg'" />
                 <span class="info">
-                    <span class="nick">{{ moeAuthStore.UserInfo?.nickname }}</span>
+                    <span class="nick">{{ moeAuthStore.UserInfo?.nickname || '未登录' }}</span>
                     <span class="badge">{{ badgeLabel }}</span>
                 </span>
             </div>
@@ -61,7 +62,7 @@ const badgeLabel = computed(() => {
                 </div>
             </div>
         </template>
-        <div v-else>还没有队伍呢, 快去加入或者创建一个!</div>
+        <div v-else>{{ moeAuthStore.isAuthenticated? '还没有队伍呢, 快去加入或者创建一个!': '登录后才能参与哦~' }}</div>
         <span class="title">活动信息</span>
         <template v-if="status.periodInfo" v-for="(info, period) in status.periodInfo" :key="period">
             <div v-if="info.name" class="period-card" :class="period">
@@ -71,8 +72,8 @@ const badgeLabel = computed(() => {
                 <div class="banner">
                     <div v-if="period === 'current_period_info'">
                         <div class="btns">
-                            <button class="primary" type="button" :disabled="!!status.my.status?.is_create_team" @click="createTeam">创建队伍</button>
-                            <button type="button" :disabled="!!status.my.status?.is_join_team" @click="()=>joinTeam()">加入队伍</button>
+                            <button class="primary" type="button" :disabled="!moeAuthStore.isAuthenticated || !!status.my.status?.is_create_team" @click="createTeam">创建队伍</button>
+                            <button type="button" :disabled="!moeAuthStore.isAuthenticated || !!status.my.status?.is_join_team" @click="()=>joinTeam()">加入队伍</button>
                         </div>
                     </div>
                     <span class="text" v-else>该期活动已结束~</span>

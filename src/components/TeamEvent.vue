@@ -1,12 +1,16 @@
 <script setup>
-import { reactive, ref, useTemplateRef, onMounted } from 'vue';
-import { get, post } from '@/utils/request';
+import { computed, ref, useTemplateRef, onMounted } from 'vue';
 import { MoeAuthStore } from '@/stores/store';
 
 const moeAuthStore = MoeAuthStore();
 
-const { closePopup } = defineProps({
-    closePopup: Function
+const { closePopup, status, copyTeamCode, createTeam, joinTeam, refreshStatus } = defineProps({
+    closePopup: Function,
+    status: Object,
+    copyTeamCode: Function,
+    createTeam: Function,
+    joinTeam: Function,
+    refreshStatus: Function
 });
 
 const closeWithAnimation = () => {
@@ -15,123 +19,12 @@ const closeWithAnimation = () => {
 }
 
 const popupRef = useTemplateRef('popup');
-const refreshLock = ref(false);
-const badgeLabel = ref('');
-const currentPeriod = ref(0);
-const eventStatus = reactive({
-    periodInfo: null,
-    my: {
-        info: null,
-        status: null,
-        teams: {
-            created: null,
-            joined: null
-        }
-    },
-});
-
-const getBadgeLabel = () => {
-    const periodName = eventStatus.my.info.period_info.name;
-    const roleName = eventStatus.my.status.is_create_team && '队长' ||
-                     eventStatus.my.status.is_join_team && '队员' ||
+const badgeLabel = computed(() => {
+    const periodName = status.my.info?.period_info.name;
+    const roleName = status.my.status?.is_create_team && '队长' ||
+                     status.my.status?.is_join_team && '队员' ||
                      '访客';
     return `${periodName} ${roleName}`;
-}
-
-const getMyTeam = () => {
-    // 目前每人都只能同时创建和加入一个队伍
-    // 所以直接这样写
-    eventStatus.my.teams.created = !!eventStatus.my.status?.is_create_team && eventStatus.my.info?.my_create_team_list[0];
-    eventStatus.my.teams.joined = !!eventStatus.my.status?.is_join_team && eventStatus.my.info?.my_join_team_list[0];
-}
-
-const refreshStatus = async () => {
-    const periodInfo = await get('/team/period/info');
-    eventStatus.periodInfo = periodInfo.data;
-    currentPeriod.value = eventStatus.periodInfo?.current_period_info?.id || 0;
-    if (!periodInfo.status || currentPeriod.value === 0) {
-        $modal.alert(`获取当期组队活动失败: ${periodInfo.error_msg}`);
-        console.error('[组队活动] 获取当期组队活动失败, 错误码:', periodInfo.error_code);
-        return;
-    }
-    console.log('[组队活动] 当期组队活动 id:', currentPeriod.value);
-    eventStatus.my.status = (await get(`/team/my/status?period_id=${currentPeriod.value}`)).data;
-    eventStatus.my.info = (await get(`/team/my/info?period_id=${currentPeriod.value}`)).data;
-
-    badgeLabel.value = getBadgeLabel();
-    getMyTeam();
-}
-
-const createTeam = async () => {
-    if(currentPeriod.value === 0) return;
-    return await get(`/team/my?period_id=${currentPeriod.value}`);
-}
-
-const joinTeam = async (team_code) => {
-    if(!team_code) return;
-    return await post('/team/join', { team_code });
-}
-
-const copyTeamCode = async (teamCode) => {
-    try {
-        if(!teamCode) throw new Error('team code can\'t be empty');
-        await navigator.clipboard.writeText(teamCode);
-        $message.success('已复制邀请码, 快去发给好友吧~');
-    } catch(e) {
-        $message.error('复制失败!');
-        console.error('[组队活动] 复制邀请码失败:', e);
-    }
-}
-
-const createTeamFromUi = async () => {
-    try {
-        const res = await createTeam();
-        if(res.data?.team_id) {
-            $message.success('已成功创建队伍!');
-            await refreshStatus();
-        } else {
-            $message.error(res.error_msg || '创建队伍失败');
-            console.error('[组队活动] 创建队伍失败:', res);
-        }
-    } catch(e) {
-        if(e.response?.data?.team_id) {
-            $message.success('创建队伍成功!');
-            await refreshStatus();
-            return;
-        }
-        $message.error(e.response?.data?.error_msg || '创建队伍失败');
-        console.error('[组队活动] 创建队伍失败:', e);
-    }
-}
-
-const joinTeamFromUi = async () => {
-    const team_code = await $modal.prompt('请输入队伍码:');
-    if(!team_code) return;
-    try {
-        const res = await joinTeam(team_code);
-        if(!res.status) {
-            $message.success('已成功加入队伍!');
-            await refreshStatus();
-        } else {
-            $message.error(res.error_msg || '加入队伍失败');
-            console.error('[组队活动] 加入队伍失败:', res);
-        }
-    }
-    catch(e) {
-        $message.error(e.response?.data?.error_msg || '加入队伍失败');
-        console.error('[组队活动] 加入队伍失败:', e);
-    }
-}
-
-const refreshStatusFromUi = () => {
-    refreshLock.value = true;
-    refreshStatus();
-    setTimeout(() => refreshLock.value = false, 3000);
-}
-
-onMounted(async () => {
-    await refreshStatus();
-    // console.log('[team-event] on-mounted', eventStatus);
 });
 </script>
 
@@ -147,30 +40,30 @@ onMounted(async () => {
                 </span>
             </div>
             <div class="btns">
-                <button class="act-btn" type="button" title="刷新" :disabled="refreshLock" @click="refreshStatusFromUi"><i class="fas fa-refresh" /></button>
+                <button class="act-btn" type="button" title="刷新" :disabled="status.refreshLock" @click="refreshStatus"><i class="fas fa-refresh" /></button>
                 <button class="act-btn" type="buton" title="关闭" @click="closeWithAnimation"><i class="fas fa-xmark" /></button>
             </div>
         </div>
         <span class="title">我的队伍</span>
-        <template v-if="!!eventStatus.my.status?.is_create_team || !!eventStatus.my.status?.is_join_team">
-            <div v-if="!!eventStatus.my.status?.is_create_team" class="my-team">
-                <span class="sub-title">我创建的队伍 ({{ eventStatus.my.teams.created?.member_list.length || 0 }}/3)</span>
+        <template v-if="!!status.my.status?.is_create_team || !!status.my.status?.is_join_team">
+            <div v-if="!!status.my.status?.is_create_team" class="my-team">
+                <span class="sub-title">我创建的队伍 ({{ status.my.teams.created?.member_list.length || 0 }}/3)</span>
                 <div class="members">
-                    <img draggable="false" v-for="m in eventStatus.my.teams.created?.member_list" :src="m.user_pic" :title="m.nick_name" />
-                    <span v-if="eventStatus.my.teams.created?.member_list.length < 3" class="invite" title="复制邀请码" @click="() => copyTeamCode(eventStatus.my.teams.created?.team_code)"><i class="fas fa-plus" /></span>
+                    <img draggable="false" v-for="m in status.my.teams.created?.member_list" :src="m.user_pic" :title="m.nick_name" />
+                    <span v-if="status.my.teams.created?.member_list.length < 3" class="invite" title="复制邀请码" @click="() => copyTeamCode(status.my.teams.created?.team_code)"><i class="fas fa-plus" /></span>
                 </div>
             </div>
-            <div v-if="!!eventStatus.my.status?.is_join_team" class="my-team">
-                <span class="sub-title">我加入的队伍 ({{ eventStatus.my.teams.joined?.member_list.length || 0 }}/3)</span>
+            <div v-if="!!status.my.status?.is_join_team" class="my-team">
+                <span class="sub-title">我加入的队伍 ({{ status.my.teams.joined?.member_list.length || 0 }}/3)</span>
                 <div class="members">
-                    <img draggable="false" v-for="m in eventStatus.my.teams.joined?.member_list" :src="m.user_pic" :title="m.nick_name" />
-                    <span v-if="eventStatus.my.teams.joined?.member_list.length < 3" class="invite" title="复制邀请码" @click="() => copyTeamCode(eventStatus.my.teams.joined?.team_code)"><i class="fas fa-plus" /></span>
+                    <img draggable="false" v-for="m in status.my.teams.joined?.member_list" :src="m.user_pic" :title="m.nick_name" />
+                    <span v-if="status.my.teams.joined?.member_list.length < 3" class="invite" title="复制邀请码" @click="() => copyTeamCode(status.my.teams.joined?.team_code)"><i class="fas fa-plus" /></span>
                 </div>
             </div>
         </template>
         <div v-else>还没有队伍呢, 快去加入或者创建一个!</div>
         <span class="title">活动信息</span>
-        <template v-if="eventStatus.periodInfo" v-for="(info, period) in eventStatus.periodInfo" :key="period">
+        <template v-if="status.periodInfo" v-for="(info, period) in status.periodInfo" :key="period">
             <div v-if="info.name" class="period-card" :class="period">
                 <span class="title">
                     {{ info.name }} {{ info.status_name }}
@@ -178,8 +71,8 @@ onMounted(async () => {
                 <div class="banner">
                     <div v-if="period === 'current_period_info'">
                         <div class="btns">
-                            <button class="primary" type="button" :disabled="!!eventStatus.my.status?.is_create_team" @click="createTeamFromUi">创建队伍</button>
-                            <button type="button" :disabled="!!eventStatus.my.status?.is_join_team" @click="joinTeamFromUi">加入队伍</button>
+                            <button class="primary" type="button" :disabled="!!status.my.status?.is_create_team" @click="createTeam">创建队伍</button>
+                            <button type="button" :disabled="!!status.my.status?.is_join_team" @click="()=>joinTeam()">加入队伍</button>
                         </div>
                     </div>
                     <span class="text" v-else>该期活动已结束~</span>

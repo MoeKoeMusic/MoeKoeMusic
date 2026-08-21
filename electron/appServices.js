@@ -789,6 +789,7 @@ export function setThumbarButtons(mainWindow, isPlaying = false) {
 // 处理自定义协议相关
 let hash = "";
 let listid = "";
+let teamcode;
 let protocolMainWindow = null;
 
 // 注册自定义协议
@@ -845,6 +846,7 @@ function handleUrl(url) {
     // 提取所有参数并更新全局变量
     hash = urlObj.searchParams.get("hash") || "";
     listid = urlObj.searchParams.get("listid") || "";
+    teamcode = urlObj.searchParams.get('code') || '';
 
     // 根据路径和参数决定发送什么数据到渲染进程
     if (protocolMainWindow && protocolMainWindow.webContents) {
@@ -852,6 +854,7 @@ function handleUrl(url) {
         protocolMainWindow.webContents.send('url-params', {
             hash,
             listid,
+            teamcode,
             urlPath: urlObj.pathname.substring(1) // 去掉前导斜杠
         });
     }
@@ -863,13 +866,14 @@ export function sendHashAfterLoad(mainWindow) {
         protocolMainWindow = mainWindow;
     }
 
-    if ((hash || listid) && protocolMainWindow) {
+    if ((hash || listid || teamcode) && protocolMainWindow) {
         protocolMainWindow.webContents.on('did-finish-load', () => {
             setTimeout(() => {
                 protocolMainWindow.webContents.send('url-params', {
                     hash,
                     listid,
-                    urlPath: 'share'
+                    teamcode,
+                    urlPath: teamcode? 'join': 'share'
                 });
             }, 1000);
         });

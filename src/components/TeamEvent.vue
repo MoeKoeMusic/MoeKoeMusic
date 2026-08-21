@@ -15,30 +15,34 @@ const closeWithAnimation = () => {
 }
 
 const popupRef = useTemplateRef('popup');
-const myTeam = ref(null);
+const refreshLock = ref(false);
 const badgeLabel = ref('');
 const currentPeriod = ref(0);
 const eventStatus = reactive({
     periodInfo: null,
-    my: { info: null, status: null },
+    my: {
+        info: null,
+        status: null,
+        teams: {
+            created: null,
+            joined: null
+        }
+    },
 });
 
 const getBadgeLabel = () => {
     const periodName = eventStatus.my.info.period_info.name;
     const roleName = eventStatus.my.status.is_create_team && '队长' ||
                      eventStatus.my.status.is_join_team && '队员' ||
-                     eventStatus.my.status.is_visit_team && '访客';
+                     '访客';
     return `${periodName} ${roleName}`;
 }
 
 const getMyTeam = () => {
-    let teams;
-    if(eventStatus.my.status.is_create_team)
-        teams = eventStatus.my.info.my_create_team_list;
-    else if(eventStatus.my.status.is_join_team)
-        teams = eventStatus.my.info.my_join_team_list;
-    else return null;
-    return teams.find(t => t.period_info.id === currentPeriod.value) || false;
+    // 目前每人都只能同时创建和加入一个队伍
+    // 所以直接这样写
+    eventStatus.my.teams.created = !!eventStatus.my.status?.is_create_team && eventStatus.my.info?.my_create_team_list[0];
+    eventStatus.my.teams.joined = !!eventStatus.my.status?.is_join_team && eventStatus.my.info?.my_join_team_list[0];
 }
 
 const refreshStatus = async () => {
@@ -55,7 +59,7 @@ const refreshStatus = async () => {
     eventStatus.my.info = (await get(`/team/my/info?period_id=${currentPeriod.value}`)).data;
 
     badgeLabel.value = getBadgeLabel();
-    myTeam.value = getMyTeam();
+    getMyTeam();
 }
 
 const createTeam = async () => {
@@ -115,9 +119,15 @@ const joinTeamFromUi = async () => {
     }
 }
 
+const refreshStatusFromUi = () => {
+    refreshLock.value = true;
+    refreshStatus();
+    setTimeout(() => refreshLock.value = false, 3000);
+}
+
 onMounted(async () => {
     await refreshStatus();
-    // console.log('[team-event] on-mounted', eventStatus, myTeam);
+    console.log('[team-event] on-mounted', eventStatus);
 });
 </script>
 
@@ -132,16 +142,28 @@ onMounted(async () => {
                     <span class="badge">{{ badgeLabel }}</span>
                 </span>
             </div>
-            <button class="close-btn" type="buton" title="关闭" @click="closeWithAnimation"><i class="fas fa-xmark" /></button>
-        </div>
-        <span class="title">我的队伍 ({{ myTeam?.member_list?.length || 0 }})</span>
-        <div v-if="myTeam" class="my-team">
-            <div class="members">
-                <img draggable="false" v-for="m in myTeam?.member_list" :src="m.user_pic" :title="m.nick_name" />
-                <span class="invite" title="复制邀请码" @click="copyTeamCode"><i class="fas fa-plus" /></span>
+            <div class="btns">
+                <button class="act-btn" type="button" title="刷新" :disabled="refreshLock" @click="refreshStatusFromUi"><i class="fas fa-refresh" /></button>
+                <button class="act-btn" type="buton" title="关闭" @click="closeWithAnimation"><i class="fas fa-xmark" /></button>
             </div>
         </div>
-        <div v-else-if="myTeam === null">少女祈祷中...</div>
+        <span class="title">我的队伍</span>
+        <template v-if="!!eventStatus.my.info?.is_create_team || !!eventStatus.my.info?.is_join_team">
+            <div v-if="!!eventStatus.my.info?.is_create_team" class="my-team">
+                <span class="sub-title">我创建的队伍</span>
+                <div class="members">
+                    <img draggable="false" v-for="m in eventStatus.my.teams.created?.member_list" :src="m.user_pic" :title="m.nick_name" />
+                    <span v-if="eventStatus.my.teams.created?.member_list.length < 3" class="invite" title="复制邀请码" @click="copyTeamCode"><i class="fas fa-plus" /></span>
+                </div>
+            </div>
+            <div v-if="!!eventStatus.my.info?.is_join_team" class="my-team">
+                <span class="sub-title">我加入的队伍</span>
+                <div class="members">
+                    <img draggable="false" v-for="m in eventStatus.my.teams.joined?.member_list" :src="m.user_pic" :title="m.nick_name" />
+                    <span v-if="eventStatus.my.teams.joined?.member_list.length < 3" class="invite" title="复制邀请码" @click="copyTeamCode"><i class="fas fa-plus" /></span>
+                </div>
+            </div>
+        </template>
         <div v-else>还没有队伍呢, 快去加入或者创建一个!</div>
         <span class="title">活动信息</span>
         <template v-if="eventStatus.periodInfo" v-for="(info, period) in eventStatus.periodInfo" :key="period">
@@ -151,10 +173,9 @@ onMounted(async () => {
                 </span>
                 <div class="banner">
                     <div v-if="period === 'current_period_info'">
-                        <span class="text" v-if="myTeam">快去邀请好友加入队伍吧~</span>
-                        <div class="btns" v-else>
-                            <button class="primary" type="button" @click="createTeamFromUi">创建队伍</button>
-                            <button type="button" @click="joinTeamFromUi">加入队伍</button>
+                        <div class="btns">
+                            <button class="primary" type="button" :disabled="!!eventStatus.my.info?.is_create_team" @click="createTeamFromUi">创建队伍</button>
+                            <button type="button" :disabled="!!eventStatus.my.info?.is_join_team" @click="joinTeamFromUi">加入队伍</button>
                         </div>
                     </div>
                     <span class="text" v-else>该期活动已结束~</span>
@@ -216,7 +237,7 @@ onMounted(async () => {
             }
         }
     }
-    >.close-btn {
+    >.btns>.act-btn {
         color: var(--text-color);
         cursor: pointer;
         border: none;
@@ -224,6 +245,10 @@ onMounted(async () => {
         font-size: 1.2rem;
         &:hover {
             opacity: 0.6;
+        }
+        &:disabled {
+            cursor: not-allowed;
+            opacity: 0.2;
         }
     }
 }

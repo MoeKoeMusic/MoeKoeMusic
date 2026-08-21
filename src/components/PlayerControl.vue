@@ -602,9 +602,6 @@ const resetTrackTimeline = () => {
     localStorage.setItem('player_progress', '0');
 };
 
-// Queue metadata changes before the playable URL is resolved. Reset as soon
-// as the selected track changes so the old progress/climax markers never sit
-// under the new title while addSongToQueue is still fetching that URL.
 watch(
     () => currentSong.value?.hash || '',
     (hash, previousHash) => {
@@ -885,10 +882,6 @@ const playSong = async (song) => {
             return;
         }
 
-        // A track change can happen between timeupdate events.
-        // Reset the visible timeline immediately and invalidate any pending
-        // climax request from the previous song so stale markers cannot be
-        // written back after the new song has started.
         resetTrackTimeline();
 
         currentSong.value = structuredClone(toPlayerSong(song));

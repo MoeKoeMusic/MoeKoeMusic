@@ -9,6 +9,10 @@ $text-secondary: #999;
 $text-muted: #777;
 
 html.dark {
+    --text-color: #{$text-primary};
+    --background-color: #{$bg-dark};
+    --border-color: #{$border-color};
+
     background-color: $bg-dark;
     color: $text-primary;
     filter: brightness(0.8);

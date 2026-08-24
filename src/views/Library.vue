@@ -46,6 +46,7 @@
                         <div class="user-actions">
                             <span class="action-button" @click="signIn">{{ $t('qian-dao') }}</span>
                             <span class="action-button" @click="getVip">VIP</span>
+                            <span class="action-button" @click="createTeamEventPopup">组队领取 VIP</span>
                         </div>
                     </div>
                 </div>
@@ -172,6 +173,7 @@ import { getProfileBgColor } from '../utils/utils';
 import { MoeAuthStore } from '../stores/store';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { createTeamEventPopup } from '@/utils/teamEvent';
 import BirthdayEasterEgg from '../components/BirthdayEasterEgg.vue';
 import CommonSkeleton from '../components/CommonSkeleton.vue';
 const { t } = useI18n();

@@ -56,7 +56,7 @@ export function createWindow() {
         show: savedConfig?.startMinimized === 'on' ? false : true,
         frame: useNativeTitleBar,
         titleBarStyle: useNativeTitleBar ? 'default' : 'hiddenInset',
-        autoHideMenuBar: true,
+        autoHideMenuBar: false, 
         webPreferences: {
             preload: path.join(__dirname, 'preload.cjs'),
             contextIsolation: true,
@@ -72,8 +72,8 @@ export function createWindow() {
     });
     bindExternalLinkHandler(mainWindow);
 
-    // 移除默认菜单，防止原生窗口装饰器下按 Alt 键弹出菜单栏
-    mainWindow.setMenu(null);
+    // 隐藏菜单栏但保留默认菜单
+    mainWindow.setMenuBarVisibility(false);
 
     if (store.get('maximize')) {
         mainWindow.maximize();

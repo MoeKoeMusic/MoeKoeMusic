@@ -134,7 +134,6 @@ const throttle = (func, delay) => {
     }
 }
 
-// Linux 下 setIgnoreMouseEvents 的 forward 选项不可用，避免直接吃掉鼠标事件导致无法点击
 const isLinux = window?.electron?.platform === 'linux'
 const setIgnoreMouseEvents = (ignore) => {
     if (isLinux) return

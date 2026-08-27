@@ -61,7 +61,7 @@
             </div>
             <div class="error-message" v-if="phoneFormErrors.code">{{ phoneFormErrors.code }}</div>
           </div>
-          <button type="button" class="primary-button" @click="phoneLogin" :disabled="isPhoneLoginLoading">
+          <button type="button" class="primary-button" @click="phoneLogin()" :disabled="isPhoneLoginLoading">
             <span v-if="isPhoneLoginLoading" class="loading-spinner"></span>
             {{ $t('li-ji-deng-lu') }}
           </button>

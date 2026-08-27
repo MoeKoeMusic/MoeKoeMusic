@@ -720,7 +720,7 @@ export function playStartupSound() {
     const randomIndex = Math.floor(Math.random() * audioFiles.length);
     const soundPath = isDev
         ? path.join(__dirname, '..', 'public', audioFiles[randomIndex])
-        : path.join(process.resourcesPath, 'public', audioFiles[randomIndex]);
+        : path.join(process.resourcesPath, '..', audioFiles[randomIndex]);
     try {
         switch (process.platform) {
             case 'win32':

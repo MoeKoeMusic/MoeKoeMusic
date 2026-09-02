@@ -42,12 +42,12 @@ const refreshStatus = async () => {
 
 const createTeam = async () => {
     if(currentPeriod.value === 0) return;
-    return await get(`/team/my?period_id=${currentPeriod.value}`);
+    return await get(`/team/my?period_id=${currentPeriod.value}&t=${Date.now()}`);
 }
 
 const joinTeam = async (team_code) => {
     if(!team_code) return;
-    return await post('/team/join', { team_code });
+    return await post(`/team/join?t=${Date.now()}`, { team_code });
 }
 
 const generateShareText = (teamCode) => {

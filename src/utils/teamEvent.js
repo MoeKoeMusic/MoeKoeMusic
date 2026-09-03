@@ -25,7 +25,7 @@ const getMyTeam = () => {
 }
 
 const refreshStatus = async () => {
-    const periodInfo = await get('/team/period/info');
+    const periodInfo = await get(`/team/period/info?t=${Date.now()}`);
     eventStatus.periodInfo = periodInfo.data;
     currentPeriod.value = eventStatus.periodInfo?.current_period_info?.id || 0;
     if (!periodInfo.status || currentPeriod.value === 0) {
@@ -34,20 +34,20 @@ const refreshStatus = async () => {
         return;
     }
     console.log('[组队活动] 当期组队活动 id:', currentPeriod.value);
-    eventStatus.my.status = (await get(`/team/my/status?period_id=${currentPeriod.value}`)).data;
-    eventStatus.my.info = (await get(`/team/my/info?period_id=${currentPeriod.value}`)).data;
+    eventStatus.my.status = (await get(`/team/my/status?period_id=${currentPeriod.value}&t=${Date.now()}`)).data;
+    eventStatus.my.info = (await get(`/team/my/info?period_id=${currentPeriod.value}&t=${Date.now()}`)).data;
 
     getMyTeam();
 }
 
 const createTeam = async () => {
     if(currentPeriod.value === 0) return;
-    return await get(`/team/my?period_id=${currentPeriod.value}`);
+    return await get(`/team/my?period_id=${currentPeriod.value}&t=${Date.now()}`);
 }
 
 const joinTeam = async (team_code) => {
     if(!team_code) return;
-    return await post('/team/join', { team_code });
+    return await post(`/team/join?t=${Date.now()}`, { team_code });
 }
 
 const generateShareText = (teamCode) => {

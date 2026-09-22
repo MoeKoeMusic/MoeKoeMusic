@@ -82,6 +82,8 @@
                         class="fas fa-add"></i></button>
                 <button class="extra-btn" :title="t('fen-xiang-ge-qu')" @click="share(currentSong.name, currentSong.hash)"><i
                         class="fas fa-share"></i></button>
+                <button class="extra-btn" :title="t('bo-fang-mv')" @click="playCurrentMv"><i
+                        class="fas" :class="mvLoading ? 'fa-spinner fa-spin' : 'fa-film'"></i></button>
                 <div class="playback-mode">
                     <button class="extra-btn" @click="togglePlaybackMode">
                         <i v-if="currentPlaybackModeIndex != '2'" :class="currentPlaybackMode.icon"
@@ -283,7 +285,8 @@ import PlaylistSelectModal from './PlaylistSelectModal.vue';
 import QueueList from './QueueList.vue';
 import FullscreenLyricsSettings from './FullscreenLyricsSettings.vue';
 import { useRouter } from 'vue-router';
-import { getCover, getAudioOutputDeviceSignature, share } from '../utils/utils';
+import { getCover, getAudioOutputDeviceSignature, share, openMvPlayer } from '../utils/utils';
+import { resolveSongMv } from '../utils/mv';
 import { get } from '../utils/request';
 import { createTeamEventPopup, actions as teamEventActions } from '@/utils/teamEvent';
 
@@ -1460,6 +1463,31 @@ const pausePlayback = (reason) => {
     playing.value = false;
     mediaSession.clearPositionState?.();
     if (reason) console.log('[PlayerControl] 暂停播放:', reason);
+};
+
+const mvLoading = ref(false);
+
+// 播放当前歌曲的 MV
+const playCurrentMv = async () => {
+    const song = currentSong.value;
+    if (!song?.hash || mvLoading.value) return;
+
+    mvLoading.value = true;
+    try {
+        const mv = await resolveSongMv(song);
+        if (!mv) {
+            $message.warning(t('gai-ge-qu-zan-wu-mv'));
+            return;
+        }
+
+        pausePlayback('播放MV');
+        await openMvPlayer(router, mv.hash, mv.title);
+    } catch (error) {
+        console.error('[PlayerControl] 打开MV失败:', error);
+        $message.error(t('bo-fang-mv-shi-bai'));
+    } finally {
+        mvLoading.value = false;
+    }
 };
 
 const showSpeedMenu = ref(false);

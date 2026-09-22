@@ -21,13 +21,15 @@ const cleanLogs = (content) => {
         /\b(mobile)=1[3-9]\d{9}/gm,
         /\b(token)=[A-Za-z0-9]+/gm,
         /(key)=[A-Za-z0-9]+/gm,
-        /\b(userid)=\d+/gm
+        /\b(userid)=\d+/gm,
+        /\b(username)=[^\s&]+/gim,
+        /\b(password)=[^\s&]+/gim
     ];
     matchs.forEach((match) => {
         content = content.replace(match, '$1=***');
     });
     return content;
-}
+};
 
 const exportLog = async () => {
     const logFile = path.join(app.getPath('logs'), 'main.log');

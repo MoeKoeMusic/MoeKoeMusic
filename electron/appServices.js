@@ -56,7 +56,9 @@ export function createWindow() {
         show: savedConfig?.startMinimized === 'on' ? false : true,
         frame: useNativeTitleBar,
         titleBarStyle: useNativeTitleBar ? 'default' : 'hiddenInset',
-        autoHideMenuBar: false, 
+        autoHideMenuBar: false,
+        // startMinimized 时窗口从不 show，默认的 paintWhenInitiallyHidden: true 会令隐藏窗口持续渲染，GPU 进程空转耗电
+        paintWhenInitiallyHidden: false,
         webPreferences: {
             preload: path.join(__dirname, 'preload.cjs'),
             contextIsolation: true,

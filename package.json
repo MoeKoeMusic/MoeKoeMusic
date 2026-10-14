@@ -1,6 +1,6 @@
 {
   "name": "moekoemusic",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "homepage": "https://music.moekoe.cn/",
   "main": "electron/main.js",
   "scripts": {

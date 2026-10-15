@@ -39,7 +39,7 @@
                             <span class="user-gender" :title="userGenderTitle">
                                 <i :class="userGenderIcon"></i>
                             </span>
-                            <span class="user-duration">{{ formatDuration(userDetail.duration || 0) }} {{
+                            <span class="user-duration">{{ formatDuration(listenTime || userDetail.duration || 0) }} {{
                                 $t('ting-ge-shi-chang') }}</span>
                             <span class="user-age">{{ formatRegTime(userDetail.rtime || 0) }}</span>
                         </div>
@@ -171,6 +171,7 @@ import { computed, ref, onMounted } from 'vue';
 import { get } from '../utils/request';
 import { getProfileBgColor } from '../utils/utils';
 import { MoeAuthStore } from '../stores/store';
+import { useListenTimeStore } from '@/stores/listenTime';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { createTeamEventPopup } from '@/utils/teamEvent';
@@ -179,6 +180,7 @@ import CommonSkeleton from '../components/CommonSkeleton.vue';
 const { t } = useI18n();
 const router = useRouter();
 const MoeAuth = MoeAuthStore();
+const { listenTime } = useListenTimeStore();
 const user = ref({});
 const userPlaylists = ref([]); // 创建的歌单
 const collectedPlaylists = ref([]); // 收藏的歌单

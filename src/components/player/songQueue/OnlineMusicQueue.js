@@ -78,6 +78,8 @@ export default function useOnlineMusicQueue(t, musicQueueStore, currentSong, tim
         const requestId = ++activeSongRequestId;
         const isStaleRequest = () => requestId !== activeSongRequestId;
         const currentSongHash = currentSong.value.hash;
+        // 切换音质等同一首歌的重复请求沿用已获取的 mixsongid，避免丢失
+        const previousMixSongId = currentSongHash === hash ? (Number(currentSong.value.mixsongid) || null) : null;
         if (typeof window !== 'undefined' && typeof window.electron !== 'undefined') {
             window.electron.ipcRenderer.send('set-tray-title', name + ' - ' + author);
         }
@@ -92,6 +94,7 @@ export default function useOnlineMusicQueue(t, musicQueueStore, currentSong, tim
             currentSong.value.resolvedQuality = '';
             currentSong.value.qualityLabel = '';
             currentSong.value.qualityOptions = [];
+            currentSong.value.mixsongid = previousMixSongId;
 
             console.log('[SongQueue] 获取歌曲:', hash, name);
 
@@ -107,6 +110,7 @@ export default function useOnlineMusicQueue(t, musicQueueStore, currentSong, tim
             let response = null;
             let selectedCandidate = { hash, quality: '' };
             let qualityOptions = [];
+            let mixSongId = previousMixSongId;
 
             if (!isAuth) {
                 data.free_part = 1;
@@ -126,6 +130,11 @@ export default function useOnlineMusicQueue(t, musicQueueStore, currentSong, tim
                         const privilegeResponse = await get(`/privilege/lite`, { hash: hash });
                         if (isStaleRequest()) return { stale: true };
                         qualityOptions = getQualityOptions(privilegeResponse);
+                        // /song/url 不返回 mixsongid，从 /privilege/lite 的 album_audio_id 提取，供听歌时长上报使用
+                        const albumAudioId = Number(privilegeResponse?.data?.[0]?.album_audio_id);
+                        if (Number.isSafeInteger(albumAudioId) && albumAudioId > 0) {
+                            mixSongId = albumAudioId;
+                        }
                     }
                     candidates = getPrivilegeCandidates(qualityOptions, q, hash);
                 } catch (error) {
@@ -200,6 +209,7 @@ export default function useOnlineMusicQueue(t, musicQueueStore, currentSong, tim
                 currentSong.value.resolvedQuality = selectedCandidate.quality || '';
                 currentSong.value.qualityLabel = getQualityLabel(selectedCandidate.quality);
                 currentSong.value.qualityOptions = qualityOptions.map(option => ({ ...option }));
+                currentSong.value.mixsongid = mixSongId;
                 console.log('[SongQueue] 获取到音乐URL:', currentSong.value.url);
             } else {
                 console.error('[SongQueue] 未获取到音乐URL');
@@ -215,6 +225,7 @@ export default function useOnlineMusicQueue(t, musicQueueStore, currentSong, tim
                 resolvedQuality: selectedCandidate.quality || '',
                 qualityLabel: getQualityLabel(selectedCandidate.quality),
                 qualityOptions: qualityOptions.map(option => ({ ...option })),
+                mixsongid: mixSongId,
                 name: name,
                 img: img,
                 author: author,

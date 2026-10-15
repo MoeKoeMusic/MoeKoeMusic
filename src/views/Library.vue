@@ -39,7 +39,7 @@
                             <span class="user-gender" :title="userGenderTitle">
                                 <i :class="userGenderIcon"></i>
                             </span>
-                            <span class="user-duration">{{ formatDuration(listenTime || userDetail.duration || 0) }} {{
+                            <span class="user-duration">{{ formatDuration(listenTimeMins || userDetail.duration || 0) }} {{
                                 $t('ting-ge-shi-chang') }}</span>
                             <span class="user-age">{{ formatRegTime(userDetail.rtime || 0) }}</span>
                         </div>
@@ -181,6 +181,7 @@ const { t } = useI18n();
 const router = useRouter();
 const MoeAuth = MoeAuthStore();
 const { listenTime } = useListenTimeStore();
+const listenTimeMins = computed(() => Math.round(listenTime / 60));
 const user = ref({});
 const userPlaylists = ref([]); // 创建的歌单
 const collectedPlaylists = ref([]); // 收藏的歌单

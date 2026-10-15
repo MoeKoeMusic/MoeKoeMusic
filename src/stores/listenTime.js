@@ -51,7 +51,6 @@ export const useListenTimeStore = defineStore('listen-time', () => {
 
 	/**
 	 * 上报 CSCC 事件载体
-	 * 注意：API 有 2 分钟 URL 缓存，文档要求该接口(含 POST)在 query 携带每次变化的 timestamp，否则上报会被缓存吞掉
 	 * @param {ReturnType<typeof generateCsccJson>} csccJson
 	 * @returns
 	 */
@@ -64,7 +63,7 @@ export const useListenTimeStore = defineStore('listen-time', () => {
 	 * @param {'start' | 'end' | 'switch'} type 事件类型
 	 * @param {object} data 必要数据
 	 * @param {number} data.mixsongid 歌曲 MixSongID
-	 * @param {number | undefined} data.d_sec 查询到的上次时长（秒，可选）
+	 * @param {number | undefined | null} data.d_sec 查询到的上次时长（秒，可选）
 	 * @param {number} data.diff_sec 差异时间（实际持续时间取整，秒）
 	 * @param {number} data.duration 实际持续时间（毫秒）
 	 * @returns 
@@ -72,13 +71,12 @@ export const useListenTimeStore = defineStore('listen-time', () => {
 	const reportCsccEvent = async (type, data) => {
 		try {
 			// end/switch 会联动等级同步，d_sec 要求 ≥ 服务器当前值；未显式传入时先刷新基线，避免同步被拒
-			if (type !== 'start' && (data?.d_sec === undefined || data?.d_sec === null)) {
+			if (type !== 'start' && !data.d_sec) {
 				await refreshListenTime();
 			}
 			const result = await reportCsccJson(generateCsccJson(type, data));
-			// 响应分两种结构：
-			// start（无同步参数）返回 CSCC 原始响应 { errcode, status }；
-			// end/switch（带 d_sec/diff_sec 联动同步）返回 { status, data: { report, grade, playback_accepted, grade_synced } }
+			// start 返回 CSCC 原始响应 { errcode, status }；
+			// end/switch 返回 { status, data: { report, grade, playback_accepted, grade_synced } }
 			const syncData = result?.data;
 			if (syncData && typeof syncData === 'object' && ('playback_accepted' in syncData || 'grade_synced' in syncData)) {
 				if (syncData.playback_accepted) {
@@ -93,7 +91,7 @@ export const useListenTimeStore = defineStore('listen-time', () => {
 				} else {
 					console.warn(m('时长同步失败'), syncData.grade);
 				}
-			} else if (result && (Number(result.status) === 1 || Number(result.errcode) === 0)) {
+			} else if (result && (result.status == 1 || result.errcode == 0)) {
 				console.log(m('已上报 CSCC 事件'), type);
 			} else {
 				console.warn(m('CSCC 事件响应异常'), result);

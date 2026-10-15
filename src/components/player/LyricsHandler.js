@@ -69,7 +69,7 @@ export default function useLyricsHandler(t) {
                 SongTips.value = t('huo-qu-ge-ci-shi-bai');
                 return false;
             }
-            parseLyrics(lyricResponse.decodeContent, settings?.lyricsTranslation === 'on');
+            parseLyrics(lyricResponse.decodeContent, settings?.lyricsTranslation !== 'off');
             originalLyrics.value = lyricResponse.decodeContent;
             centerFirstLine();
             return true;

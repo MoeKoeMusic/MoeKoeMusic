@@ -56,7 +56,9 @@ export function createWindow() {
         show: savedConfig?.startMinimized === 'on' ? false : true,
         frame: useNativeTitleBar,
         titleBarStyle: useNativeTitleBar ? 'default' : 'hiddenInset',
-        autoHideMenuBar: false, 
+        autoHideMenuBar: false,
+        // startMinimized 时窗口从不 show，默认的 paintWhenInitiallyHidden: true 会令隐藏窗口持续渲染，GPU 进程空转耗电；off 时保持 true 不影响 ready-to-show 语义
+        paintWhenInitiallyHidden: savedConfig?.startMinimized === 'on' ? false : true,
         webPreferences: {
             preload: path.join(__dirname, 'preload.cjs'),
             contextIsolation: true,
@@ -98,12 +100,6 @@ export function createWindow() {
 
     mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
         console.error('Failed to load:', errorCode, errorDescription);
-    });
-
-    mainWindow.once('ready-to-show', () => {
-        if (savedConfig?.startMinimized === 'on') {
-            mainWindow.hide();
-        }
     });
 
     mainWindow.webContents.on('did-finish-load', () => {

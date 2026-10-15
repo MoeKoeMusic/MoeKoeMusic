@@ -135,6 +135,29 @@ html.dark {
         }
     }
 
+    .player-menu {
+        background-color: $bg-card;
+        border: none;
+
+        &::after {
+            border-top-color: $bg-card;
+        }
+    }
+
+    .player-menu-item {
+        color: $text-primary;
+
+        &:hover:not(.disabled) {
+            background-color: $bg-hover;
+        }
+
+        &.active,
+        &.active:hover {
+            background-color: var(--primary-color);
+            color: #fff;
+        }
+    }
+
     .playlist-item,
     .song-item {
         background-color: $bg-card;

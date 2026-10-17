@@ -187,6 +187,8 @@
   "jin-yong-gpu-jia-su-zhong-qi-sheng-xiao": "GPU加速度を無効にします",
   "jie-mian": "インタフェース",
   "guan-bi-shi-minimize-to-tray": "窓を閉めるときにトレイに移動します",
+  "guan-bi-chuang-kou-hou-yin-cang-dock-tu-biao": "ウィンドウを閉じた後に Dock アイコンを隠す",
+  "yin-cang-dock-tu-biao-jin-zhi-chi-macos": "Dock アイコンの非表示は macOS のみ対応",
   "mi-gan-cheng": "ミアンオレンジ",
   "zhu-ce": "まだアカウントを持っていませんか？",
   "xin-zeng-zhang-hao-qing-xian-zai-guan-fang-ke-hu-duan-zhong-deng-lu-yi-ci": "新しいアカウントについては、公式クライアントにログインしてください",

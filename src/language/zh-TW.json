@@ -187,6 +187,8 @@
   "jin-yong-gpu-jia-su-zhong-qi-sheng-xiao": "禁用GPU加速",
   "jie-mian": "介面",
   "guan-bi-shi-minimize-to-tray": "關閉窗口時到托盤",
+  "guan-bi-chuang-kou-hou-yin-cang-dock-tu-biao": "關閉視窗後隱藏 Dock 圖示",
+  "yin-cang-dock-tu-biao-jin-zhi-chi-macos": "隱藏 Dock 圖示僅支援 macOS",
   "mi-gan-cheng": "蜜柑橙",
   "zhu-ce": "還沒有賬號？",
   "xin-zeng-zhang-hao-qing-xian-zai-guan-fang-ke-hu-duan-zhong-deng-lu-yi-ci": "新註冊賬號請先在官方客戶端中登錄一次",

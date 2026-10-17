@@ -347,6 +347,19 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
                 label: t('guan-bi-shi-minimize-to-tray')
             },
             {
+                key: 'hideDockIcon',
+                defaultValue: 'off',
+                itemIcon: 'fas fa-eye-slash',
+                selectionTitle: t('guan-bi-chuang-kou-hou-yin-cang-dock-tu-biao'),
+                options: [
+                    { displayText: t('da-kai'), value: 'on' },
+                    { displayText: t('guan-bi'), value: 'off' }
+                ],
+                available: 'darwin',
+                unavailableText: t('yin-cang-dock-tu-biao-jin-zhi-chi-macos'),
+                label: t('guan-bi-chuang-kou-hou-yin-cang-dock-tu-biao')
+            },
+            {
                 key: 'autoStart',
                 defaultValue: 'off',
                 itemIcon: 'fas fa-power-off',

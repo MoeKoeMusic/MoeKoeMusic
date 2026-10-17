@@ -501,7 +501,12 @@ export function startApiServer() {
                     apiPath = path.join(process.resourcesPath, '../api', 'app_win.exe');
                     break;
                 case 'darwin':
-                    apiPath = path.join(process.resourcesPath, '../api', 'app_macos');
+                    // Apple Silicon 原生运行，避免 Rosetta 2 转换 Intel 版 api 二进制
+                    apiPath = path.join(
+                        process.resourcesPath,
+                        '../api',
+                        process.arch === 'arm64' ? 'app_macos_arm64' : 'app_macos'
+                    );
                     break;
                 case 'linux':
                     apiPath = path.join(process.resourcesPath, '../api', 'app_linux');

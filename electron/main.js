@@ -113,8 +113,6 @@ app.on('before-quit', () => {
     setImmediate(() => {
         statusBarLyricsService.cleanup();
         customTrayMenuService.cleanup();
-
-        stopApiServer();
         apiService.stop();
         cleanupExtensions();
         app.exit(0);

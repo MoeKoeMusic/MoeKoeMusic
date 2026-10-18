@@ -4,13 +4,13 @@
   "homepage": "https://music.moekoe.cn/",
   "main": "electron/main.js",
   "scripts": {
-    "install-all": "npm install && cd api && npm install",
+    "install-all": "echo this script was deprecated, and will be remove in future. && npm run install",
     "serve": "vite",
     "build": "vite build",
     "build:docker": "cross-env VITE_APP_API_URL=/api vite build",
     "preview": "vite preview",
     "electron:serve": "cross-env NODE_ENV=development electron .",
-    "api": "node api/app.js --platform=lite --port=6521",
+    "api": "kugoumusicapi --platform=lite --port=6521",
     "dev": "npm run api & npm run serve & npm run electron:serve",
     "build:api:win": "npm run --prefix ./api pkgwin",
     "build:api:linux": "npm run --prefix ./api pkglinux",
@@ -46,13 +46,6 @@
       }
     ],
     "extraFiles": [
-      {
-        "from": "api/bin",
-        "to": "api/",
-        "filter": [
-          "**/*"
-        ]
-      },
       {
         "from": "public/assets",
         "to": "assets"
@@ -168,6 +161,7 @@
     "electron-log": "^5.2.0",
     "electron-store": "^10.0.0",
     "electron-updater": "^6.6.2",
+    "kugoumusicapi": "github:MakcRe/KuGouMusicApi#main",
     "music-metadata": "^11.7.3",
     "pinia": "^3.0.0",
     "pinia-plugin-persistedstate": "^4.1.1",

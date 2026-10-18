@@ -2,7 +2,7 @@ import { app, ipcMain, globalShortcut, dialog, Notification, shell, session, pow
 import {
     createWindow, createTray, createTouchBar, registerShortcut,
     playStartupSound, createLyricsWindow, setThumbarButtons,
-    registerProtocolHandler, sendHashAfterLoad, getTray, createMvWindow
+    registerProtocolHandler, sendHashAfterLoad, getTray, createMvWindow, syncDockIcon
 } from './appServices.js';
 import { initializeExtensions, cleanupExtensions } from './extensions/extensions.js';
 import { setupAutoUpdater, startUpdateDownload } from './services/updater.js';
@@ -187,6 +187,8 @@ ipcMain.on('save-settings', (event, settings) => {
             path: app.getPath('exe'),
         });
     }
+    // 关闭「隐藏 Dock 图标」开关时立即恢复 Dock 图标(即时生效,无需重启)
+    syncDockIcon();
 });
 ipcMain.on('clear-settings', (event) => {
     store.clear();

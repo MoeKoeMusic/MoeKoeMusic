@@ -188,6 +188,8 @@
   "jin-yong-gpu-jia-su-zhong-qi-sheng-xiao": "Disable GPU Acceleration",
   "jie-mian": "Interface",
   "guan-bi-shi-minimize-to-tray": "Minimize to Tray on Close",
+  "guan-bi-chuang-kou-hou-yin-cang-dock-tu-biao": "Hide Dock icon after closing windows",
+  "yin-cang-dock-tu-biao-jin-zhi-chi-macos": "Hiding the Dock icon is only available on macOS",
   "mi-gan-cheng": "Orange",
   "zhu-ce": "No Account?",
   "xin-zeng-zhang-hao-qing-xian-zai-guan-fang-ke-hu-duan-zhong-deng-lu-yi-ci": "New Account? Log in to Official App First",

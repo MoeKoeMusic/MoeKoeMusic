@@ -188,6 +188,8 @@
   "jin-yong-gpu-jia-su-zhong-qi-sheng-xiao": "Отключить GPU-ускорение",
   "jie-mian": "Интерфейс",
   "guan-bi-shi-minimize-to-tray": "Сворачивать в трей при закрытии",
+  "guan-bi-chuang-kou-hou-yin-cang-dock-tu-biao": "Скрывать значок Dock после закрытия окон",
+  "yin-cang-dock-tu-biao-jin-zhi-chi-macos": "Скрытие значка Dock доступно только на macOS",
   "mi-gan-cheng": "Оранжевый",
   "zhu-ce": "Нет аккаунта?",
   "xin-zeng-zhang-hao-qing-xian-zai-guan-fang-ke-hu-duan-zhong-deng-lu-yi-ci": "Новый аккаунт? Сначала войдите в официальном приложении",

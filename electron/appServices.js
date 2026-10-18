@@ -16,6 +16,26 @@ const { TouchBarLabel, TouchBarButton, TouchBarGroup, TouchBarSpacer } = TouchBa
 let mainWindow = null;
 let tray = null;
 
+// macOS:根据应用窗口可见性同步 Dock 图标
+// 开启「关闭窗口后隐藏 Dock 图标」后,所有应用窗口都不可见时隐藏 Dock 图标(应用退到托盘继续运行),
+// 任意应用窗口再次显示时自动恢复;桌面歌词悬浮窗不计入应用窗口
+export function syncDockIcon() {
+    if (process.platform !== 'darwin' || !app.dock) return;
+    if (store.get('settings')?.hideDockIcon !== 'on') {
+        // 开关关闭时确保 Dock 图标可见(处理关闭开关时窗口全部隐藏的情况)
+        app.dock.show();
+        return;
+    }
+    const hasVisibleWindow = BrowserWindow.getAllWindows().some(
+        (win) => !win.isDestroyed() && win !== lyricsWindow && win.isVisible()
+    );
+    if (hasVisibleWindow) {
+        app.dock.show();
+    } else {
+        app.dock.hide();
+    }
+}
+
 // 创建主窗口
 export function createWindow() {
     const savedConfig = store.get('settings');
@@ -120,6 +140,10 @@ export function createWindow() {
         }
     });
 
+    // macOS:窗口显示/隐藏时同步 Dock 图标(托盘、快捷键、activate 等所有唤起路径都会触发 show)
+    mainWindow.on('show', syncDockIcon);
+    mainWindow.on('hide', syncDockIcon);
+
     if (process.platform === 'win32') {
         setThumbarButtons(mainWindow);
     }
@@ -127,6 +151,9 @@ export function createWindow() {
     if (savedConfig?.desktopLyrics === 'on') {
         createLyricsWindow();
     }
+
+    // 启动即隐藏(启动时最小化)的场景下初始同步一次 Dock 图标
+    syncDockIcon();
     return mainWindow;
 }
 
@@ -226,7 +253,7 @@ export function createLyricsWindow() {
 
 export function createMvWindow() {
     const { screenWidth, screenHeight } = screen.getPrimaryDisplay().workAreaSize;
-    return new BrowserWindow({
+    const mvWindow = new BrowserWindow({
         width: Math.min(screenWidth * 0.8, 1280),
         height: Math.min(screenHeight * 0.8, 720),
         frame: false,
@@ -247,6 +274,11 @@ export function createMvWindow() {
         },
         icon: getIconPath('icon.ico')
     });
+    // macOS:MV 窗口显示/关闭时同步 Dock 图标
+    mvWindow.on('show', syncDockIcon);
+    mvWindow.on('hide', syncDockIcon);
+    mvWindow.on('closed', syncDockIcon);
+    return mvWindow;
 }
 
 const getIconPath = (iconName, subPath = '') => path.join(

@@ -1,8 +1,9 @@
-import { WebSocketServer } from 'ws';
+import createServer from '../util/kugouapi/createServer.js';
 
 class ApiService {
     constructor() {
-        this.wsServer = null;
+        this.app = null;
+        this.server = null;
         this.clients = new Set();
         this.currentLyrics = null;
         this.isPlaying = false;
@@ -12,11 +13,30 @@ class ApiService {
     init(mainWindow) {
         this.mainWindow = mainWindow;
     }
-    // 启动 WebSocket 服务器
-    start() {
-        if (this.wsServer) return; 
-        this.wsServer = new WebSocketServer({ port: 6520 });
-        this.wsServer.on('connection', (ws) => {
+    /**
+     * 开启外部 API 服务
+     * @param {object} config 外部 API 服务配置
+     * @param {string | null | undefined} config.host 监听主机
+     * @param {number | null | undefined} config.port 监听端口
+     * @param {string | null | undefined} config.wsPath WebSocket 监听地址
+     * @returns 
+     */
+    start(config) {
+        if (this.app) return;
+        this.app = createServer();
+
+        config = {
+            host: '0.0.0.0',
+            port: 6520,
+            wsPath: '/moekoe',
+            ...config
+        }
+        if(config.wsPath && !config.wsPath.startsWith('/'))
+            config.wsPath = `/${config.wsPath}`;
+
+        this.app.ws(config.wsPath, async (req, res) => {
+            const ws = await res.accept();
+
             this.clients.add(ws);
             //发送欢迎信息
             ws.send(JSON.stringify({
@@ -60,24 +80,29 @@ class ApiService {
             });
         });
 
-        console.log('WebSocket server running at ws://127.0.0.1:6520');
+
+        this.server = this.app.createServer();
+        this.server.listen(config.port, config.host, () => {
+            console.log(`KuGouMusicApi server running at http://${config.host}:${config.port}`);
+            console.log(`WebSocket server running at ws://${config.host}:${config.port}${config.wsPath}`);
+        });
     }
 
     stop() {
-        if (this.wsServer) {
+        if (this.app) {
             for (const client of this.clients) {
                 client.close();
             }
             this.clients.clear();
-            this.wsServer.close();
-            this.wsServer = null;
-            console.log('WebSocket 服务器已停止');
+            this.server.close();
+            this.server = null;
+            console.log('外部 API 服务已停止');
         }
     }
-    
+
     // 广播到所有客户端
     broadcastToClients(data) {
-        if(!this.wsServer) return;
+        if (!this.app) return;
         const message = JSON.stringify(data);
         for (const client of this.clients) {
             if (client.readyState === 1) {
@@ -100,7 +125,7 @@ class ApiService {
                 break;
         }
     }
-    
+
     // 更新歌词数据
     updateLyrics(lyricsData) {
         this.currentLyrics = lyricsData;
@@ -109,7 +134,7 @@ class ApiService {
             data: lyricsData
         });
     }
-    
+
     // 更新播放状态
     updatePlayerState(state) {
         this.isPlaying = state.isPlaying;

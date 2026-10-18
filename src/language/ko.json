@@ -187,6 +187,8 @@
   "jin-yong-gpu-jia-su-zhong-qi-sheng-xiao": "GPU 가속도를 비활성화합니다",
   "jie-mian": "인터페이스",
   "guan-bi-shi-minimize-to-tray": "창을 닫을 때 트레이로 이동하십시오",
+  "guan-bi-chuang-kou-hou-yin-cang-dock-tu-biao": "창을 닫으면 Dock 아이콘 숨기기",
+  "yin-cang-dock-tu-biao-jin-zhi-chi-macos": "Dock 아이콘 숨기기는 macOS에서만 지원",
   "mi-gan-cheng": "미안 오렌지",
   "zhu-ce": "아직 계정이 없습니까?",
   "xin-zeng-zhang-hao-qing-xian-zai-guan-fang-ke-hu-duan-zhong-deng-lu-yi-ci": "새 계정을 위해 공식 고객에게 로그인하십시오.",

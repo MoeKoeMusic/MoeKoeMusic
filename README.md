@@ -1,6 +1,6 @@
 <br />
 <p align="center">
-    <img src="https://github.com/iAJue/MoeKoeMusic/raw/main/images/hero.png" alt="hero" width="250" height="250">
+    <img src="https://github.com/MoeKoeMusic/MoeKoeMusic/raw/main/images/hero.png" alt="hero" width="250" height="250">
   <h2 align="center" style="font-weight: 600">MoeKoe Music</h2>
   <p align="center">
     <a href="https://github.com/MoeKoeMusic/MoeKoeMusic/releases/latest"><img src="https://img.shields.io/github/v/release/MoeKoeMusic/MoeKoeMusic?style=flat-square" /></a>
@@ -12,24 +12,24 @@
   <p align="center">
     一款开源简洁高颜值的酷狗第三方客户端
     <br />
-    <a href="https://github.com/iAJue/MoeKoeMusic/" target="blank"><strong>🌎 GitHub仓库</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
-    <a href="https://github.com/iAJue/MoeKoeMusic/releases" target="blank"><strong>📦️ 下载安装包</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
+    <a href="https://github.com/MoeKoeMusic/MoeKoeMusic/" target="blank"><strong>🌎 GitHub仓库</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
+    <a href="https://github.com/MoeKoeMusic/MoeKoeMusic/releases" target="blank"><strong>📦️ 下载安装包</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
     <a href="https://MoeJue.cn" target="blank"><strong>💬 访问博客</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
     <a href="https://Music.MoeKoe.cn" target="blank"><strong>🏠 项目主页</strong></a>
   </p>
   <p align="center">
-    <a href="https://github.com/iAJue/MoeKoeMusic/README.md" target="blank"><strong>🇨🇳 简体中文</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
-    <a href="https://github.com/iAJue/MoeKoeMusic/blob/main/docs/README_tw.md" target="blank"><strong>🇨🇳 繁体中文</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
-    <a href="https://github.com/iAJue/MoeKoeMusic/blob/main/docs/README_ja.md" target="blank"><strong>🇯🇵 日本語</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
-    <a href="https://github.com/iAJue/MoeKoeMusic/blob/main/docs/README_en.md" target="blank"><strong>🇺🇸 English</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
-    <a href="https://github.com/iAJue/MoeKoeMusic/blob/main/docs/README_ko.md" target="blank"><strong>🇰🇷 한국어</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
-    <a href="https://github.com/iAJue/MoeKoeMusic/blob/main/docs/README_ru.md" target="blank"><strong>🇷🇺 Русский</strong></a>
+    <a href="https://github.com/MoeKoeMusic/MoeKoeMusic/README.md" target="blank"><strong>🇨🇳 简体中文</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
+    <a href="https://github.com/MoeKoeMusic/MoeKoeMusic/blob/main/docs/README_tw.md" target="blank"><strong>🇨🇳 繁体中文</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
+    <a href="https://github.com/MoeKoeMusic/MoeKoeMusic/blob/main/docs/README_ja.md" target="blank"><strong>🇯🇵 日本語</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
+    <a href="https://github.com/MoeKoeMusic/MoeKoeMusic/blob/main/docs/README_en.md" target="blank"><strong>🇺🇸 English</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
+    <a href="https://github.com/MoeKoeMusic/MoeKoeMusic/blob/main/docs/README_ko.md" target="blank"><strong>🇰🇷 한국어</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
+    <a href="https://github.com/MoeKoeMusic/MoeKoeMusic/blob/main/docs/README_ru.md" target="blank"><strong>🇷🇺 Русский</strong></a>
     <br />
     <br />
   </p>
 </p>
 
-![images](https://github.com/iAJue/MoeKoeMusic/raw/main/images/1.png)
+![images](https://github.com/MoeKoeMusic/MoeKoeMusic/raw/main/images/1.png)
 
 ## ❤️ 前言
 
@@ -75,7 +75,7 @@
 
 ### 1. 客户端安装
 
-访问本项目的 [Releases](https://github.com/iAJue/MoeKoeMusic/releases) 页面下载安装包。
+访问本项目的 [Releases](https://github.com/MoeKoeMusic/MoeKoeMusic/releases) 页面下载安装包。
 
 ### 2. WEB端安装（docker）
 
@@ -84,9 +84,8 @@
     1. 方式一：快速启动（推荐）
 
     ```
-    git clone https://github.com/iAJue/MoeKoeMusic.git
+    git clone --depth=1 https://github.com/MoeKoeMusic/MoeKoeMusic.git
     cd MoeKoeMusic
-    git submodule update --init --recursive
     docker compose up -d &
     ```
 
@@ -124,7 +123,7 @@
     复制内容上面的内容，粘贴到宝塔面板的容器编排里面，编排名称为MoeKoeMusic，点击部署即可。
 
 ### 3. 一键部署
-[![使用 EdgeOne Pages 部署](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://edgeone.ai/pages/new?template=https://github.com/iAJue/moekoemusic&install-command=npm%20install&output-directory=dist&root-directory=.%2F&build-command=npm%20run%20build&env=VITE_APP_API_URL)
+[![使用 EdgeOne Pages 部署](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://edgeone.ai/pages/new?template=https://github.com/MoeKoeMusic/MoeKoeMusic&install-command=npm%20install&output-directory=dist&root-directory=.%2F&build-command=npm%20run%20build&env=VITE_APP_API_URL)
 
 需在环境变量(VITE_APP_API_URL)中填写自己的API地址
 
@@ -133,35 +132,44 @@
 1. 克隆本仓库
 
 ```sh
-git clone --recurse-submodules https://github.com/iAJue/MoeKoeMusic.git
+git clone --depth=1 https://github.com/MoeKoeMusic/MoeKoeMusic.git
 ```
 
 2. 进入目录并安装依赖
 
 ```sh
 cd MoeKoeMusic
-npm run install-all
+npm install
 ```
 3. 启动开发者模式
+  - 在浏览器里开发
+  ```sh
+  npm run dev
+  ```
+  - 在客户端开发模式下开发
+  ```sh
+  npm run dev:client
+  ```
+
+4. 构建前端
+为你的目标平台选择一条命令来构建前端
 ```sh
-npm run dev
-```
-4. 打包项目
-```sh
-npm run build
+npm run build # 为网页端构建前端
+npm run build:client # 为客户端构建前端
+npm run build:docker # 为 Docker 镜像构建前端
 ```
 5. 编译项目
   - Windows: 
   ```sh
-  npm run electron:build:win [默认 NSIS 安装包]
+  npm run electron:build:win # [默认 NSIS 安装包]
   ```
   -	Linux: 
   ```sh
-  npm run electron:build:linux [默认 AppImage 格式]
+  npm run electron:build:linux # [默认 AppImage 格式]
   ```
   -	macOS: 
   ```sh
-  npm run electron:build:macos [默认 macOS 双架构]
+  npm run electron:build:macos # [默认 macOS 双架构]
   ```
 
 
@@ -173,22 +181,9 @@ npm run build
 
 1. 安装 [Node.js](https://nodejs.org/en/)，并确保 `Node.js` 版本 >= 18.0.0。
 
-2. 使用 `git clone https://github.com/iAJue/MoeKoeMusic.git` 克隆本仓库到本地。
+2. 使用 `git clone --depth=1 https://github.com/MoeKoeMusic/MoeKoeMusic.git` 克隆本仓库到本地。
 
 3. 使用 `npm install` 安装项目依赖。
-4. 编译API服务端
-    - Windows:
-        ```sh
-        npm run build:api:win
-        ```
-    - Linux:
-        ```sh
-        npm run build:api:linux
-        ```
-    - macOS:
-      ```sh
-      npm run build:api:macos
-      ```
 
 5. 选择下列的命令来打包适合的你的安装包，打包出来的文件在 `/dist_electron` 目录下。了解更多信息可访问 [electron-builder 文档](https://www.electron.build/cli)
 
@@ -265,7 +260,7 @@ npm run build
 
 如果您觉得这个项目对您有帮助，欢迎给我们一个 Star！您的支持是我们持续改进的动力。
 
-[![GitHub stars](https://img.shields.io/github/stars/iAJue/MoeKoeMusic.svg?style=social&label=Star)](https://github.com/iAJue/MoeKoeMusic)
+[![GitHub stars](https://img.shields.io/github/stars/MoeKoeMusic/MoeKoeMusic.svg?style=social&label=Star)](https://github.com/MoeKoeMusic/MoeKoeMusic)
 
 ## ✅ 反馈
 
@@ -286,7 +281,7 @@ npm run build
 
 本项目仅供个人学习研究使用，禁止用于商业及非法用途。
 
-基于 [GNU General Public License v2.0 (GPL-2.0)](https://github.com/iAJue/MoeKoeMusic/blob/main/LICENSE) 许可进行开源。
+基于 [GNU General Public License v2.0 (GPL-2.0)](https://github.com/MoeKoeMusic/MoeKoeMusic/blob/main/LICENSE) 许可进行开源。
 
 ## 👍 灵感来源
 
@@ -299,18 +294,18 @@ API 源代码来自 [MakcRe/KuGouMusicApi](https://github.com/MakcRe/KuGouMusicA
 
 ## 🖼️ 截图
 
-![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/2.png)
-![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/3.png)
-![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/4.png)
-![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/5.png)
-![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/6.png)
-![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/7.png)
-![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/8.png)
-![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/9.png)
-![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/10.png)
-![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/11.png)
+![image](https://github.com/MoeKoeMusic/MoeKoeMusic/raw/main/images/2.png)
+![image](https://github.com/MoeKoeMusic/MoeKoeMusic/raw/main/images/3.png)
+![image](https://github.com/MoeKoeMusic/MoeKoeMusic/raw/main/images/4.png)
+![image](https://github.com/MoeKoeMusic/MoeKoeMusic/raw/main/images/5.png)
+![image](https://github.com/MoeKoeMusic/MoeKoeMusic/raw/main/images/6.png)
+![image](https://github.com/MoeKoeMusic/MoeKoeMusic/raw/main/images/7.png)
+![image](https://github.com/MoeKoeMusic/MoeKoeMusic/raw/main/images/8.png)
+![image](https://github.com/MoeKoeMusic/MoeKoeMusic/raw/main/images/9.png)
+![image](https://github.com/MoeKoeMusic/MoeKoeMusic/raw/main/images/10.png)
+![image](https://github.com/MoeKoeMusic/MoeKoeMusic/raw/main/images/11.png)
 
 
 ## 🗓️ Star History
 
-[![Star History Chart](https://api.star-history.com/chart?repos=MoeKoeMusic/MoeKoeMusic&type=date&legend=top-left&sealed_token=unIw8k8CbengL1CW5XVoW-psSsTQHjp7X6Hchrr9WiEh4baeFZXunI95J9V8nnY8XTWrT8UuvRBXScevzXLRlhTID0-_V200iw9TFChclu1-28maCH3NutInvRl6nQ1jDMXpInpefFixeHYDr8BCn9fYqiNtZAoK30Vi46s7QPQQU80mJstgjgeqWjXf)](https://www.star-history.com/#iAJue/MoeKoeMusic&Date)
+[![Star History Chart](https://api.star-history.com/chart?repos=MoeKoeMusic/MoeKoeMusic&type=date&legend=top-left&sealed_token=unIw8k8CbengL1CW5XVoW-psSsTQHjp7X6Hchrr9WiEh4baeFZXunI95J9V8nnY8XTWrT8UuvRBXScevzXLRlhTID0-_V200iw9TFChclu1-28maCH3NutInvRl6nQ1jDMXpInpefFixeHYDr8BCn9fYqiNtZAoK30Vi46s7QPQQU80mJstgjgeqWjXf)](https://www.star-history.com/#MoeKoeMusic/MoeKoeMusic&Date)

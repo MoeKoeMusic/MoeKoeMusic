@@ -1,7 +1,6 @@
 import { app, ipcMain, globalShortcut, dialog, Notification, shell, session, powerSaveBlocker, nativeImage, screen } from 'electron';
 import {
-    createWindow, createTray, createTouchBar, startApiServer,
-    stopApiServer, registerShortcut,
+    createWindow, createTray, createTouchBar, registerShortcut,
     playStartupSound, createLyricsWindow, setThumbarButtons,
     registerProtocolHandler, sendHashAfterLoad, getTray, createMvWindow
 } from './appServices.js';
@@ -12,6 +11,7 @@ import statusBarLyricsService from './services/statusBarLyricsService.js';
 import customTrayMenuService from './services/customTrayMenuService.js';
 import { setupDesktopShortcutIcon } from './services/desktopShortcutIcon.js';
 import { openLogPath, exportLog } from './services/logHelper.js';
+import { registerKuGouApiHandler } from './services/kugouApiService.js';
 import Store from 'electron-store';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -21,6 +21,8 @@ let mainWindow = null;
 let blockerId = null;
 const store = new Store();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+process.env.platform = (store.get('settings')?.dataSource || 'concept') === 'concept'? 'lite': '';
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -42,55 +44,39 @@ if (!gotTheLock) {
 }
 
 app.on('ready', () => {
-    startApiServer().then(() => {
-        try {
-            mainWindow = createWindow();
-            createTray(mainWindow);
-            customTrayMenuService.init(() => mainWindow, getTray);
+    try {
+        registerKuGouApiHandler();
+        mainWindow = createWindow();
+        createTray(mainWindow);
+        customTrayMenuService.init(() => mainWindow, getTray);
 
-            // 初始化状态栏歌词服务
-            statusBarLyricsService.init(mainWindow, store, getTray, createTray);
+        // 初始化状态栏歌词服务
+        statusBarLyricsService.init(mainWindow, store, getTray, createTray);
 
-            if (process.platform === "darwin" && store.get('settings')?.touchBar == 'on') createTouchBar(mainWindow);
-            playStartupSound();
-            registerShortcut();
-            setupAutoUpdater(mainWindow);
-            apiService.init(mainWindow);
-            registerProtocolHandler(mainWindow);
-            sendHashAfterLoad(mainWindow);
-            void initializeExtensions();
-            setupDesktopShortcutIcon();
-        } catch (error) {
-            console.log('初始化应用时发生错误:', error);
-            createTray(null);
-            dialog.showMessageBox({
-                type: 'error',
-                title: t('error'),
-                message: t('init-error'),
-                buttons: [t('ok')]
-            }).then(result => {
-                if (result.response === 0) {
-                    app.isQuitting = true;
-                    app.quit();
-                }
-            });
-        }
-    }).catch((error) => {
-        console.log('API 服务启动失败:', error);
+        if (process.platform === "darwin" && store.get('settings')?.touchBar == 'on') createTouchBar(mainWindow);
+        playStartupSound();
+        registerShortcut();
+        setupAutoUpdater(mainWindow);
+        apiService.init(mainWindow);
+        registerProtocolHandler(mainWindow);
+        sendHashAfterLoad(mainWindow);
+        void initializeExtensions();
+        setupDesktopShortcutIcon();
+    } catch (error) {
+        console.log('初始化应用时发生错误:', error);
         createTray(null);
         dialog.showMessageBox({
             type: 'error',
             title: t('error'),
-            message: t('api-error'),
+            message: t('init-error'),
             buttons: [t('ok')]
         }).then(result => {
             if (result.response === 0) {
                 app.isQuitting = true;
                 app.quit();
             }
-            return;
         });
-    });
+    }
 });
 
 const settings = store.get('settings');

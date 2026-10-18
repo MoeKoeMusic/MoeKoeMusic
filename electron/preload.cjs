@@ -47,3 +47,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     openLogPath: () => ipcRenderer.invoke('open-log-path'),
     exportLog: () => ipcRenderer.invoke('export-log'),
 });
+
+contextBridge.exposeInMainWorld('kugouapi', {
+    generateNewDevice: () => ipcRenderer.invoke('kugouapi:generate-new-device'),
+    getDevice: () => ipcRenderer.invoke('kugouapi:get-device'),
+    request: (path, payload) => ipcRenderer.invoke('kugouapi:request', path, payload)
+});

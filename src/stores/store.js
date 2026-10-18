@@ -2,8 +2,10 @@ import { defineStore } from 'pinia';
 import axios from 'axios';
 import { getApiBaseUrl } from '../utils/apiBaseUrl';
 
+const registerDeviceApi = import.meta.env.VITE_APP_ENV === 'client'?
+{ get: async(path) => await window.kugouapi?.request(path) }:
 // 用于设备注册的独立 axios 实例（不带拦截器，避免循环依赖）
-const registerDeviceApi = axios.create({
+axios.create({
     baseURL: getApiBaseUrl(),
     timeout: 10000,
 });

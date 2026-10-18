@@ -4,6 +4,36 @@ import { MoeAuthStore } from '../stores/store';
 import { getApiBaseUrl } from './apiBaseUrl';
 import { handleRiskResponse } from './riskVerify';
 
+const injectAuthHeader = (config) => {
+    const MoeAuth = MoeAuthStore();
+    const token = MoeAuth.UserInfo?.token;
+    const userid = MoeAuth.UserInfo?.userid;
+    const t1 = MoeAuth.UserInfo?.t1;
+    const dfid = MoeAuth.Device?.dfid;
+    const mid = MoeAuth.Device?.mid;
+    const guid = MoeAuth.Device?.guid;
+    const serverDev = MoeAuth.Device?.serverDev;
+    const mac = MoeAuth.Device?.mac;
+
+    const authParts = [];
+    if (token) authParts.push(`token=${(token)}`);
+    if (userid) authParts.push(`userid=${(userid)}`);
+    if (dfid) authParts.push(`dfid=${(dfid)}`);
+    if (t1) authParts.push(`t1=${(t1)}`);
+    if (mid) authParts.push(`KUGOU_API_MID=${(mid)}`);
+    if (guid) authParts.push(`KUGOU_API_GUID=${(guid)}`);
+    if (serverDev) authParts.push(`KUGOU_API_DEV=${(serverDev)}`);
+    if (mac) authParts.push(`KUGOU_API_MAC=${(mac)}`);
+
+    if (authParts.length > 0) {
+        config.headers = {
+            ...config.headers,
+            Authorization: authParts.join(';')
+        };
+    }
+    return config;
+}
+
 // 创建一个 axios 实例
 const httpClient = axios.create({
     baseURL: getApiBaseUrl(),
@@ -16,35 +46,7 @@ const httpClient = axios.create({
 
 // 请求拦截器
 httpClient.interceptors.request.use(
-    config => {
-        const MoeAuth = MoeAuthStore();
-        const token = MoeAuth.UserInfo?.token;
-        const userid = MoeAuth.UserInfo?.userid;
-        const t1 = MoeAuth.UserInfo?.t1;
-        const dfid = MoeAuth.Device?.dfid;
-        const mid = MoeAuth.Device?.mid;
-        const guid = MoeAuth.Device?.guid;
-        const serverDev = MoeAuth.Device?.serverDev;
-        const mac = MoeAuth.Device?.mac;
-
-        const authParts = [];
-        if (token) authParts.push(`token=${(token)}`);
-        if (userid) authParts.push(`userid=${(userid)}`);
-        if (dfid) authParts.push(`dfid=${(dfid)}`);
-        if (t1) authParts.push(`t1=${(t1)}`);
-        if (mid) authParts.push(`KUGOU_API_MID=${(mid)}`);
-        if (guid) authParts.push(`KUGOU_API_GUID=${(guid)}`);
-        if (serverDev) authParts.push(`KUGOU_API_DEV=${(serverDev)}`);
-        if (mac) authParts.push(`KUGOU_API_MAC=${(mac)}`);
-
-        if (authParts.length > 0) {
-            config.headers = {
-                ...config.headers,
-                Authorization: authParts.join(';')
-            };
-        }
-        return config;
-    },
+    injectAuthHeader,
     error => Promise.reject(error)
 );
 
@@ -98,10 +100,23 @@ httpClient.interceptors.response.use(
     }
 );
 
+const requestBuiltinApi = async (path, payload) => {
+    const result = await window.kugouapi?.request(path, injectAuthHeader(payload));
+    const resp = result.body || { data: undefined, error_code: 0, error_msg: 'body is undefined', status: 0 };
+    const riskResult = await handleRiskResponse(result,
+        (retryConfig) => requestBuiltinApi({ ...retryConfig }),
+        (path, params) => requestBuiltinApi(path, { params, __skipRisk: true })
+    );
+    if(riskResult.handled) return riskResult.data;
+    else return resp;
+}
+
 // 封装 GET 请求
 export const get = async (url, params = {}, config = {}, onSuccess = null, onError = null) => {
     try {
-        const response = await httpClient.get(url, { params, ...config });
+        const response = import.meta.env.VITE_APP_ENV === 'client'?
+            await requestBuiltinApi(url, { params, ...config }):
+            await httpClient.get(url, { params, ...config });
         if (onSuccess) onSuccess(response);
         return response;
     } catch (error) {
@@ -113,7 +128,9 @@ export const get = async (url, params = {}, config = {}, onSuccess = null, onErr
 // 封装 POST 请求
 export const post = async (url, data = {}, config = {}, onSuccess = null, onError = null) => {
     try {
-        const response = await httpClient.post(url, data, config);
+        const response = import.meta.env.VITE_APP_ENV === 'client'?
+            await requestBuiltinApi(url, { params: data, ...config }):
+            await httpClient.post(url, data, config);
         if (onSuccess) onSuccess(response);
         return response;
     } catch (error) {
@@ -125,7 +142,9 @@ export const post = async (url, data = {}, config = {}, onSuccess = null, onErro
 // 封装 PUT 请求
 export const put = async (url, data = {}, config = {}, onSuccess = null, onError = null) => {
     try {
-        const response = await httpClient.put(url, data, config);
+        const response = import.meta.env.VITE_APP_ENV === 'client'?
+            await requestBuiltinApi(url, { params: data, ...config }):
+            await httpClient.put(url, data, config);
         if (onSuccess) onSuccess(response);
         return response;
     } catch (error) {
@@ -137,7 +156,9 @@ export const put = async (url, data = {}, config = {}, onSuccess = null, onError
 // 封装 DELETE 请求
 export const del = async (url, config = {}, onSuccess = null, onError = null) => {
     try {
-        const response = await httpClient.delete(url, config);
+        const response = import.meta.env.VITE_APP_ENV === 'client'?
+            await requestBuiltinApi(url, config):
+            await httpClient.delete(url, config);
         if (onSuccess) onSuccess(response);
         return response;
     } catch (error) {
@@ -149,7 +170,9 @@ export const del = async (url, config = {}, onSuccess = null, onError = null) =>
 // 封装 PATCH 请求
 export const patch = async (url, data = {}, config = {}, onSuccess = null, onError = null) => {
     try {
-        const response = await httpClient.patch(url, data, config);
+        const response = import.meta.env.VITE_APP_ENV === 'client'?
+            await requestBuiltinApi(url, { params: data, ...config }):
+            await httpClient.patch(url, data, config);
         if (onSuccess) onSuccess(response);
         return response;
     } catch (error) {
@@ -172,7 +195,9 @@ export const uploadImage = async (url, file, additionalData = {}, config = {}, o
         }
 
         // 需要确保 Content-Type 被设置为 multipart/form-data
-        const response = await httpClient.post(url, formData, {
+        const response = import.meta.env.VITE_APP_ENV === 'client'?
+            await requestBuiltinApi(url, { params: formData, ...config, headers: { ...config.headers, 'Content-Type': 'multipart/form-data' } }):
+            await httpClient.post(url, formData, {
             ...config,
             headers: {
                 ...config.headers,

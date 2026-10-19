@@ -1,0 +1,23 @@
+{
+  "name": "moekoemusic-docker",
+  "version": "1.0.0",
+  "homepage": "https://music.moekoe.cn/",
+  "type": "module",
+  "author": {
+    "name": "LateDreamXD",
+    "email": "xiaozhisans@qq.com"
+  },
+  "description": "MoeKoe Music Docker",
+  "private": true,
+  "bin": "app.js",
+  "main": "app.js",
+  "module": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "^5.3.0",
+    "http-proxy-middleware": "^4.2.0",
+    "kugoumusicapi": "github:MakcRe/KuGouMusicApi#514f870"
+  }
+}

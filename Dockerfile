@@ -1,8 +1,8 @@
 # Stage 1: Build Frontend
-FROM node:20-alpine AS frontend-builder
+FROM node:20-alpine AS frontend
 WORKDIR /app
 COPY package*.json ./
-# Remove electron and electron-builder from package.json
+# Remove electron stuffs and api from package.json
 RUN node -e "const fs = require('fs'); const filePath = './package.json'; \
              let rawdata = fs.readFileSync(filePath); let packageJson = JSON.parse(rawdata); \
              if (packageJson.devDependencies) { \
@@ -10,10 +10,14 @@ RUN node -e "const fs = require('fs'); const filePath = './package.json'; \
                delete packageJson.devDependencies['electron-builder']; \
              } \
              if (packageJson.dependencies) { \
-               delete packageJson.dependencies.electron; \
+               delete packageJson.dependencies['electron-is-dev']; \
+               delete packageJson.dependencies['electron-log']; \
+               delete packageJson.dependencies['electron-store']; \
+               delete packageJson.dependencies['electron-updater']; \
+               delete packageJson.dependencies.kugoumusicapi; \
              } \
              fs.writeFileSync(filePath, JSON.stringify(packageJson, null, 2));"
-RUN npm install
+RUN npm ci
 COPY . .
 RUN npm run build:docker
 
@@ -21,32 +25,12 @@ RUN npm run build:docker
 FROM node:20-alpine
 WORKDIR /app
 
-# Install Nginx
-RUN apk add --no-cache nginx
+RUN apk add --no-cache git
+RUN corepack enable
 
-# Copy API code
-COPY ./api ./api
-# Install API dependencies
-WORKDIR /app/api
-RUN npm install -g npm@11 && npm install --omit=dev
-# Reset WORKDIR to /app
-WORKDIR /app 
+COPY ./docker/ .
+COPY --from=frontend /app/dist/ ./dist/
 
-# Copy built frontend static assets from the builder stage
-COPY --from=frontend-builder /app/dist/ ./dist/
+RUN pnpm install --frozen-lockfile
 
-# Expose ports
-# For frontend served by 'serve'
-EXPOSE 8080 
-# For API
-EXPOSE 6521 
-
-# Copy Nginx configuration
-COPY nginx.conf /etc/nginx/nginx.conf
-
-# Command to run both services
-# API runs from /app/api directory, frontend served by Nginx
-# CMD ["sh", "-c", "cd /app/api && node app.js & nginx -g 'daemon off;'"]
-CMD sh -c "\
-  echo 'client running @ http://127.0.0.1:8080/'; \
-  cd /app/api && node app.js & nginx -g 'daemon off;'"
+CMD ["pnpm", "run", "start"]

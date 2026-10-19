@@ -36,7 +36,7 @@ export default () => {
                 'Access-Control-Allow-Headers': 'Authorization,X-Requested-With,Content-Type,Cache-Control',
                 'Access-Control-Allow-Methods': 'PUT,POST,GET,DELETE,OPTIONS',
                 'Content-Type': 'application/json; charset=utf-8',
-                'X-Powered-By': 'KuGouMusicApi',
+                'X-Powered-By': 'kugoumusicapi',
                 Server: `${app.getName()}/${app.getVersion()}`
             });
         }
@@ -107,17 +107,13 @@ export default () => {
                     }
                 }
 
-                logger.log('内置 API 输出 (来自外部的请求): [OK]', moduleDef.route, moduleResponse);
+                logger.log('内置 API 输出 (来自外部的请求): [OK]', req.originalUrl);
                 res.header(moduleResponse.headers).status(moduleResponse.status).send(moduleResponse.body);
             } catch (e) {
                 const moduleResponse = e;
 
                 if (!moduleResponse.body) {
-                    res.status(404).send({
-                        code: 404,
-                        data: null,
-                        msg: 'Not Found',
-                    });
+                    res.status(404).send({ code: 404, data: null, msg: 'Not Found' });
                     return;
                 }
 
@@ -126,6 +122,13 @@ export default () => {
             }
         });
     }
+
+    // 处理索引和 404 路由
+    expressApp.useHTTP((req, res) => {
+        if(req.path === '/') res.status(204).end();
+        else res.status(404).send({ code: 404, data: null, msg: 'Not Found' });
+        return;
+    });
 
     return expressApp;
 }

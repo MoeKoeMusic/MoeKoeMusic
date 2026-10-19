@@ -26,7 +26,7 @@ class ApiService {
         this.app = createServer();
 
         config = {
-            host: '0.0.0.0',
+            host: '127.0.0.1',
             port: 6520,
             wsPath: '/moekoe',
             ...config
@@ -79,7 +79,6 @@ class ApiService {
                 console.log('WebSocket 客户端已断开连接');
             });
         });
-
 
         this.server = this.app.createServer();
         this.server.listen(config.port, config.host, () => {

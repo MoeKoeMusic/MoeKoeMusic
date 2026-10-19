@@ -439,6 +439,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
                     { displayText: '默认', value: 'default' },
                     { displayText: '自定义', value: 'custom' }
                 ],
+                available: 'web',
                 keepOpen: true,
                 label: 'RPC地址',
                 showRefreshHint: true,

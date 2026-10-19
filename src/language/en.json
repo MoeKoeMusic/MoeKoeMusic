@@ -322,5 +322,11 @@
   "fen-xiang-ge-qu": "Share",
   "qie-huan-dao-yin-yi": "Switch to Romanization",
   "qie-huan-dao-fan-yi": "Switch to Translation",
-  "wei-zhi-cuo-wu": "Unknown error"
+  "wei-zhi-cuo-wu": "Unknown error",
+  "jian-ting-zhu-ji": "Listening host",
+  "websocket-jian-ting-lu-jing": "WebSocket Listening path",
+  "jian-ting-duan-kou": "Listening port",
+  "allow-lan-request": "Allow connections from LAN",
+  "websocket-api-url-preview": "WebSocket API Endpoint Preview",
+  "web-api-url-preview": "Web API Endpoint Preview"
 }

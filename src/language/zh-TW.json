@@ -26,7 +26,7 @@
   "sheng-yin": "聲音",
   "tou-ding-lv": "薄荷綠",
   "wai-guan": "外觀",
-  "native-title-bar":"原生窗口装饰器",
+  "native-title-bar": "原生窗口装饰器",
   "ge-ci-bei-jing": "歌詞背景",
   "xian-shi-zhuo-mian-ge-ci": "顯示桌面歌詞",
   "xiao": "小",
@@ -302,5 +302,6 @@
   "fen-xiang-ge-qu": "分享歌曲",
   "qie-huan-dao-yin-yi": "切換到音譯",
   "qie-huan-dao-fan-yi": "切換到翻譯",
-  "wei-zhi-cuo-wu": "未知錯誤"
+  "wei-zhi-cuo-wu": "未知錯誤",
+  "allow-lan-request": "批准來自區域網的連結"
 }

@@ -91,7 +91,11 @@ html.dark {
             }
         }
 
-        button {
+        label {
+            color: $text-primary !important;
+        }
+
+        button:not(.setting-switch) {
             background-color: $bg-input !important;
             color: $text-primary !important;
             border: 1px solid #373434 !important;

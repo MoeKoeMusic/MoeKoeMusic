@@ -319,6 +319,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
                 defaultValue: 'off',
                 itemIcon: 'fas fa-expand',
                 selectionTitle: t('shi-pei-gao-dpi'),
+                noSelection: false,
                 options: [
                     { displayText: t('da-kai'), value: 'on' },
                     { displayText: t('guan-bi'), value: 'off' }
@@ -418,6 +419,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
                 defaultValue: 'off',
                 itemIcon: 'fas fa-code',
                 selectionTitle: t('api-mo-shi'),
+                noSelection: false,
                 options: [
                     { displayText: t('da-kai'), value: 'on' },
                     { displayText: t('guan-bi'), value: 'off' }
@@ -489,6 +491,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
                 defaultValue: 'off',
                 itemIcon: 'fas fa-random',
                 selectionTitle: t('wang-luo-dai-li'),
+                noSelection: false,
                 options: [
                     { displayText: t('qi-yong'), value: 'on' },
                     { displayText: t('jin-yong'), value: 'off' }

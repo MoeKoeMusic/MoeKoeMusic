@@ -100,7 +100,7 @@ if (settings?.highDpi === 'on') {
 }
 
 if (settings?.apiMode === 'on') {
-    apiService.start();
+    apiService.start(settings?.apiModeConfig);
 }
 
 // 即将退出

@@ -30,7 +30,6 @@ const createRequest = async (path, payload) => {
 	const module = api[coventPath(path)];
 
 	if(!module) {
-		logger.error('内置 API 输出: [ERR]', path, '404 Not Found');
 		return {
 			status: 404,
 			body: {

@@ -33,8 +33,8 @@ startService().then(() => {
 	});
 }).catch(e => { throw e; });
 
-process.once('uncaughtException', (e, o) => {
-	console.error('(XwX) Oops, a fatal error occurred. process will be close', e, o);
+process.once('uncaughtException', e => {
+	console.error('(XwX) Oops, a fatal error occurred. process will be close\n', e);
 	process.exit(1);
 });
 

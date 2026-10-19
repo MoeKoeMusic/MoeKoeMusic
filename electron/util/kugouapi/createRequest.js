@@ -29,11 +29,35 @@ const createRequest = async (path, payload) => {
 	/** @type {undefined | api[keyof api]} */
 	const module = api[coventPath(path)];
 
+	if(!module) {
+		logger.error('内置 API 输出: [ERR]', path, '404 Not Found');
+		return {
+			status: 404,
+			body: {
+				data: null,
+				status: 0,
+				error_code: 0,
+				error_msg: 'Not Found'
+			},
+			cookie: [],
+			headers: {}
+		}
+	}
+
+	const device = getDevice();
 	const params = {
 		...getParamsFromSearch(path),
 		...payload?.params,
 		cookie: {
-			...getDevice(),
+			...device,
+			// 部分接口必须调用 KUGOU_API_* 关键字
+			// 所以保留以保证兼容性
+			KUGOU_API_DEV: device.dev,
+			KUGOU_API_GUID: device.uuid,
+			KUGOU_API_MAC: device.mac,
+			KUGOU_API_MID: device.mid,
+			KUGOU_API_PLATFORM: process.env.platform || (store.get('settings')?.dataSource || 'concept') === 'concept'? 'lite': '',
+			KUGOU_API_WEBGL: device.webgl,
 			...parseCookieStr(getParamsFromSearch(path)?.cookie),
 			...parseCookieStr(payload?.cookie),
 			...parseCookieStr(payload?.headers.authorization || payload?.headers.Authorization)
@@ -41,8 +65,8 @@ const createRequest = async (path, payload) => {
 	}
 
 	try {
-		const result = await module?.(params);
-		logger.log('内置 API 输出: [OK]', path, result);
+		const result = await module(params);
+		logger.log('内置 API 输出: [OK]', path);
 		return result;
 	} catch (e) {
 		logger.error('内置 API 输出: [ERR]', path, e);

@@ -15,7 +15,7 @@
                 <ExtensionManager v-if="section.title === t('cha-jian')" />
                 <div v-else class="settings-cards">
                     <div v-for="(item, itemIndex) in getVisibleItems(section)" :key="itemIndex" class="setting-card"
-                        :class="{ 'setting-card--toggle': isToggleItem(item) }" @click="handleCardClick(item)">
+                        :class="{ 'setting-card--toggle': isToggleItem(item) }" @click.stop="handleCardClick(item)">
                         <div class="setting-card-header">
                             <div class="setting-card-title">
                                 <i :class="item.itemIcon || 'fas fa-sliders-h'"></i>
@@ -246,7 +246,6 @@ const createSelectedSettings = (sections) => {
 const selectedSettings = ref(createSelectedSettings(settingSections.value));
 
 const isSelectionOpen = ref(false);
-const currentHelpLink = ref('');
 const selectionType = ref('');
 const fontOptions = ref([]);
 const fontOptionsLoading = ref(false);
@@ -381,8 +380,7 @@ const openSelection = (type, helpLink) => {
     }
 };
 
-const openHelpLink = () => {
-    const url = currentHelpLink.value;
+const openHelpLink = (url) => {
     if (!url) return;
     if (isElectron()) {
         window.electron.ipcRenderer.send('open-url', url);

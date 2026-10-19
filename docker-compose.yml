@@ -1,5 +1,3 @@
-version: '3.3'
-
 services:
   moekoe-music:
     container_name: moekoe-music # 容器名

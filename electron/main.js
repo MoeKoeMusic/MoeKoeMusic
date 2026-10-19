@@ -22,7 +22,7 @@ let blockerId = null;
 const store = new Store();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-process.env.platform = (store.get('settings')?.dataSource || 'concept') === 'concept'? 'lite': '';
+const settings = store.get('settings');
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -43,9 +43,14 @@ if (!gotTheLock) {
     });
 }
 
+// 初始化 KuGouAPI 环境变量并注册 IPC 通道
+if(settings?.proxy === 'on') process.env.KUGOU_API_PROXY = settings?.proxyUrl || '';
+process.env.platform = (settings?.dataSource || 'concept') === 'concept'? 'lite': '';
+
+registerKuGouApiHandler();
+
 app.on('ready', () => {
     try {
-        registerKuGouApiHandler();
         mainWindow = createWindow();
         createTray(mainWindow);
         customTrayMenuService.init(() => mainWindow, getTray);
@@ -53,7 +58,7 @@ app.on('ready', () => {
         // 初始化状态栏歌词服务
         statusBarLyricsService.init(mainWindow, store, getTray, createTray);
 
-        if (process.platform === "darwin" && store.get('settings')?.touchBar == 'on') createTouchBar(mainWindow);
+        if (process.platform === "darwin" && settings?.touchBar == 'on') createTouchBar(mainWindow);
         playStartupSound();
         registerShortcut();
         setupAutoUpdater(mainWindow);
@@ -79,7 +84,6 @@ app.on('ready', () => {
     }
 });
 
-const settings = store.get('settings');
 if (settings?.gpuAcceleration === 'on') {
     app.disableHardwareAcceleration();
     app.commandLine.appendSwitch('enable-transparent-visuals');
@@ -152,7 +156,7 @@ ipcMain.on('disclaimer-response', (event, accepted) => {
 ipcMain.on('window-control', (event, action) => {
     switch (action) {
         case 'close':
-            if (store.get('settings')?.minimizeToTray === 'off') {
+            if (settings?.minimizeToTray === 'off') {
                 app.isQuitting = true;
                 app.quit();
             } else {
@@ -247,7 +251,7 @@ ipcMain.on('desktop-lyrics-action', (event, action) => {
 });
 
 const syncDesktopLyricsSetting = (value) => {
-    const settings = store.get('settings') || {};
+    const settings = settings || {};
     store.set('settings', {
         ...settings,
         desktopLyrics: value

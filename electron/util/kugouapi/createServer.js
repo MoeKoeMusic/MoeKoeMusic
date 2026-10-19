@@ -64,9 +64,25 @@ export default () => {
             });
 
             const { cookie, ...params } = req.query;
+            const device = getDevice();
 
             const body = Buffer.isBuffer(req.body) ? { data: req.body } : req.body;
-            const query = Object.assign({}, { cookie: Object.assign({}, getDevice(), req.cookies, cookie) }, params, body);
+            const query = Object.assign({}, {
+                cookie: Object.assign(
+                    {}, req.cookies, cookie,
+                    {
+                        ...device,
+                        // 部分接口必须调用 KUGOU_API_* 关键字
+                        // 所以保留以保证兼容性
+                        KUGOU_API_DEV: device.dev,
+                        KUGOU_API_GUID: device.uuid,
+                        KUGOU_API_MAC: device.mac,
+                        KUGOU_API_MID: device.mid,
+                        KUGOU_API_PLATFORM: process.env.platform,
+                        KUGOU_API_WEBGL: device.webgl
+                    }
+                )
+            }, params, body);
 
             const authHeader = req.headers['authorization'];
             if (authHeader) {

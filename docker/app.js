@@ -22,6 +22,11 @@ app.use('/api', createProxyMiddleware({
 	target: 'http://127.0.0.1:6521'
 }));
 
+app.use((req, res) => {
+	res.status(403).send({ status: 403, message: 'Forbidden' });
+	return;
+});
+
 startService().then(() => {
 	app.listen(8080, () => {
 		console.log('(OwO) MoeKoe Music Docker running @ http://127.0.0.1:8080');

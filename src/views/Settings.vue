@@ -63,21 +63,21 @@
         <teleport to="body">
         <div v-if="isSelectionOpen" class="modal" @click.self="closeSelection">
             <div class="modal-content">
-                <a v-if="currentHelpLink" class="help-link" @click="openHelpLink" :title="$t('bang-zhu')"
+                <a v-if="currentHelpLink" class="help-link" @click="openHelpLink()" :title="$t('bang-zhu')"
                     :aria-label="$t('bang-zhu')">
                     <i class="fas fa-question-circle"></i>
                 </a>
                 <h3>{{ getSettingItem(selectionType)?.selectionTitle }}</h3>
                 <input v-if="isFontSelection()" class="font-search" placeholder="搜索字体..."
                     v-model="fontSearch" />
-                <ul v-if="!isFontSelection() && selectionType !== 'audioOutputDevice'">
+                <ul v-else-if="!isToggleItem(getSettingItem(selectionType))">
                     <li v-for="option in getSettingItem(selectionType)?.options || []" :key="option.value"
                         @click="selectOption(option)">
                         {{ option.displayText }}
                     </li>
                 </ul>
 
-                <ul v-else-if="selectionType === 'audioOutputDevice'">
+                <ul v-if="selectionType === 'audioOutputDevice'">
                     <li v-if="audioOutputDevicesLoading">正在获取设备列表...</li>
                     <li v-else-if="audioOutputDeviceOptions.length === 0">未检测到音频输出设备</li>
                     <li v-else v-for="option in audioOutputDeviceOptions" :key="option.value"
@@ -118,16 +118,53 @@
 
                 <div v-if="selectionType === 'apiMode' && selectedSettings.apiMode.value === 'on'"
                     class="api-settings-container">
-                    <div class="api-setting-item">
-                        <label>{{ $t('api-di-zhi') }}</label>
-                        <input type="text" :value="defaultApiBaseUrl" readonly class="api-input" />
+                    <div v-if="false" class="api-setting-item">
+                        <label>{{ $t('jian-ting-zhu-ji') }}</label>
+                        <input type="text" placeholder="127.0.0.1" class="api-input" v-model="apiModeForm.host" />
                     </div>
                     <div class="api-setting-item">
-                        <label>{{ $t('websocket-di-zhi') }}</label>
-                        <input type="text" value="ws://127.0.0.1:6520" readonly class="api-input" />
+                        <label>{{ $t('jian-ting-duan-kou') }}</label>
+                        <input type="number" placeholder="6520" min="1" max="65535" class="api-input" v-model="apiModeForm.port" />
+                    </div>
+                    <div class="api-setting-item">
+                        <label>{{ $t('websocket-jian-ting-lu-jing') }}</label>
+                        <input type="text" spellcheck="false" placeholder="/moekoe" class="api-input" v-model="apiModeForm.wsPath" />
+                    </div>
+                    <div class="api-setting-item row">
+                        <label>{{ $t('allow-lan-request') }}</label>
+                        <button type="button" class="setting-switch" :class="{ active: apiModeForm.host === '0.0.0.0' }"
+                                :aria-checked="apiModeForm.host === '0.0.0.0'" role="switch"
+                                @click.stop="toggleLanApiMode">
+                             <span class="setting-switch-thumb"></span>
+                        </button>
+                    </div>
+                    <div class="api-setting-item">
+                        <label>
+                            {{ $t('websocket-api-url-preview') }}
+                            <a class="help-link normal" @click="openHelpLink('https://music.moekoe.cn/websocket-api.html')" :title="$t('bang-zhu')"
+                                :aria-label="$t('bang-zhu')">
+                                <i class="fas fa-question-circle"></i>
+                            </a>
+                    </label>
+                        <input type="url" spellcheck="false" readonly class="api-input" :value="apiModeUrlPreview.ws" />
+                    </div>
+                    <div class="api-setting-item">
+                        <label>
+                            {{ $t('web-api-url-preview') }}
+                            <a class="help-link normal" @click="openHelpLink('https://music.moekoe.cn/api-docs.html')" :title="$t('bang-zhu')"
+                                :aria-label="$t('bang-zhu')">
+                                <i class="fas fa-question-circle"></i>
+                            </a>
+                        </label>
+                        <input type="url" spellcheck="false" readonly class="api-input" :value="apiModeUrlPreview.http" />
                     </div>
                     <div class="api-hint">
-                        {{ $t('mo-ren-api-ti-shi') }}
+                        {{ $t('zhong-qi-hou-sheng-xiao') }}
+                    </div>
+                    <div class="proxy-actions">
+                        <button class="primary" @click="saveApiModeUrl">
+                            {{ $t('bao-cun-she-zhi-an-niu') }}
+                        </button>
                     </div>
                 </div>
                 <div v-if="selectionType === 'apiBaseUrlMode' && selectedSettings.apiBaseUrlMode.value === 'custom'"
@@ -200,7 +237,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, getCurrentInstance, onUnmounted, reactive } from 'vue';
+import { ref, onMounted, getCurrentInstance, onUnmounted, reactive, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { MoeAuthStore } from '../stores/store';
 import ExtensionManager from '@/components/ExtensionManager.vue';
@@ -246,6 +283,7 @@ const createSelectedSettings = (sections) => {
 const selectedSettings = ref(createSelectedSettings(settingSections.value));
 
 const isSelectionOpen = ref(false);
+const currentHelpLink = ref('');
 const selectionType = ref('');
 const fontOptions = ref([]);
 const fontOptionsLoading = ref(false);
@@ -381,6 +419,7 @@ const openSelection = (type, helpLink) => {
 };
 
 const openHelpLink = (url) => {
+    url = url || currentHelpLink.value;
     if (!url) return;
     if (isElectron()) {
         window.electron.ipcRenderer.send('open-url', url);
@@ -405,6 +444,15 @@ const isToggleItem = (item) => {
     return values.includes('on') && values.includes('off');
 };
 
+const isPreventOpenSelectionItem = (item) =>
+    (typeof item.noSelection === 'undefined' || item.noSelection === true);
+
+const isDisabledItem = (item) => {
+    const value = JSON.parse(localStorage.getItem('settings') || 'null')?.[item.key];
+    return value? value === 'off': false;
+}
+
+
 const isToggleEnabled = (item) => selectedSettings.value[item.key]?.value === 'on';
 
 const handleCardClick = (item) => {
@@ -413,9 +461,10 @@ const handleCardClick = (item) => {
         return;
     }
 
-    if (isToggleItem(item)) {
+    if (isToggleItem(item) && isPreventOpenSelectionItem(item)) {
         return;
-    }
+    } else if(isToggleItem(item) && isDisabledItem(item))
+        return;
 
     openSelection(item.key);
 };
@@ -528,6 +577,7 @@ const toggleSetting = async (item) => {
     const currentValue = selectedSettings.value[item.key]?.value;
     const nextOption = item.options.find(option => option.value === (currentValue === 'on' ? 'off' : 'on'));
     if (!nextOption) return;
+    if(!isPreventOpenSelectionItem(item) && nextOption.value === 'on') openSelection(item.key, item.helpLink);
 
     selectedSettings.value[item.key] = { ...nextOption };
     await runSelectAction(item, nextOption);
@@ -564,10 +614,10 @@ const selectFontOption = (option) => {
 const isElectron = () => {
     return typeof window !== 'undefined' && typeof window.electron !== 'undefined';
 };
-const saveSettings = () => {
-    const settingsToSave = Object.fromEntries(
+const saveSettings = (additional = {}) => {
+    const settingsToSave = Object.assign({}, Object.fromEntries(
         Object.entries(selectedSettings.value).map(([key, setting]) => [key, setting.value])
-    );
+    ), additional);
     settingsToSave.shortcuts = shortcuts.value;
     localStorage.setItem('settings', JSON.stringify(settingsToSave));
     window.dispatchEvent(new CustomEvent('settings-change', {
@@ -596,6 +646,11 @@ onMounted(() => {
                 const option = settingItem.options.find(option => option.value === savedSettings[key]) || settingItem.options[0];
                 selectedSettings.value[key] = { ...option };
                 continue;
+            }
+            if(key === 'apiModeConfig') {
+                apiModeForm.host = savedSettings[key].host || '127.0.0.1';
+                apiModeForm.port = savedSettings[key].port || 6520;
+                apiModeForm.wsPath = savedSettings[key].wsPath || '/moekoe';
             }
             if (key === 'apiBaseUrlMode') {
                 const value = savedSettings[key] || 'default';
@@ -666,7 +721,47 @@ const showShortcutModal = ref(false);
 const recordingKey = ref('');
 const shortcuts = ref({});
 const proxyForm = reactive({ url: '', testing: false, testResult: '', testStatus: '' });
+const apiModeForm = reactive({ host: '127.0.0.1', port: 6520, wsPath: '/moekoe' });
+const apiModeUrlPreview = reactive({
+    http: computed(() => `http://127.0.0.1:${apiModeForm.port}`),
+    ws: computed(() => `ws://127.0.0.1:${apiModeForm.port}${apiModeForm.wsPath}`)
+});
 const apiBaseUrlForm = reactive({ url: '', testing: false, testResult: '', testStatus: '' });
+
+const toggleLanApiMode = () => {
+    const hosts = {
+        allow: '0.0.0.0',
+        deny: '127.0.0.1'
+    };
+    if(apiModeForm.host === hosts.allow) apiModeForm.host = hosts.deny;
+    else apiModeForm.host = hosts.allow;
+}
+
+const validateApiModeForm = () => {
+    const result = {
+        error: false,
+        msg: ''
+    }
+    if(apiModeForm.port <= 0 || apiModeForm.port >= 65535)
+        result.error = true, result.msg = '非法的端口 (仅限 1 ~ 65535)';
+    return result;
+}
+
+const saveApiModeUrl = () => {
+    if(!apiModeForm.port || !apiModeForm.wsPath) return;
+
+    const validation = validateApiModeForm();
+    if(validation.error) {
+        $modal.error(validation.msg);
+        return;
+    }
+
+    saveSettings({
+        apiModeConfig: apiModeForm
+    });
+    markRefreshHint('apiMode');
+    closeSelection();
+}
 
 const testApiBaseUrl = async () => {
     const validation = validateApiBaseUrl(apiBaseUrlForm.url);
@@ -1291,6 +1386,10 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
     display: flex;
     flex-direction: column;
 
+    &:has(>.api-settings-container) {
+        max-height: 70vh;
+    }
+
     h3 {
         flex: 0 0 auto;
         font-size: 20px;
@@ -1331,7 +1430,7 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
         }
     }
 
-    button {
+    button:not(.setting-switch) {
         flex: 0 0 auto;
         margin-top: 20px;
         padding: 10px 20px;
@@ -1362,6 +1461,12 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
     cursor: pointer;
     text-decoration: none;
     font-size: 18px;
+
+    &.normal {
+        position: static;
+        display: contents;
+        margin-left: 4px;
+    }
 
     &:hover {
         opacity: 0.85;
@@ -1598,6 +1703,12 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
         align-items: flex-start;
         margin-bottom: 10px;
         width: 100%;
+
+        &.row {
+            margin-top: 8px;
+            flex-direction: row;
+            justify-content: space-between;
+        }
 
         label {
             font-size: 14px;

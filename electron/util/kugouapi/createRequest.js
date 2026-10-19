@@ -55,7 +55,7 @@ const createRequest = async (path, payload) => {
 			KUGOU_API_GUID: device.uuid,
 			KUGOU_API_MAC: device.mac,
 			KUGOU_API_MID: device.mid,
-			KUGOU_API_PLATFORM: process.env.platform || (store.get('settings')?.dataSource || 'concept') === 'concept'? 'lite': '',
+			KUGOU_API_PLATFORM: process.env.platform,
 			KUGOU_API_WEBGL: device.webgl,
 			...parseCookieStr(getParamsFromSearch(path)?.cookie),
 			...parseCookieStr(payload?.cookie),

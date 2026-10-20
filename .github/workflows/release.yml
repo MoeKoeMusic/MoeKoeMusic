@@ -97,8 +97,8 @@ jobs:
         env:
           os: ${{ runner.os == 'Windows' && 'win' || runner.os == 'macOS' && 'macos' || 'linux' }}
         run: |
-          npm run install-all
-          npm run build
+          npm ci
+          npm run build:client
           npm run electron:build:${{ env.os }}
 
       - name: Upload to Release

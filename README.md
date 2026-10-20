@@ -92,7 +92,7 @@
     2. ~~方式二：使用docker-compose一键安装 （镜像暂未上传官方）~~
     
     ```
-    docker run -d --name MoeKoeMusic -p 8080:8080 -p 6521:6521 -e PORT=6521 -e platform=lite iajue/moekoe-music:latest
+    docker run -d --name MoeKoeMusic -p 8080:8080 -e PORT=6521 -e platform=lite iajue/moekoe-music:latest
     ```
 
     3. 方式三：宝塔容器编排
@@ -160,17 +160,17 @@ npm run build:docker # 为 Docker 镜像构建前端
 ```
 5. 编译项目
   - Windows: 
-  ```sh
-  npm run electron:build:win # [默认 NSIS 安装包]
-  ```
-  -	Linux: 
-  ```sh
-  npm run electron:build:linux # [默认 AppImage 格式]
-  ```
-  -	macOS: 
-  ```sh
-  npm run electron:build:macos # [默认 macOS 双架构]
-  ```
+```sh
+npm run electron:build:win # [默认 NSIS 安装包]
+```
+  - Linux: 
+```sh
+npm run electron:build:linux # [默认 AppImage 格式]
+```
+  - macOS: 
+```sh
+npm run electron:build:macos # [默认 macOS 双架构]
+```
 
 
 更多命令请查看 `package.json` 文件 `scripts` 

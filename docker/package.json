@@ -15,6 +15,9 @@
   "scripts": {
     "start": "node app.js"
   },
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "express": "^5.3.0",
     "http-proxy-middleware": "^4.2.0",

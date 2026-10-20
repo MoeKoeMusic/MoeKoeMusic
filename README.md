@@ -179,7 +179,7 @@ npm run electron:build:macos # [默认 macOS 双架构]
 
 如果在 Release 页面没有找到适合你的设备的安装包的话，你可以根据下面的步骤来打包自己的客户端。
 
-1. 安装 [Node.js](https://nodejs.org/en/)，并确保 `Node.js` 版本 >= 18.0.0。
+1. 安装 [Node.js](https://nodejs.org/en/)，并确保 `Node.js` 版本 >= 20.0.0。
 
 2. 使用 `git clone --depth=1 https://github.com/MoeKoeMusic/MoeKoeMusic.git` 克隆本仓库到本地。
 

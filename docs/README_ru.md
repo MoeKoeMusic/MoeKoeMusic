@@ -1,7 +1,7 @@
-> **Note**: Этот документ на русском языке может не быть актуальным вовремя. Для актуального материала, пожалуйста, обратитесь к [версии на упрощенном китайском](https://github.com/iAJue/MoeKoeMusic/README.md).
+> **Note**: Этот документ на русском языке может не быть актуальным вовремя. Для актуального материала, пожалуйста, обратитесь к [версии на упрощенном китайском](https://github.com/MoeKoeMusic/MoeKoeMusic/blob/main/README.md).
 <br />
 <p align="center">
-    <img src="https://github.com/iAJue/MoeKoeMusic/raw/main/images/hero.png" alt="hero" width="250" height="250">
+    <img src="https://github.com/MoeKoeMusic/MoeKoeMusic/raw/main/images/hero.png" alt="hero" width="250" height="250">
   <h2 align="center" style="font-weight: 600">MoeKoe Music</h2>
   <p align="center">
     <a href="https://github.com/MoeKoeMusic/MoeKoeMusic/releases/latest"><img src="https://img.shields.io/github/v/release/MoeKoeMusic/MoeKoeMusic?style=flat-square" /></a>
@@ -11,64 +11,64 @@
     <a href="https://github.com/iAJue"><img src="https://img.shields.io/badge/%F0%9F%8E%89_Create_by_iAJue-with_Love_%E2%9D%A4-pink?style=flat-square" /></a>
   </p>
   <p align="center">
-    Открытый, лаконичный и красивый сторонний клиент для Kugou
+    Открытый, лаконичный и красивый сторонний клиент для KuGou Music
     <br />
-    <a href="https://github.com/iAJue/MoeKoeMusic/" target="blank"><strong>GitHub</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
-    <a href="https://github.com/iAJue/MoeKoeMusic/releases" target="blank"><strong>Скачать</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
-    <a href="https://MoeJue.cn" target="blank"><strong>Блог</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
-    <a href="https://Music.MoeKoe.cn" target="blank"><strong>Сайт проекта</strong></a>
+    <a href="https://github.com/MoeKoeMusic/MoeKoeMusic/" target="blank"><strong>🌎 Репозиторий GitHub</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
+    <a href="https://github.com/MoeKoeMusic/MoeKoeMusic/releases" target="blank"><strong>📦️ Скачать установщики</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
+    <a href="https://MoeJue.cn" target="blank"><strong>💬 Посетить блог</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
+    <a href="https://Music.MoeKoe.cn" target="blank"><strong>🏠 Домашняя страница проекта</strong></a>
   </p>
   <p align="center">
-    <a href="https://github.com/iAJue/MoeKoeMusic/README.md" target="blank"><strong>简体中文</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
-    <a href="https://github.com/iAJue/MoeKoeMusic/blob/main/docs/README_tw.md" target="blank"><strong>繁体中文</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
-    <a href="https://github.com/iAJue/MoeKoeMusic/blob/main/docs/README_ja.md" target="blank"><strong>日本語</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
-    <a href="https://github.com/iAJue/MoeKoeMusic/blob/main/docs/README_en.md" target="blank"><strong>English</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
-    <a href="https://github.com/iAJue/MoeKoeMusic/blob/main/docs/README_ko.md" target="blank"><strong>한국어</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
-    <a href="https://github.com/iAJue/MoeKoeMusic/blob/main/docs/README_ru.md" target="blank"><strong>Русский</strong></a>
+    <a href="https://github.com/MoeKoeMusic/MoeKoeMusic/blob/main/README.md" target="blank"><strong>🇨🇳 简体中文</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
+    <a href="https://github.com/MoeKoeMusic/MoeKoeMusic/blob/main/docs/README_tw.md" target="blank"><strong>🇨🇳 繁体中文</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
+    <a href="https://github.com/MoeKoeMusic/MoeKoeMusic/blob/main/docs/README_ja.md" target="blank"><strong>🇯🇵 日本語</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
+    <a href="https://github.com/MoeKoeMusic/MoeKoeMusic/blob/main/docs/README_en.md" target="blank"><strong>🇺🇸 English</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
+    <a href="https://github.com/MoeKoeMusic/MoeKoeMusic/blob/main/docs/README_ko.md" target="blank"><strong>🇰🇷 한국어</strong></a>&nbsp;&nbsp;|&nbsp;&nbsp;
+    <a href="https://github.com/MoeKoeMusic/MoeKoeMusic/blob/main/docs/README_ru.md" target="blank"><strong>🇷🇺 Русский</strong></a>
     <br />
     <br />
   </p>
 </p>
 
-![images](https://github.com/iAJue/MoeKoeMusic/raw/main/images/1.png)
+![images](https://github.com/MoeKoeMusic/MoeKoeMusic/raw/main/images/1.png)
 
 ## ❤️ Предисловие
 
-Ещё около 10 лет назад, когда я пользовался веб-версией QQ, я начал использовать Kugou Music (уже более десяти лет как фанат). За эти годы вся моя коллекция песен оказалась именно там. Позже я пытался перейти на NetEase Cloud или QQ Music и даже импортировать плейлисты из Kugou, но результаты были неудовлетворительными. Я в основном слушаю опенинги аниме, и многие треки просто невозможно найти на других платформах.
+Ещё около десяти лет назад, когда я пользовался веб-версией QQ, я уже начал слушать музыку в KuGou (я преданный поклонник вот уже более десяти лет), так что все песни, собранные за эти годы, хранились именно там. Позже я пробовал NetEase Cloud Music и QQ Music, пытался импортировать туда плейлисты из KuGou, но результат меня не устроил: я в основном слушаю OP из японских аниме, и многие песни просто не удавалось найти.
 
-В итоге я вернулся к Kugou. Однако на Mac-версии Kugou периодически возникали проблемы с воспроизведением. По рекомендации друзей я теперь слушаю музыку через [концептуальную версию](https://t1.kugou.com/d2tBza3CSV2) Kugou — это одно из немногих приложений, где можно бесплатно слушать VIP-треки. Очень рекомендую.
+Побродив туда-сюда, я в конце концов вернулся в KuGou. Правда, в версии для Mac воспроизведение часто сбоит; интерфейс небогат функциями, но в целом всё неплохо. По совету знакомых из сети я теперь слушаю музыку в [концептуальной версии KuGou](https://t1.kugou.com/d2tBza3CSV2) — это одно из немногих музыкальных приложений на рынке, где можно бесплатно слушать VIP-песни. Настоятельно рекомендую.
 
-На своей странице я писал, что очень люблю слушать музыку, особенно опенинги аниме. Как это доказать? Просто разработать собственный музыкальный плеер.
+В своём профиле я написал, что очень люблю слушать музыку, особенно OP из японских аниме. Как это доказать? (мой веб-плейлист тоже давно пришёл в запустение) — сделать собственный музыкальный плеер.
 
 
-## ✨ Особенности
+## ✨ Возможности
 
-- ✅ Разработан на Vue.js
-- 🔴 Авторизация через аккаунт Kugou (QR-код/телефон/логин)
-- 📃 Отображение текстов песен
-- 📻 Ежедневные рекомендации
+- ✅ Разработано на стеке Vue.js
+- 🔴 Вход в аккаунт KuGou (QR-код / телефон / аккаунт)
+- 📃 Поддержка отображения текстов песен
+- 📻 Ежедневные рекомендованные песни
 - 🔕 Никаких социальных функций
 - 🔗 Прямое подключение к официальным серверам
-- ✔️ Автоматическое получение VIP ежедневно, после входа вы VIP
-- 🎨 Переключение цветовых тем
+- ✔️ Автоматическое получение VIP каждый день — вошёл и ты VIP
+- 🎨 Смена цветовой темы
 - 👋 Приветствие при запуске
 - ⚙️ Поддержка нескольких платформ
-- 🧩 Суперсистема плагинов
+- 🧩 Система суперплагинов
 - 🧭 Персонализация макета
 - 🥚 Скрытые функции и система пасхалок
-- 🚀 система направляющих новичков
-- ✨ Больше возможностей для самостоятельного открытия
+- 🚀 Система обучения для новичков
+- ✨ Ещё больше возможностей — исследуйте сами
 
-## 📢 Список задач
+## 📢 Todo List
 - [x] 📺 Поддержка воспроизведения MV
 - [x] 🌚 Автоматическое переключение Light/Dark Mode
 - [x] 👆 Поддержка Touch Bar
 - [x] 🖥️ Поддержка PWA
 - [x] ⌨️ Глобальные горячие клавиши
-- [x] 🤟 Мультиязычность
+- [x] 🤟 Поддержка нескольких языков
 - [x] 📻 Текст песни на рабочем столе
-- [x] ⚙️ Оптимизация архитектуры
-- [x] 🎶 Добавление/удаление песен и плейлистов в избранное
+- [x] ⚙️ Оптимизация системной архитектуры
+- [x] 🎶 Добавление песен в плейлист/избранное и отмена
 
 [Посмотреть журнал изменений](http://music.moekoe.cn/changelog.html)
 
@@ -76,230 +76,239 @@
 
 ### 1. Установка клиента
 
-Скачайте установочный пакет на странице [Releases](https://github.com/iAJue/MoeKoeMusic/releases).
+Перейдите на страницу [Releases](https://github.com/MoeKoeMusic/MoeKoeMusic/releases) этого проекта и скачайте установочный пакет.
 
-### 2. WEB-версия (Docker)
+### 2. Установка веб-версии (docker)
 
-* Примечание: после развёртывания откройте соответствующий порт на сервере или используйте обратный прокси.
+* Внимание: после развёртывания необходимо открыть соответствующий порт на сервере, либо использовать обратный прокси для доступа по домену.
 
     1. Способ 1: Быстрый запуск (рекомендуется)
 
     ```
-    git clone https://github.com/iAJue/MoeKoeMusic.git
+    git clone --depth=1 https://github.com/MoeKoeMusic/MoeKoeMusic.git
     cd MoeKoeMusic
-    git submodule update --init --recursive
     docker compose up -d &
     ```
 
-    2. ~~Способ 2: docker-compose (образ пока не загружен официально)~~
-
+    2. ~~Способ 2: Установка в один клик через docker-compose (образ ещё не загружен официально)~~
+    
     ```
-    docker run -d --name MoeKoeMusic -p 8080:8080 -p 6521:6521 -e PORT=6521 -e platform=lite iajue/moekoe-music:latest
+    docker run -d --name MoeKoeMusic -p 8080:8080 -e PORT=6521 -e platform=lite iajue/moekoe-music:latest
     ```
 
-    3. Способ 3: Через панель управления
+    3. Способ 3: Оркестрация контейнеров в панели Baota
 
     * Удалённый образ, версия может отставать от официальной
-
+    
     ```
     version: '3.3'
-
+    
     services:
       moekoe-music:
+        # Адрес образа
         image: registry.cn-wulanchabu.aliyuncs.com/youngxj/moekoe-music:latest
-        container_name: moekoe-music
-        restart: unless-stopped
+        container_name: moekoe-music # Имя контейнера
+        restart: unless-stopped # Автоперезапуск
         build:
           context: .
           dockerfile: Dockerfile
         environment:
           - PORT=6521
           - platform=lite
-        ports:
-          - "8080:8080"  # Фронтенд
-          - "6521:6521"  # API
-
+        ports: # Проброс портов
+          - "8080:8080"  # Фронтенд-сервис
+          - "6521:6521"  # API-сервис
+    
     ```
-### 3. Развертывание в один клик
-[![Развернуть на EdgeOne Pages](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://edgeone.ai/pages/new?template=https://github.com/iAJue/moekoemusic&install-command=npm%20install&output-directory=dist&root-directory=.%2F&build-command=npm%20run%20build&env=VITE_APP_API_URL)
+    
+    Скопируйте содержимое выше, вставьте его в раздел оркестрации контейнеров панели Baota, задайте имя оркестрации `MoeKoeMusic` и нажмите «Развернуть».
 
-Укажите свой API-адрес в переменной окружения (VITE_APP_API_URL)
+### 3. Развёртывание в один клик
+[![Развернуть с EdgeOne Pages](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://edgeone.ai/pages/new?template=https://github.com/MoeKoeMusic/MoeKoeMusic&install-command=npm%20install&output-directory=dist&root-directory=.%2F&build-command=npm%20run%20build&env=VITE_APP_API_URL)
+
+Необходимо указать собственный API-адрес в переменной окружения `VITE_APP_API_URL`.
 
 ## ⚙️ Разработка
 
-1. Клонируйте репозиторий
+1. Клонируйте этот репозиторий
 
 ```sh
-git clone --recurse-submodules https://github.com/iAJue/MoeKoeMusic.git
+git clone --depth=1 https://github.com/MoeKoeMusic/MoeKoeMusic.git
 ```
 
-2. Перейдите в директорию и установите зависимости
+2. Перейдите в каталог и установите зависимости
 
 ```sh
 cd MoeKoeMusic
-npm run install-all
+npm install
 ```
-3. Запустите режим разработки
-```sh
-npm run dev
-```
-4. Сборка проекта
-```sh
-npm run build
-```
-5. Компиляция
-  - Windows:
+3. Запустите режим разработчика
+  - Разработка в браузере
   ```sh
-  npm run electron:build:win
+  npm run dev
   ```
-  - Linux:
+  - Разработка в режиме клиента
   ```sh
-  npm run electron:build:linux
-  ```
-  - macOS:
-  ```sh
-  npm run electron:build:macos
+  npm run dev:client
   ```
 
+4. Соберите фронтенд
+Выберите одну из команд ниже в зависимости от целевой платформы, чтобы собрать фронтенд
+```sh
+npm run build # Собрать фронтенд для веба
+npm run build:client # Собрать фронтенд для клиента
+npm run build:docker # Собрать фронтенд для Docker-образа
+```
+5. Скомпилируйте проект
+  - Windows: 
+```sh
+npm run electron:build:win # [по умолчанию установщик NSIS]
+```
+  - Linux: 
+```sh
+npm run electron:build:linux # [по умолчанию формат AppImage]
+```
+  - macOS: 
+```sh
+npm run electron:build:macos # [по умолчанию обе архитектуры macOS]
+```
 
-Больше команд в файле `package.json` в секции `scripts`
+
+Остальные команды смотрите в разделе `scripts` файла `package.json`.
 
 ## 👷‍♂️ Сборка клиента
 
-Если на странице Release нет подходящего пакета для вашего устройства, вы можете собрать клиент самостоятельно.
+Если на странице Releases вы не нашли установщик, подходящий для вашего устройства, вы можете собрать собственный клиент по шагам ниже.
 
-1. Установите [Node.js](https://nodejs.org/en/) версии >= 18.0.0.
+1. Установите [Node.js](https://nodejs.org/en/) и убедитесь, что версия `Node.js` >= 18.0.0.
 
-2. Клонируйте репозиторий: `git clone https://github.com/iAJue/MoeKoeMusic.git`
+2. Клонируйте этот репозиторий локально командой `git clone --depth=1 https://github.com/MoeKoeMusic/MoeKoeMusic.git`.
 
-3. Установите зависимости: `npm install`
-4. Скомпилируйте API-сервер
-    - Windows:
-        ```sh
-        npm run build:api:win
-        ```
-    - Linux:
-        ```sh
-        npm run build:api:linux
-        ```
-    - macOS:
-      ```sh
-      npm run build:api:macos
-      ```
+3. Установите зависимости проекта командой `npm install`.
 
-5. Выберите команду для сборки. Результат будет в директории `/dist_electron`. Подробнее: [electron-builder](https://www.electron.build/cli)
+4. Используйте `npm run build:client`, чтобы собрать клиентский фронтенд
+
+5. Выберите одну из команд ниже, чтобы собрать подходящий вам установщик; готовые файлы появятся в каталоге `/dist_electron`. Подробнее см. [документацию electron-builder](https://www.electron.build/cli).
 
 
-#### 1. macOS
-   - Универсальный пакет (Intel и Apple Silicon):
+#### 1. Сборка для платформы macOS
+   - Универсальный пакет macOS (архитектуры Intel и Apple Silicon):
    ```
    npm run electron:build -- --mac --universal
    ```
-   - Только Intel:
+   - Только архитектура Intel:
    ```
    npm run electron:build -- --mac --x64
    ```
-   - Только Apple Silicon:
+   - Только архитектура Apple Silicon:
    ```
    npm run electron:build -- --mac --arm64
    ```
 
 
-#### 2. Windows
+#### 2. Сборка для платформы Windows
 
-   - NSIS-установщик (для большинства пользователей):
+   - Установщик NSIS по умолчанию (подходит большинству пользователей Windows):
    ```
    npm run electron:build -- --win
    ```
-   - EXE + Squirrel:
+   - Создание EXE-файлов и установщиков Squirrel для Windows:
    ```
    npm run electron:build -- --win --ia32 --x64 --arm64 --target squirrel
    ```
-   - Портативная версия (без установки):
+       - `--ia32` — 32-битная архитектура Windows.
+       - `--x64` — 64-битная архитектура Windows.
+       - `--arm64` — архитектура ARM Windows (устройства вроде Surface).
+
+   - Создание портативного EXE-файла для Windows (без установки):
    ```
    npm run electron:build -- --win --portable
    ```
-#### 3. Linux
-   - AppImage (для большинства дистрибутивов):
+#### 3. Сборка для платформы Linux
+   - Формат AppImage по умолчанию (подходит большинству дистрибутивов Linux):
+
    ```
    npm run electron:build -- --linux
    ```
-   - snap (Ubuntu и совместимые):
+   - snap (для Ubuntu и дистрибутивов с поддержкой snap):
    ```
    npm run electron:build -- --linux --target snap
    ```
-   - deb (Debian/Ubuntu):
+   - deb (для семейства Debian/Ubuntu):
    ```
    npm run electron:build -- --linux --target deb
    ```
-   - rpm (Red Hat/Fedora):
+   - rpm (для семейства Red Hat/Fedora):
    ```
    npm run electron:build -- --linux --target rpm
    ```
-   - ARM64:
+   - Архитектура ARM64 (ARM v8+): 
    ```
-   npm run build:api:linux-aarch64
-   npm run electron:build:linux-aarch64
+   npm run build:api:linux-arm64 // собрать API
+   npm run electron:build:linux-arm64 // собрать основную программу
    ```
 
-#### 4. Все платформы сразу
+#### 4. Сборка для всех платформ
+
+  Если нужно одновременно создать установщики для Windows, macOS и Linux, используйте следующую команду:
   ```
   npm run electron:build -- -mwl
   ```
 
-#### 5. Дополнительные настройки
+#### 5. Пользовательские настройки сборки
 
-Вы можете добавить другие опции для настройки сборки, например, указать архитектуру x64 или arm64.
+  При необходимости можно добавить другие параметры для более тонкой настройки сборки: например, указать архитектуры x64 и arm64 или выбрать другие целевые форматы.
 
 ## ⭐ Поддержать проект
 
-Если проект оказался полезным, поставьте Star! Ваша поддержка мотивирует нас продолжать развитие.
+Если этот проект оказался вам полезен, поставьте нам Star! Ваша поддержка — это стимул для нас продолжать улучшения.
 
-[![GitHub stars](https://img.shields.io/github/stars/iAJue/MoeKoeMusic.svg?style=social&label=Star)](https://github.com/iAJue/MoeKoeMusic)
+[![GitHub stars](https://img.shields.io/github/stars/MoeKoeMusic/MoeKoeMusic.svg?style=social&label=Star)](https://github.com/MoeKoeMusic/MoeKoeMusic)
 
 ## ✅ Обратная связь
 
-По любым вопросам или предложениям создавайте issue или pull request.
+Если у вас есть вопросы или предложения, смело открывайте issue или pull request.
 
 ## ⚠️ Отказ от ответственности
-0. Это сторонний клиент для Kugou, не официальное приложение. Для полного функционала используйте официальный клиент.
-1. Проект предназначен только для обучения. Уважайте авторские права и не используйте его в коммерческих или незаконных целях!
-2. При использовании проекта могут создаваться данные, защищённые авторским правом. Проект не владеет этими данными. Во избежание нарушения авторских прав удаляйте такие данные в течение 24 часов.
-3. Пользователь несёт ответственность за любой ущерб, возникший в результате использования проекта.
-4. Запрещено использовать проект в нарушение местного законодательства.
-5. Музыкальные платформы заслуживают поддержки. Уважайте авторские права, поддерживайте легальный контент.
-6. Проект предназначен только для исследования технических возможностей. Коммерческое сотрудничество и пожертвования не принимаются.
-7. Если правообладатели считают проект неуместным, свяжитесь с нами для изменения или удаления.
-
+1. Эта программа является сторонним клиентом KuGou, а не официальным продуктом KuGou. Для более полного функционала скачайте официальный клиент.
+2. Проект предназначен только для обучения. Уважайте авторские права и не используйте проект в коммерческих или противоправных целях!
+3. В процессе использования проекта могут создаваться объекты авторского права. Проект не обладает правами на них. Во избежание нарушений пользователь обязан удалить все объекты авторского права, созданные в ходе использования проекта, в течение 24 часов.
+4. Пользователь несёт ответственность за любые прямые, косвенные, особые, случайные или последующие убытки любого характера, возникшие в результате использования проекта, включая, но не ограничиваясь, ущербом от потери деловой репутации, простоя, сбоя или отказа компьютера, а также любые иные коммерческие убытки или потери, будь то следствие настоящего соглашения либо использования или невозможности использования проекта.
+5. Запрещается использовать проект в нарушение местных законов и нормативных актов. Любые противоправные или незаконные действия, вызванные использованием проекта пользователем, знавшим или не знавшим о том, что местные законы и нормативные акты этого не допускают, относятся на счёт пользователя; проект не несёт за них прямой, косвенной, особой, случайной или последующей ответственности.
+6. Музыкальным платформам непросто — уважайте авторские права и поддерживайте лицензионный контент.
+7. Проект служит исключительно для исследования и изучения технической осуществимости и не принимает никакого коммерческого сотрудничества (включая, но не ограничиваясь рекламой) и пожертвований.
+8. Если официальная музыкальная платформа сочтёт проект неприемлемым, она может связаться с проектом для его изменения или удаления.
+            
 
 ## 📜 Лицензия
 
-Проект предназначен только для личного изучения. Коммерческое и незаконное использование запрещено.
+Проект предназначен только для личного обучения и исследования; коммерческое и противоправное использование запрещено.
 
-Лицензия: [GNU General Public License v2.0 (GPL-2.0)](https://github.com/iAJue/MoeKoeMusic/blob/main/LICENSE)
+Открытый исходный код распространяется по лицензии [GNU General Public License v2.0 (GPL-2.0)](https://github.com/MoeKoeMusic/MoeKoeMusic/blob/main/LICENSE).
 
 ## 👍 Источники вдохновения
 
-Исходный код API: [MakcRe/KuGouMusicApi](https://github.com/MakcRe/KuGouMusicApi)
+Исходный код API взят из [MakcRe/KuGouMusicApi](https://github.com/MakcRe/KuGouMusicApi)
 
 - [Apple Music](https://music.apple.com)
 - [YouTube Music](https://music.youtube.com)
 - [YesPlayMusic](https://github.com/qier222/YesPlayMusic)
-- [Kugou Music](https://kugou.com/)
+- [KuGou Music](https://kugou.com/)
 
 ## 🖼️ Скриншоты
 
-![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/2.png)
-![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/3.png)
-![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/4.png)
-![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/5.png)
-![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/6.png)
-![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/7.png)
-![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/8.png)
-![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/9.png)
-![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/10.png)
-![image](https://github.com/iAJue/MoeKoeMusic/raw/main/images/11.png)
+![image](https://github.com/MoeKoeMusic/MoeKoeMusic/raw/main/images/2.png)
+![image](https://github.com/MoeKoeMusic/MoeKoeMusic/raw/main/images/3.png)
+![image](https://github.com/MoeKoeMusic/MoeKoeMusic/raw/main/images/4.png)
+![image](https://github.com/MoeKoeMusic/MoeKoeMusic/raw/main/images/5.png)
+![image](https://github.com/MoeKoeMusic/MoeKoeMusic/raw/main/images/6.png)
+![image](https://github.com/MoeKoeMusic/MoeKoeMusic/raw/main/images/7.png)
+![image](https://github.com/MoeKoeMusic/MoeKoeMusic/raw/main/images/8.png)
+![image](https://github.com/MoeKoeMusic/MoeKoeMusic/raw/main/images/9.png)
+![image](https://github.com/MoeKoeMusic/MoeKoeMusic/raw/main/images/10.png)
+![image](https://github.com/MoeKoeMusic/MoeKoeMusic/raw/main/images/11.png)
+
 
 ## 🗓️ Star History
 
-[![Star History Chart](https://api.star-history.com/chart?repos=MoeKoeMusic/MoeKoeMusic&type=date&legend=top-left&sealed_token=unIw8k8CbengL1CW5XVoW-psSsTQHjp7X6Hchrr9WiEh4baeFZXunI95J9V8nnY8XTWrT8UuvRBXScevzXLRlhTID0-_V200iw9TFChclu1-28maCH3NutInvRl6nQ1jDMXpInpefFixeHYDr8BCn9fYqiNtZAoK30Vi46s7QPQQU80mJstgjgeqWjXf)](https://www.star-history.com/#iAJue/MoeKoeMusic&Date)
+[![Star History Chart](https://api.star-history.com/chart?repos=MoeKoeMusic/MoeKoeMusic&type=date&legend=top-left&sealed_token=unIw8k8CbengL1CW5XVoW-psSsTQHjp7X6Hchrr9WiEh4baeFZXunI95J9V8nnY8XTWrT8UuvRBXScevzXLRlhTID0-_V200iw9TFChclu1-28maCH3NutInvRl6nQ1jDMXpInpefFixeHYDr8BCn9fYqiNtZAoK30Vi46s7QPQQU80mJstgjgeqWjXf)](https://www.star-history.com/#MoeKoeMusic/MoeKoeMusic&Date)

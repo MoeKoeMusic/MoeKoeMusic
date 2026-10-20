@@ -185,6 +185,8 @@ npm run electron:build:macos # [默认 macOS 双架构]
 
 3. 使用 `npm install` 安装项目依赖。
 
+4. 使用 `npm run build:client` 为客户端构建前端
+
 5. 选择下列的命令来打包适合的你的安装包，打包出来的文件在 `/dist_electron` 目录下。了解更多信息可访问 [electron-builder 文档](https://www.electron.build/cli)
 
 

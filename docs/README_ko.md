@@ -180,7 +180,7 @@ npm run electron:build:macos # [기본 macOS 듀얼 아키텍처]
 
 Release 페이지에서 자신의 기기에 맞는 설치 파일을 찾지 못했다면, 아래 단계에 따라 직접 클라이언트를 패키징할 수 있습니다.
 
-1. [Node.js](https://nodejs.org/en/)를 설치하고 `Node.js` 버전이 18.0.0 이상인지 확인합니다.
+1. [Node.js](https://nodejs.org/en/)를 설치하고 `Node.js` 버전이 20.0.0 이상인지 확인합니다.
 
 2. `git clone --depth=1 https://github.com/MoeKoeMusic/MoeKoeMusic.git`을 사용해 이 저장소를 로컬에 클론합니다.
 

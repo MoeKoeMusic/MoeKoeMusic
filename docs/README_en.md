@@ -180,7 +180,7 @@ For more commands, please refer to `scripts` in the `package.json` file.
 
 If you can't find an installer suitable for your device on the Releases page, you can follow the steps below to package your own client.
 
-1. Install [Node.js](https://nodejs.org/en/) and make sure the `Node.js` version is >= 18.0.0.
+1. Install [Node.js](https://nodejs.org/en/) and make sure the `Node.js` version is >= 20.0.0.
 
 2. Clone this repository locally with `git clone --depth=1 https://github.com/MoeKoeMusic/MoeKoeMusic.git`.
 

@@ -328,5 +328,8 @@
   "jian-ting-duan-kou": "Listening port",
   "allow-lan-request": "Allow connections from LAN",
   "websocket-api-url-preview": "WebSocket API Endpoint Preview",
-  "web-api-url-preview": "Web API Endpoint Preview"
+  "web-api-url-preview": "Web API Endpoint Preview",
+  "zi-dong-jue-ding": "Auto Decide",
+  "shi-zhong-kai-qi": "Always Enable",
+  "fu-zhi": "Copy"
 }

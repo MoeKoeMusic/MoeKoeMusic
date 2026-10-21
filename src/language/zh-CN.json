@@ -328,5 +328,9 @@
   "jian-ting-duan-kou": "监听端口",
   "allow-lan-request": "允许来自局域网的连接",
   "websocket-api-url-preview": "WebSocket API 终结点预览",
-  "web-api-url-preview": "Web API 终结点预览"
+  "web-api-url-preview": "Web API 终结点预览",
+  "zi-dong-jue-ding": "自动决定",
+  "shi-zhong-kai-qi": "始终开启",
+  "shi-zhong-guan-bi": "始终关闭",
+  "fu-zhi": "复制"
 }

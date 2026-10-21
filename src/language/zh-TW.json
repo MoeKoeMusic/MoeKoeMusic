@@ -303,5 +303,9 @@
   "qie-huan-dao-yin-yi": "切換到音譯",
   "qie-huan-dao-fan-yi": "切換到翻譯",
   "wei-zhi-cuo-wu": "未知錯誤",
-  "allow-lan-request": "批准來自區域網的連結"
+  "allow-lan-request": "批准來自區域網的連結",
+  "zi-dong-jue-ding": "自動選取",
+  "shi-zhong-kai-qi": "總是開啓",
+  "shi-zhong-guan-bi": "總是關閉",
+  "fu-zhi": "複製"
 }

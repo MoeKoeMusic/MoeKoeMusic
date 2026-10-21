@@ -1469,13 +1469,6 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
         }
     }
 
-    .close-button {
-        position: absolute;
-        top: 12px;
-        left: 12px;
-        font-size: 18px;
-    }
-
     button:not(.setting-switch) {
         flex: 0 0 auto;
         margin-top: 20px;
@@ -1503,6 +1496,14 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
                 opacity: 0.6;
             }
         }
+
+        &.close-button {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            font-size: 18px;
+            color: var(--text-color);
+        }
     }
 
     > button {
@@ -1517,8 +1518,16 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
 
         >button {
             margin-top: 0;
+            color: var(--text-color);
+            background-color: var(--secondary-color);
+            transition-property: color, background-color;
+
+            &:hover {
+                color: #fff;
+            }
 
             &.active {
+                color: #fff;
                 background-color: $primary;
             }
         }

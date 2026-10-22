@@ -69,8 +69,16 @@ html.dark {
         }
     }
 
+    .setting-switch.active {
+        background-color: var(--primary-color);
+    }
+
     .refresh-hint {
         color: #ff6b6b;
+    }
+
+    .help-link {
+        color: var(--primary-color);
     }
 
     .modal-content {
@@ -91,18 +99,21 @@ html.dark {
             }
         }
 
-        label {
+        button:not(.active), label {
             color: $text-primary !important;
         }
 
-        button:not(.setting-switch) {
+        button:not(.setting-switch, .close-button, :is(.switch-panel>button.active)) {
             background-color: $bg-input !important;
-            color: $text-primary !important;
             border: 1px solid #373434 !important;
 
             &:hover {
                 background-color: $bg-hover !important;
             }
+        }
+
+        .switch-panel>button.active {
+            background-color: var(--primary-color);
         }
     }
 

@@ -63,6 +63,9 @@
         <teleport to="body">
         <div v-if="isSelectionOpen" class="modal" @click.self="closeSelection">
             <div class="modal-content">
+                <button class="ghost-button close-button" :title="t('guan-bi-an-niu')" :aria-label="t('guan-bi-an-niu')" @click="closeSelection">
+                    <i class="fas fa-x"></i>
+                </button>
                 <a v-if="currentHelpLink" class="help-link" @click="openHelpLink()" :title="$t('bang-zhu')"
                     :aria-label="$t('bang-zhu')">
                     <i class="fas fa-question-circle"></i>
@@ -70,7 +73,7 @@
                 <h3>{{ getSettingItem(selectionType)?.selectionTitle }}</h3>
                 <input v-if="isFontSelection()" class="font-search" placeholder="搜索字体..."
                     v-model="fontSearch" />
-                <ul v-else-if="!isToggleItem(getSettingItem(selectionType))">
+                <ul v-else-if="!isToggleItem(getSettingItem(selectionType)) && isPreventOpenSelectionItem(getSettingItem(selectionType))">
                     <li v-for="option in getSettingItem(selectionType)?.options || []" :key="option.value"
                         @click="selectOption(option)">
                         {{ option.displayText }}
@@ -86,7 +89,7 @@
                     </li>
                 </ul>
 
-                <ul v-else-if="isFontSelection()" class="font-list">
+                <ul v-if="isFontSelection()" class="font-list">
                     <li v-if="fontOptionsLoading">{{ $t('jia-zai-zhong') }}</li>
                     <li v-else-if="fontOptions.length === 0">{{ $t('mo-ren-zi-ti') }}</li>
                     <template v-else v-for="option in fontOptions" :key="option.value">
@@ -116,8 +119,18 @@
                     </div>
                 </div>
 
-                <div v-if="selectionType === 'apiMode' && selectedSettings.apiMode.value === 'on'"
+                <div v-if="selectionType === 'apiMode'"
                     class="api-settings-container">
+                    <div class="api-setting-item">
+                        <label>{{ t('kai-qi') }}/{{ t('guan-bi') }}</label>
+                        <div class="switch-panel">
+                            <button v-for="option in getSettingItem(selectionType)?.options || []" :key="option.value"
+                                :class="{ active: selectedSettings[selectionType].value === option.value }"
+                                @click="selectOption(option)">
+                                {{ option.displayText }}
+                            </button>
+                        </div>
+                    </div>
                     <div v-if="false" class="api-setting-item">
                         <label>{{ $t('jian-ting-zhu-ji') }}</label>
                         <input type="text" placeholder="127.0.0.1" class="api-input" v-model="apiModeForm.host" />
@@ -141,24 +154,34 @@
                     <div class="api-setting-item">
                         <label>
                             {{ $t('websocket-api-url-preview') }}
-                            <a class="help-link normal" @click="openHelpLink('https://music.moekoe.cn/websocket-api.html')" :title="$t('bang-zhu')"
-                                :aria-label="$t('bang-zhu')">
-                                <i class="fas fa-question-circle"></i>
-                            </a>
-                    </label>
+                            <span class="btns">
+                                <a :title="t('fu-zhi')" :aria-label="t('fu-zhi')" class="copy-button" @click="copy(apiModeUrlPreview.ws, $event.target)">
+                                    <i class="fas fa-clipboard"></i>
+                                </a>
+                                <a class="help-link normal" @click="openHelpLink('https://music.moekoe.cn/websocket-api.html')" :title="$t('bang-zhu')"
+                                    :aria-label="$t('bang-zhu')">
+                                    <i class="fas fa-question-circle"></i>
+                                </a>
+                            </span>
+                        </label>
                         <input type="url" spellcheck="false" readonly class="api-input" :value="apiModeUrlPreview.ws" />
                     </div>
                     <div class="api-setting-item">
                         <label>
                             {{ $t('web-api-url-preview') }}
-                            <a class="help-link normal" @click="openHelpLink('https://music.moekoe.cn/api-docs.html')" :title="$t('bang-zhu')"
-                                :aria-label="$t('bang-zhu')">
-                                <i class="fas fa-question-circle"></i>
-                            </a>
+                            <span class="btns">
+                                <a :title="t('fu-zhi')" :aria-label="t('fu-zhi')" class="copy-button" @click="copy(apiModeUrlPreview.http, $event.target)">
+                                    <i class="fas fa-clipboard"></i>
+                                </a>
+                                <a class="help-link normal" @click="openHelpLink('https://music.moekoe.cn/api-docs.html')" :title="$t('bang-zhu')"
+                                    :aria-label="$t('bang-zhu')">
+                                    <i class="fas fa-question-circle"></i>
+                                </a>
+                            </span>
                         </label>
                         <input type="url" spellcheck="false" readonly class="api-input" :value="apiModeUrlPreview.http" />
                     </div>
-                    <div class="api-hint">
+                    <div v-if="false" class="api-hint">
                         {{ $t('zhong-qi-hou-sheng-xiao') }}
                     </div>
                     <div class="proxy-actions">
@@ -203,7 +226,6 @@
                         {{ proxyForm.testResult }}
                     </div>
                 </div>
-                <button @click="closeSelection">{{ $t('guan-bi-an-niu') }}</button>
             </div>
         </div>
         </teleport>
@@ -253,6 +275,20 @@ const appVersion = ref('');
 const platform = ref('');
 const activeTab = ref(0);
 const defaultApiBaseUrl = DEFAULT_API_BASE_URL;
+
+/** @param {HTMLButtonElement | null | undefined} target */
+const copy = async (content, target = null) => {
+    if(target) target.disabled = true;
+    try {
+        await navigator.clipboard.writeText(content);
+        $message.success('复制成功');
+    } catch(e) {
+        $message.error('复制失败：', e.message);
+    }
+    if(target) setTimeout(() => {
+        target.disabled = false;
+    }, 1500);
+}
 
 const {
     settingSections,
@@ -448,7 +484,7 @@ const isPreventOpenSelectionItem = (item) =>
     (typeof item.noSelection === 'undefined' || item.noSelection === true);
 
 const isDisabledItem = (item) => {
-    const value = JSON.parse(localStorage.getItem('settings') || 'null')?.[item.key];
+    const value = selectedSettings.value?.[item.key].value;
     return value? value === 'off': false;
 }
 
@@ -463,8 +499,9 @@ const handleCardClick = (item) => {
 
     if (isToggleItem(item) && isPreventOpenSelectionItem(item)) {
         return;
-    } else if(isToggleItem(item) && isDisabledItem(item))
+    } else if(isToggleItem(item) && isDisabledItem(item)) {
         return;
+    }
 
     openSelection(item.key);
 };
@@ -1136,6 +1173,7 @@ const installPWA = async () => {
 <style lang="scss" scoped>
 $primary: var(--color-primary);
 $primary-light: var(--color-primary-light);
+$secondary: var(--primary-color);
 $text-muted: #666;
 $border-light: #eaeaea;
 $shadow-light: rgba(0, 0, 0, 0.15);
@@ -1328,6 +1366,7 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
     padding: 0;
     transition: background-color 0.2s ease;
     flex: 0 0 auto;
+    box-shadow: 1px 1px 1px var(--color-box-shadow);
 
     &.active {
         background: $primary;
@@ -1434,7 +1473,7 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
         flex: 0 0 auto;
         margin-top: 20px;
         padding: 10px 20px;
-        background-color: $primary;
+        background-color: $secondary;
         color: white;
         border: none;
         border-radius: 8px;
@@ -1445,11 +1484,53 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
         &:hover {
             background-color: $primary;
         }
+
+        &.ghost-button {
+            margin: 0;
+            padding: 0;
+            border: none;
+            min-width: auto;
+            background-color: transparent;
+
+            &:hover {
+                opacity: 0.6;
+            }
+        }
+
+        &.close-button {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            font-size: 18px;
+            color: var(--text-color);
+        }
     }
 
     > button {
         align-self: center;
         min-width: 96px;
+    }
+
+    .switch-panel {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+
+        >button {
+            margin-top: 0;
+            color: var(--text-color);
+            background-color: var(--secondary-color);
+            transition-property: color, background-color;
+
+            &:hover {
+                color: #fff;
+            }
+
+            &.active {
+                color: #fff;
+                background-color: $primary;
+            }
+        }
     }
 }
 
@@ -1464,8 +1545,7 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
 
     &.normal {
         position: static;
-        display: contents;
-        margin-left: 4px;
+        display: inline;
     }
 
     &:hover {
@@ -1714,6 +1794,22 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
             font-size: 14px;
             color: #333;
             margin-bottom: 5px;
+
+            .btns {
+                display: inline-flex;
+                align-items: center;
+                margin-left: 4px;
+                gap: 6px;
+
+                .copy-button {
+                    display: inline;
+                    font-size: 16px;
+
+                    &:hover {
+                        opacity: 0.8;
+                    }
+                }
+            }
         }
 
         .api-input {
@@ -1724,6 +1820,12 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
             padding: 5px;
             padding-left: 10px;
             box-sizing: border-box;
+
+            &:read-only {
+                color: $text-muted;
+                border-color: $text-muted;
+                outline-color: $primary-light;
+            }
         }
     }
 
@@ -1732,32 +1834,32 @@ $shadow-medium: rgba(0, 0, 0, 0.18);
         color: #999;
         text-align: center;
     }
-}
 
-.proxy-actions {
-    display: flex;
-    gap: 12px;
-    width: 100%;
+    .proxy-actions {
+        display: flex;
+        gap: 12px;
+        width: 100%;
 
-    button {
-        flex: 1;
-        min-width: 0;
-        padding: 8px 0;
-        border-radius: 6px;
-    }
-}
-
-.proxy-test-result {
-    font-size: 13px;
-    line-height: 18px;
-    margin-top: 5px;
-
-    &.success {
-        color: #4caf50;
+        button {
+            flex: 1;
+            min-width: 0;
+            padding: 8px 0;
+            border-radius: 6px;
+        }
     }
 
-    &.error {
-        color: #e53935;
+    .proxy-test-result {
+        font-size: 13px;
+        line-height: 18px;
+        margin-top: 5px;
+
+        &.success {
+            color: #4caf50;
+        }
+
+        &.error {
+            color: #e53935;
+        }
     }
 }
 </style>

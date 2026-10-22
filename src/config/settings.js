@@ -416,13 +416,14 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             },
             {
                 key: 'apiMode',
-                defaultValue: 'off',
+                defaultValue: 'auto',
                 itemIcon: 'fas fa-code',
                 selectionTitle: t('api-mo-shi'),
                 noSelection: false,
                 options: [
-                    { displayText: t('da-kai'), value: 'on' },
-                    { displayText: t('guan-bi'), value: 'off' }
+                    { displayText: t('zi-dong-jue-ding'), value: 'auto' },
+                    { displayText: t('shi-zhong-kai-qi'), value: 'on' },
+                    { displayText: t('shi-zhong-guan-bi'), value: 'off' }
                 ],
                 available: 'client',
                 keepOpen: true,

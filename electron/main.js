@@ -16,6 +16,7 @@ import Store from 'electron-store';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { t } from './language/i18n.js';
+import { getExtensionsFromPermissions } from './extensions/utils.js';
 
 let mainWindow = null;
 let blockerId = null;
@@ -99,7 +100,13 @@ if (settings?.highDpi === 'on') {
     app.commandLine.appendSwitch('force-device-scale-factor', settings?.dpiScale || '1');
 }
 
-if (settings?.apiMode === 'on') {
+if(settings?.apiMode === 'auto') {
+    const apiModeExtensions = getExtensionsFromPermissions('moekoe', 'moekoe:apiMode');
+    if(apiModeExtensions.length >= 1) {
+        console.log(`detected ${apiModeExtensions.length} extension(s) need 'moekoe:apiMode' permission, automatically starting api service...`);
+        apiService.start(settings?.apiModeConfig);
+    }
+} else if (settings?.apiMode === 'on') {
     apiService.start(settings?.apiModeConfig);
 }
 

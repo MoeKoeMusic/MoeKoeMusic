@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import extensionManager from './extensionManager.js';
 import nativeHostManager from './nativeHostManager.js';
 import { bindExternalLinkHandler } from '../services/externalLinkHandler.js';
+import { parsePermissions } from './utils.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -139,7 +140,7 @@ export function registerExtensionIPC() {
                     description: ext.manifest?.description || '',
                     author: authorName,
                     authorUrl: authorUrl,
-                    permissions: ext.manifest?.permissions || [],
+                    permissions: parsePermissions(ext.manifest),
                     iconData: iconData,
                     moeKoeAdapted: ext.manifest?.moekoe === true || scannedExt?.manifest?.moekoe === true,
                     minversion: ext.manifest?.minversion || scannedExt?.manifest?.minversion || '',

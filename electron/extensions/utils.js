@@ -1,3 +1,5 @@
+import extensionManager from './extensionManager.js';
+
 const ValidMoekoePermissions = ['moekoe:nativeHost', 'nativeHost', 'moekoe:apiMode', 'apiMode'];
 
 export const parsePermissions = (manifest) => {
@@ -28,4 +30,20 @@ export const parsePermissions = (manifest) => {
 		});
 	}
 	return result;
+}
+
+/**
+ * @param {'all' | 'chrome' | 'moekoe' | 'moekoe_invalid'} type
+ * @param {string} permission
+ * @returns {Electron.Extension[]}
+ */
+export const getExtensionsFromPermissions = (type, permission) => {
+	const extensions = extensionManager.scanExtensions(true);
+	const matchedExtensions = [];
+
+	extensions.forEach(ext => {
+		if(ext.permissions?.[type].includes(permission)) matchedExtensions.push(ext);
+	});
+
+	return matchedExtensions;
 }

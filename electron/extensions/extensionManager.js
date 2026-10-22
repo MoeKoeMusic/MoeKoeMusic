@@ -9,7 +9,6 @@ import { parsePermissions } from './utils.js';
 import { validateNativeHostManifest } from './nativeHostManager.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-let scanCache = null;
 
 // Chrome 插件管理 - 根据环境选择正确的路径
 const EXTENSIONS_DIR = !isDev
@@ -490,8 +489,6 @@ export function formatFileSize(bytes) {
 export function scanExtensions(prescan = false) {
     ensureExtensionsDirectory();
 
-    if(!prescan && scanCache) return scanCache;
-    
     try {
         const extensionDirs = fs.readdirSync(EXTENSIONS_DIR, { withFileTypes: true })
             .filter(dirent => dirent.isDirectory())
@@ -512,8 +509,6 @@ export function scanExtensions(prescan = false) {
             }
         }
 
-        if(!prescan && extensions.length > 0) scanCache = extensions;
-        
         return extensions;
     } catch (error) {
         log.error('扫描插件失败:', error);

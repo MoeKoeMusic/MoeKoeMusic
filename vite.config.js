@@ -83,6 +83,7 @@ export default defineConfig({
       }
     })
   ],
+  clearScreen: false, // prevent vite from clearing api log
   define: {
     __VERSION__: JSON.stringify(process.env.npm_package_version)
   },

@@ -42,7 +42,7 @@ export async function loadChromeExtensions() {
                     // 验证 manifest 格式
                     if (manifest.manifest_version && manifest.name && manifest.version) {
                         loadTasks.push(
-                            session.defaultSession.loadExtension(extensionPath, {
+                            session.defaultSession.extensions.loadExtension(extensionPath, {
                                 allowFileAccess: true
                             }).then((extension) => {
                                 log.info(`成功加载插件: ${manifest.name} (${extension.id})`);
@@ -72,9 +72,9 @@ export async function loadChromeExtensions() {
  */
 export function unloadChromeExtensions() {
     try {
-        const extensions = session.defaultSession.getAllExtensions();
+        const extensions = session.defaultSession.extensions.getAllExtensions();
         extensions.forEach(extension => {
-            session.defaultSession.removeExtension(extension.id);
+            session.defaultSession.extensions.removeExtension(extension.id);
             log.info(`卸载插件: ${extension.name}`);
         });
     } catch (error) {
@@ -87,7 +87,7 @@ export function unloadChromeExtensions() {
  */
 export function getLoadedExtensions() {
     try {
-        return session.defaultSession.getAllExtensions();
+        return session.defaultSession.extensions.getAllExtensions();
     } catch (error) {
         log.error('获取插件列表失败:', error);
         return [];
@@ -100,7 +100,7 @@ export function getLoadedExtensions() {
  */
 export async function installExtension(extensionPath) {
     try {
-        const extension = await session.defaultSession.loadExtension(extensionPath, {
+        const extension = await session.defaultSession.extensions.loadExtension(extensionPath, {
             allowFileAccess: true
         });
         log.info(`手动安装插件成功: ${extension.name}`);
@@ -123,7 +123,7 @@ export function uninstallExtension(extensionId, extensionDir = '') {
 
         targetDirPath = path.join(EXTENSIONS_DIR, path.basename(extensionDir.trim()));
         try {
-            session.defaultSession.removeExtension(extensionId);
+            session.defaultSession.extensions.removeExtension(extensionId);
             removedFromSession = true;
             log.info(`卸载插件会话: ${extensionId}`);
         } catch (error) {

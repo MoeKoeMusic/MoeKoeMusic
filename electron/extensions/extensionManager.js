@@ -5,9 +5,11 @@ import log from 'electron-log';
 import { fileURLToPath } from 'url';
 import isDev from 'electron-is-dev';
 import AdmZip from 'adm-zip';
+import { parsePermissions } from './utils.js';
 import { validateNativeHostManifest } from './nativeHostManager.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+let scanCache = null;
 
 // Chrome 插件管理 - 根据环境选择正确的路径
 const EXTENSIONS_DIR = !isDev
@@ -208,15 +210,20 @@ export function validateManifest(manifestPath) {
             return { valid: false, error: '仅支持 Manifest V3 格式' };
         }
 
+        const permissions = parsePermissions(manifest);
+        if(permissions.moekoe_invalid.length > 0) {
+            log.warn(`[Extension Manager] 插件 ${manifest.name || manifest.plugin_id || '未命名'} 包含无效的 moekoe 权限申请`, permissions.moekoe_invalid);
+        }
+
         // Native Host 是本地进程能力，必须在 manifest 校验阶段先拦截不安全声明。
         const nativeHostError = validateNativeHostManifest(manifest);
         if (nativeHostError) {
-            return { valid: false, error: nativeHostError };
+            return { valid: false, error: nativeHostError, permissions };
         }
 
-        return { valid: true, manifest };
+        return { valid: true, manifest, permissions };
     } catch (error) {
-        return { valid: false, error: `解析 manifest.json 失败: ${error.message}` };
+        return { valid: false, error: `解析 manifest.json 失败: ${error.message}`, permissions: null };
     }
 }
 
@@ -247,7 +254,7 @@ export function getExtensionInfo(extensionDir) {
     
     const validation = validateManifest(manifestPath);
     if (!validation.valid) {
-        return { error: validation.error };
+        return { error: validation.error, permissions: validation.permissions };
     }
 
     const manifest = validation.manifest;
@@ -260,7 +267,7 @@ export function getExtensionInfo(extensionDir) {
         version: manifest.version,
         description: manifest.description || '',
         author: manifest.author || '',
-        permissions: manifest.permissions || [],
+        permissions: validation.permissions,
         path: extensionPath,
         size: getDirectorySize(extensionPath),
         lastModified: stats.mtime,
@@ -480,8 +487,10 @@ export function formatFileSize(bytes) {
 /**
  * 扫描并获取所有插件信息
  */
-export function scanExtensions() {
+export function scanExtensions(prescan = false) {
     ensureExtensionsDirectory();
+
+    if(!prescan && scanCache) return scanCache;
     
     try {
         const extensionDirs = fs.readdirSync(EXTENSIONS_DIR, { withFileTypes: true })
@@ -496,12 +505,14 @@ export function scanExtensions() {
                 extensions.push({
                     ...info,
                     directory: extensionDir,
-                    installed: isExtensionInstalled(info.name)
+                    installed: prescan? 'unknown': isExtensionInstalled(info.name)
                 });
             } else {
                 log.warn(`插件 ${extensionDir} 信息获取失败:`, info.error);
             }
         }
+
+        if(!prescan && extensions.length > 0) scanCache = extensions;
         
         return extensions;
     } catch (error) {

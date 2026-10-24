@@ -244,8 +244,7 @@ Releases ページにご自身のデバイスに合うインストーラーが�
    ```
    - ARM64 アーキテクチャ（ARM v8 以上）： 
    ```
-   npm run build:api:linux-arm64 // APIをビルド
-   npm run electron:build:linux-arm64 // メインプログラムをビルド
+   npm run electron:build:linux-arm64
    ```
 
 #### 4. すべてのプラットフォーム向けのパッケージ

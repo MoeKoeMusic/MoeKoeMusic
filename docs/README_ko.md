@@ -244,8 +244,7 @@ Release 페이지에서 자신의 기기에 맞는 설치 파일을 찾지 못�
    ```
    - ARM64 아키텍처(ARM v8+): 
    ```
-   npm run build:api:linux-arm64 // API 컴파일
-   npm run electron:build:linux-arm64 // 메인 프로그램 컴파일
+   npm run electron:build:linux-arm64
    ```
 
 #### 4. 모든 플랫폼 패키징

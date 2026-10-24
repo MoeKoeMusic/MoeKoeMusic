@@ -244,8 +244,7 @@ npm run electron:build:macos # [по умолчанию обе архитект�
    ```
    - Архитектура ARM64 (ARM v8+): 
    ```
-   npm run build:api:linux-arm64 // собрать API
-   npm run electron:build:linux-arm64 // собрать основную программу
+   npm run electron:build:linux-arm64
    ```
 
 #### 4. Сборка для всех платформ

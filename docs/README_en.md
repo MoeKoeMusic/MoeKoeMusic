@@ -244,8 +244,7 @@ If you can't find an installer suitable for your device on the Releases page, yo
    ```
    - ARM64 architecture (ARM v8+):
    ```
-   npm run build:api:linux-arm64 // build the API
-   npm run electron:build:linux-arm64 // build the main program
+   npm run electron:build:linux-arm64
    ```
 
 #### 4. Packaging for all platforms

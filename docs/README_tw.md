@@ -244,8 +244,7 @@ npm run electron:build:macos # [預設 macOS 雙架構]
    ```
    - ARM64 架構（ARM v8+）: 
    ```
-   npm run build:api:linux-arm64 // 編譯 API
-   npm run electron:build:linux-arm64 // 編譯主程式
+   npm run electron:build:linux-arm64
    ```
 
 #### 4. 打包所有平台

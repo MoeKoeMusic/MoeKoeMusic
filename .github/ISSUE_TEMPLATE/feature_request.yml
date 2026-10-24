@@ -1,6 +1,7 @@
 name: "✨ 新特性请求"
 description: 为项目提出一个新想法或建议
 title: '[新需求]: '
+type: 'Feature'
 labels: ['enhancement']
 body:
   - type: markdown
@@ -14,6 +15,21 @@ body:
         - 搜索现有的issues和讨论，确保这个特性尚未被提出
         - 确认这是一个新特性而不是bug修复
         - 有完整的上下文链，帮助我们评估是否是值得添加的特性
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: 请确保您已阅读以上注意事项，并勾选下方的确认框。
+      options:
+        - label: 我已知晓并同意，如果我不按照模板提供的指示进行填写，则我的 Issue 可能会被无条件关闭。
+          required: true
+        - label: 我确定这是一个从未被提出和实现过的功能（请阅读以下两则）。
+          required: true
+        - label: 我已在 [Issue Tracker](https://github.com/MoeKoeMusic/MoeKoeMusic/issues) 和 [Discussions](https://github.com/orgs/MoeKoeMusic/discussions) 中找过我要请求的功能，没有找到类似 Issue 或 Discussion。
+          required: true
+        - label: 我已在 [Pull Request](https://github.com/MoeKoeMusic/MoeKoeMusic/pulls) 中找过我要请求的功能，没有找到类似 Pull Request。
+          required: true
+        - label: 我已知晓并同意，此模板仅用于向 MoeKoe Music 请求新功能，否则我的 Issue 可能会被无条件关闭/锁定。
+          required: true
   - type: textarea
     id: problem-description
     attributes:

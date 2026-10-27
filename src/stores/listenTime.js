@@ -20,7 +20,6 @@ export const useListenTimeStore = defineStore('listen-time', () => {
 			return null;
 		}
 	}
-	refreshListenTime();
 
 	/** 生成 CSCC 事件载体 */
 	const generateCsccJson = (type, data) => {

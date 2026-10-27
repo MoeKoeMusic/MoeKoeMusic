@@ -87,14 +87,13 @@ jobs:
         with:
           submodules: true
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - name: Setup PNPM + Node.js
+        uses: pnpm/setup@v3
         with:
-          node-version: ${{ matrix.node }}
-          cache: pnpm # use cache
-
-      - name: Setup PNPM
-        uses: pnpm/action-setup@v6
+          version: 9
+          runtime: node@20
+          require-lockfile: true
+          cache: true
 
       - name: Build
         env:

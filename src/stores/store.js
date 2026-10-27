@@ -3,7 +3,10 @@ import axios from 'axios';
 import { getApiBaseUrl } from '../utils/apiBaseUrl';
 
 const registerDeviceApi = import.meta.env.VITE_APP_ENV === 'client'?
-{ get: async(path) => await window.kugouapi?.request(path) }:
+{ get: async(path) => {
+    const res = await window.kugouapi?.request(path);
+    if(res.body) return res.body;
+} }:
 // 用于设备注册的独立 axios 实例（不带拦截器，避免循环依赖）
 axios.create({
     baseURL: getApiBaseUrl(),
@@ -33,7 +36,8 @@ export const MoeAuthStore = defineStore('MoeData', {
             if (this.Device) return this.Device;
             try {
                 const response = await registerDeviceApi.get('/register/dev');
-                const device = response?.data?.data;
+                const device = import.meta.env.VITE_APP_ENV === 'client'?
+                               response?.data: response?.data?.data;
                 if (device) {
                     this.Device = device;
                     return device;

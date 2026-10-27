@@ -17,15 +17,14 @@ RUN node -e "const fs = require('fs'); const filePath = './package.json'; \
                delete packageJson.dependencies.kugoumusicapi; \
              } \
              fs.writeFileSync(filePath, JSON.stringify(packageJson, null, 2));"
-RUN npm ci
+RUN pnpm install --frozen-lockfile
 COPY . .
-RUN npm run build:docker
+RUN pnpm run build:docker
 
 # Stage 2: Setup Combined App
 FROM node:20-alpine
 WORKDIR /app
 
-RUN apk add --no-cache git
 RUN corepack enable
 
 COPY ./docker/ .

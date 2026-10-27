@@ -59,7 +59,7 @@ const createRequest = async (path, payload) => {
 			KUGOU_API_WEBGL: device.webgl,
 			...parseCookieStr(getParamsFromSearch(path)?.cookie),
 			...parseCookieStr(payload?.cookie),
-			...parseCookieStr(payload?.headers.authorization || payload?.headers.Authorization)
+			...parseCookieStr(payload?.headers?.authorization || payload?.headers?.Authorization)
 		}
 	}
 

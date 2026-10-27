@@ -140,37 +140,37 @@ git clone --depth=1 https://github.com/MoeKoeMusic/MoeKoeMusic.git
 
 ```sh
 cd MoeKoeMusic
-npm install
+pnpm install --frozen-lockfile
 ```
 3. 開発者モードを起動
   - ブラウザで開発
   ```sh
-  npm run dev
+  pnpm run dev
   ```
   - クライアントの開発モードで開発
   ```sh
-  npm run dev:client
+  pnpm run dev:client
   ```
 
 4. フロントエンドをビルド
 対象プラットフォームに応じて、以下のいずれかのコマンドでフロントエンドをビルドします
 ```sh
-npm run build # Web用のフロントエンドをビルド
-npm run build:client # クライアント用のフロントエンドをビルド
-npm run build:docker # Dockerイメージ用のフロントエンドをビルド
+pnpm run build # Web用のフロントエンドをビルド
+pnpm run build:client # クライアント用のフロントエンドをビルド
+pnpm run build:docker # Dockerイメージ用のフロントエンドをビルド
 ```
 5. プロジェクトをコンパイル
   - Windows: 
 ```sh
-npm run electron:build:win # [デフォルトは NSIS インストーラー]
+pnpm run electron:build:win # [デフォルトは NSIS インストーラー]
 ```
   - Linux: 
 ```sh
-npm run electron:build:linux # [デフォルトは AppImage 形式]
+pnpm run electron:build:linux # [デフォルトは AppImage 形式]
 ```
   - macOS: 
 ```sh
-npm run electron:build:macos # [デフォルトは macOS のデュアルアーキテクチャ]
+pnpm run electron:build:macos # [デフォルトは macOS のデュアルアーキテクチャ]
 ```
 
 
@@ -184,9 +184,9 @@ Releases ページにご自身のデバイスに合うインストーラーが�
 
 2. `git clone --depth=1 https://github.com/MoeKoeMusic/MoeKoeMusic.git` で本リポジトリをローカルにクローンします。
 
-3. `npm install` でプロジェクトの依存関係をインストールします。
+3. `pnpm install --frozen-lockfile` でプロジェクトの依存関係をインストールします。
 
-4. `npm run build:client` を使ってクライアント用のフロントエンドをビルドする
+4. `pnpm run build:client` を使ってクライアント用のフロントエンドをビルドする
 
 5. 以下のコマンドから適したものを選んでインストーラーをパッケージします。出力されたファイルは `/dist_electron` ディレクトリにあります。詳しくは [electron-builder のドキュメント](https://www.electron.build/cli) をご覧ください。
 
@@ -194,15 +194,15 @@ Releases ページにご自身のデバイスに合うインストーラーが�
 #### 1. macOS プラットフォーム向けのパッケージ
    - ユニバーサルな macOS パッケージ（Intel と Apple Silicon のデュアルアーキテクチャ）：
    ```
-   npm run electron:build -- --mac --universal
+   pnpm run electron:build -- --mac --universal
    ```
    - Intel アーキテクチャのみ：
    ```
-   npm run electron:build -- --mac --x64
+   pnpm run electron:build -- --mac --x64
    ```
    - Apple Silicon アーキテクチャのみ：
    ```
-   npm run electron:build -- --mac --arm64
+   pnpm run electron:build -- --mac --arm64
    ```
 
 
@@ -210,11 +210,11 @@ Releases ページにご自身のデバイスに合うインストーラーが�
 
    - デフォルトの NSIS インストーラー（ほとんどの Windows ユーザーに適しています）：
    ```
-   npm run electron:build -- --win
+   pnpm run electron:build -- --win
    ```
    - Windows 用の EXE ファイルと Squirrel インストーラーを作成：
    ```
-   npm run electron:build -- --win --ia32 --x64 --arm64 --target squirrel
+   pnpm run electron:build -- --win --ia32 --x64 --arm64 --target squirrel
    ```
        - `--ia32` は 32 ビット Windows アーキテクチャです。
        - `--x64` は 64 ビット Windows アーキテクチャです。
@@ -222,36 +222,36 @@ Releases ページにご自身のデバイスに合うインストーラーが�
 
    - Windows 用のポータブル EXE ファイルを生成（インストール不要）：
    ```
-   npm run electron:build -- --win --portable
+   pnpm run electron:build -- --win --portable
    ```
 #### 3. Linux プラットフォーム向けのパッケージ
    - デフォルトの AppImage 形式（ほとんどの Linux ディストリビューションに適しています）：
 
    ```
-   npm run electron:build -- --linux
+   pnpm run electron:build -- --linux
    ```
    - snap（Ubuntu および snap をサポートするディストリビューション向け）：
    ```
-   npm run electron:build -- --linux --target snap
+   pnpm run electron:build -- --linux --target snap
    ```
    - deb（Debian／Ubuntu 系向け）：
    ```
-   npm run electron:build -- --linux --target deb
+   pnpm run electron:build -- --linux --target deb
    ```
    - rpm（Red Hat／Fedora 系向け）：
    ```
-   npm run electron:build -- --linux --target rpm
+   pnpm run electron:build -- --linux --target rpm
    ```
    - ARM64 アーキテクチャ（ARM v8 以上）： 
    ```
-   npm run electron:build:linux-arm64
+   pnpm run electron:build:linux-arm64
    ```
 
 #### 4. すべてのプラットフォーム向けのパッケージ
 
   Windows、macOS、Linux のインストーラーを同時に生成する必要がある場合は、以下のコマンドを使用できます：
   ```
-  npm run electron:build -- -mwl
+  pnpm run electron:build -- -mwl
   ```
 
 #### 5. カスタムビルド設定

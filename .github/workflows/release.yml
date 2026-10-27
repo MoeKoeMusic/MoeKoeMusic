@@ -77,7 +77,6 @@ jobs:
     needs: increment-version
     strategy:
       matrix:
-        node: [lts/*]
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
@@ -87,19 +86,21 @@ jobs:
         with:
           submodules: true
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - name: Setup PNPM + Node.js
+        uses: pnpm/setup@v3
         with:
-          node-version: ${{ matrix.node }}
-          cache: 'npm' # use cache
+          version: 11
+          runtime: node@20
+          require-lockfile: true
+          cache: true
 
       - name: Build
         env:
           os: ${{ runner.os == 'Windows' && 'win' || runner.os == 'macOS' && 'macos' || 'linux' }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npm ci
-          npm run build:client
-          npm run electron:build:${{ env.os }}
+          pnpm run build:client
+          pnpm run electron:build:${{ env.os }}
 
       - name: Upload to Release
         uses: softprops/action-gh-release@v3

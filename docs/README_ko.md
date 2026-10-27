@@ -140,37 +140,37 @@ git clone --depth=1 https://github.com/MoeKoeMusic/MoeKoeMusic.git
 
 ```sh
 cd MoeKoeMusic
-npm install
+pnpm install --frozen-lockfile
 ```
 3. 개발자 모드를 시작합니다
   - 브라우저에서 개발
   ```sh
-  npm run dev
+  pnpm run dev
   ```
   - 클라이언트 개발 모드에서 개발
   ```sh
-  npm run dev:client
+  pnpm run dev:client
   ```
 
 4. 프런트엔드 빌드
 대상 플랫폼에 맞는 명령을 하나 선택하여 프런트엔드를 빌드하세요
 ```sh
-npm run build # 웹용 프런트엔드 빌드
-npm run build:client # 클라이언트용 프런트엔드 빌드
-npm run build:docker # Docker 이미지용 프런트엔드 빌드
+pnpm run build # 웹용 프런트엔드 빌드
+pnpm run build:client # 클라이언트용 프런트엔드 빌드
+pnpm run build:docker # Docker 이미지용 프런트엔드 빌드
 ```
 5. 프로젝트 컴파일
   - Windows: 
 ```sh
-npm run electron:build:win # [기본 NSIS 설치 파일]
+pnpm run electron:build:win # [기본 NSIS 설치 파일]
 ```
   - Linux: 
 ```sh
-npm run electron:build:linux # [기본 AppImage 형식]
+pnpm run electron:build:linux # [기본 AppImage 형식]
 ```
   - macOS: 
 ```sh
-npm run electron:build:macos # [기본 macOS 듀얼 아키텍처]
+pnpm run electron:build:macos # [기본 macOS 듀얼 아키텍처]
 ```
 
 
@@ -184,9 +184,9 @@ Release 페이지에서 자신의 기기에 맞는 설치 파일을 찾지 못�
 
 2. `git clone --depth=1 https://github.com/MoeKoeMusic/MoeKoeMusic.git`을 사용해 이 저장소를 로컬에 클론합니다.
 
-3. `npm install`로 프로젝트 의존성을 설치합니다.
+3. `pnpm install --frozen-lockfile`로 프로젝트 의존성을 설치합니다.
 
-4. `npm run build:client`를 사용해서 클라이언트용 프론트엔드를 빌드하기
+4. `pnpm run build:client`를 사용해서 클라이언트용 프론트엔드를 빌드하기
 
 5. 아래 명령 중 자신에게 맞는 것을 선택해 설치 파일을 패키징하면, 결과물은 `/dist_electron` 디렉터리에 생성됩니다. 자세한 내용은 [electron-builder 문서](https://www.electron.build/cli)를 참고하세요.
 
@@ -194,15 +194,15 @@ Release 페이지에서 자신의 기기에 맞는 설치 파일을 찾지 못�
 #### 1. macOS 플랫폼 패키징
    - 범용 macOS 패키지(Intel 및 Apple Silicon 듀얼 아키텍처):
    ```
-   npm run electron:build -- --mac --universal
+   pnpm run electron:build -- --mac --universal
    ```
    - Intel 아키텍처만:
    ```
-   npm run electron:build -- --mac --x64
+   pnpm run electron:build -- --mac --x64
    ```
    - Apple Silicon 아키텍처만:
    ```
-   npm run electron:build -- --mac --arm64
+   pnpm run electron:build -- --mac --arm64
    ```
 
 
@@ -210,11 +210,11 @@ Release 페이지에서 자신의 기기에 맞는 설치 파일을 찾지 못�
 
    - 기본 NSIS 설치 파일(대부분의 Windows 사용자에게 적합):
    ```
-   npm run electron:build -- --win
+   pnpm run electron:build -- --win
    ```
    - Windows용 EXE 파일과 Squirrel 설치 파일 생성:
    ```
-   npm run electron:build -- --win --ia32 --x64 --arm64 --target squirrel
+   pnpm run electron:build -- --win --ia32 --x64 --arm64 --target squirrel
    ```
        - `--ia32`는 32비트 Windows 아키텍처입니다.
        - `--x64`는 64비트 Windows 아키텍처입니다.
@@ -222,36 +222,36 @@ Release 페이지에서 자신의 기기에 맞는 설치 파일을 찾지 못�
 
    - Windows용 포터블 EXE 파일 생성(설치 불필요):
    ```
-   npm run electron:build -- --win --portable
+   pnpm run electron:build -- --win --portable
    ```
 #### 3. Linux 플랫폼 패키징
    - 기본 AppImage 형식(대부분의 Linux 배포판에 적합):
 
    ```
-   npm run electron:build -- --linux
+   pnpm run electron:build -- --linux
    ```
    - snap(Ubuntu 및 snap을 지원하는 배포판용):
    ```
-   npm run electron:build -- --linux --target snap
+   pnpm run electron:build -- --linux --target snap
    ```
    - deb(Debian/Ubuntu 계열용):
    ```
-   npm run electron:build -- --linux --target deb
+   pnpm run electron:build -- --linux --target deb
    ```
    - rpm(Red Hat/Fedora 계열용):
    ```
-   npm run electron:build -- --linux --target rpm
+   pnpm run electron:build -- --linux --target rpm
    ```
    - ARM64 아키텍처(ARM v8+): 
    ```
-   npm run electron:build:linux-arm64
+   pnpm run electron:build:linux-arm64
    ```
 
 #### 4. 모든 플랫폼 패키징
 
   Windows, macOS, Linux용 설치 파일을 동시에 생성해야 한다면 다음 명령을 사용할 수 있습니다:
   ```
-  npm run electron:build -- -mwl
+  pnpm run electron:build -- -mwl
   ```
 
 #### 5. 사용자 지정 빌드 설정

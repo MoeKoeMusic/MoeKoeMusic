@@ -164,7 +164,7 @@
     "electron-store": "^10.1.0",
     "electron-updater": "^6.8.9",
     "express": "^5.3.0",
-    "kugoumusicapi": "github:MakcRe/KuGouMusicApi#62730f9",
+    "kugoumusicapi": "github:MakcRe/KuGouMusicApi#5d6c9f7",
     "music-metadata": "^11.16.1",
     "pinia": "^3.0.4",
     "pinia-plugin-persistedstate": "^4.7.1",
@@ -175,5 +175,6 @@
     "vue3-virtual-scroller": "^0.2.3",
     "websocket-express": "^4.1.0",
     "ws": "^8.22.0"
-  }
+  },
+  "packageManager": "pnpm@12.15.0"
 }

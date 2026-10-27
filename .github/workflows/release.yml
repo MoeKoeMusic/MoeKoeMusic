@@ -77,7 +77,6 @@ jobs:
     needs: increment-version
     strategy:
       matrix:
-        node: [lts/*]
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30

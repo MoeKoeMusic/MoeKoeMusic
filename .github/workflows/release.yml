@@ -90,7 +90,7 @@ jobs:
       - name: Setup PNPM + Node.js
         uses: pnpm/setup@v3
         with:
-          version: 9
+          version: 11
           runtime: node@20
           require-lockfile: true
           cache: true

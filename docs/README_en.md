@@ -140,37 +140,37 @@ git clone --depth=1 https://github.com/MoeKoeMusic/MoeKoeMusic.git
 
 ```sh
 cd MoeKoeMusic
-npm install
+pnpm install --frozen-lockfile
 ```
 3. Start developer mode
   - Develop in the browser
   ```sh
-  npm run dev
+  pnpm run dev
   ```
   - Develop in client development mode
   ```sh
-  npm run dev:client
+  pnpm run dev:client
   ```
 
 4. Build the frontend
 Choose one of the commands below for your target platform to build the frontend
 ```sh
-npm run build # Build the frontend for the web
-npm run build:client # Build the frontend for the client
-npm run build:docker # Build the frontend for the Docker image
+pnpm run build # Build the frontend for the web
+pnpm run build:client # Build the frontend for the client
+pnpm run build:docker # Build the frontend for the Docker image
 ```
 5. Compile the project
   - Windows:
 ```sh
-npm run electron:build:win # [NSIS installer by default]
+pnpm run electron:build:win # [NSIS installer by default]
 ```
   - Linux:
 ```sh
-npm run electron:build:linux # [AppImage format by default]
+pnpm run electron:build:linux # [AppImage format by default]
 ```
   - macOS:
 ```sh
-npm run electron:build:macos # [both macOS architectures by default]
+pnpm run electron:build:macos # [both macOS architectures by default]
 ```
 
 
@@ -184,9 +184,9 @@ If you can't find an installer suitable for your device on the Releases page, yo
 
 2. Clone this repository locally with `git clone --depth=1 https://github.com/MoeKoeMusic/MoeKoeMusic.git`.
 
-3. Install the project dependencies with `npm install`.
+3. Install the project dependencies with `pnpm install --frozen-lockfile`.
 
-4. Build frontend for client with `npm run build:client`
+4. Build frontend for client with `pnpm run build:client`
 
 5. Choose one of the commands below to package the installer that suits you; the output files will be in the `/dist_electron` directory. For more information, see the [electron-builder documentation](https://www.electron.build/cli).
 
@@ -194,15 +194,15 @@ If you can't find an installer suitable for your device on the Releases page, yo
 #### 1. Packaging for the macOS platform
    - Universal macOS package (Intel and Apple Silicon, both architectures):
    ```
-   npm run electron:build -- --mac --universal
+   pnpm run electron:build -- --mac --universal
    ```
    - Intel architecture only:
    ```
-   npm run electron:build -- --mac --x64
+   pnpm run electron:build -- --mac --x64
    ```
    - Apple Silicon architecture only:
    ```
-   npm run electron:build -- --mac --arm64
+   pnpm run electron:build -- --mac --arm64
    ```
 
 
@@ -210,11 +210,11 @@ If you can't find an installer suitable for your device on the Releases page, yo
 
    - Default NSIS installer (suitable for most Windows users):
    ```
-   npm run electron:build -- --win
+   pnpm run electron:build -- --win
    ```
    - Create EXE files and Squirrel installers for Windows:
    ```
-   npm run electron:build -- --win --ia32 --x64 --arm64 --target squirrel
+   pnpm run electron:build -- --win --ia32 --x64 --arm64 --target squirrel
    ```
        - `--ia32` targets 32-bit Windows.
        - `--x64` targets 64-bit Windows.
@@ -222,36 +222,36 @@ If you can't find an installer suitable for your device on the Releases page, yo
 
    - Generate a portable EXE for Windows (no installation required):
    ```
-   npm run electron:build -- --win --portable
+   pnpm run electron:build -- --win --portable
    ```
 #### 3. Packaging for the Linux platform
    - Default AppImage format (suitable for most Linux distributions):
 
    ```
-   npm run electron:build -- --linux
+   pnpm run electron:build -- --linux
    ```
    - snap (for Ubuntu and distributions that support snap):
    ```
-   npm run electron:build -- --linux --target snap
+   pnpm run electron:build -- --linux --target snap
    ```
    - deb (for the Debian/Ubuntu family):
    ```
-   npm run electron:build -- --linux --target deb
+   pnpm run electron:build -- --linux --target deb
    ```
    - rpm (for the Red Hat/Fedora family):
    ```
-   npm run electron:build -- --linux --target rpm
+   pnpm run electron:build -- --linux --target rpm
    ```
    - ARM64 architecture (ARM v8+):
    ```
-   npm run electron:build:linux-arm64
+   pnpm run electron:build:linux-arm64
    ```
 
 #### 4. Packaging for all platforms
 
   If you need to generate installers for Windows, macOS and Linux at the same time, you can use the following command:
   ```
-  npm run electron:build -- -mwl
+  pnpm run electron:build -- -mwl
   ```
 
 #### 5. Custom build settings

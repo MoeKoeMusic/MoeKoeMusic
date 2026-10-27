@@ -140,37 +140,37 @@ git clone --depth=1 https://github.com/MoeKoeMusic/MoeKoeMusic.git
 
 ```sh
 cd MoeKoeMusic
-npm install
+pnpm install --frozen-lockfile
 ```
 3. Запустите режим разработчика
   - Разработка в браузере
   ```sh
-  npm run dev
+  pnpm run dev
   ```
   - Разработка в режиме клиента
   ```sh
-  npm run dev:client
+  pnpm run dev:client
   ```
 
 4. Соберите фронтенд
 Выберите одну из команд ниже в зависимости от целевой платформы, чтобы собрать фронтенд
 ```sh
-npm run build # Собрать фронтенд для веба
-npm run build:client # Собрать фронтенд для клиента
-npm run build:docker # Собрать фронтенд для Docker-образа
+pnpm run build # Собрать фронтенд для веба
+pnpm run build:client # Собрать фронтенд для клиента
+pnpm run build:docker # Собрать фронтенд для Docker-образа
 ```
 5. Скомпилируйте проект
   - Windows: 
 ```sh
-npm run electron:build:win # [по умолчанию установщик NSIS]
+pnpm run electron:build:win # [по умолчанию установщик NSIS]
 ```
   - Linux: 
 ```sh
-npm run electron:build:linux # [по умолчанию формат AppImage]
+pnpm run electron:build:linux # [по умолчанию формат AppImage]
 ```
   - macOS: 
 ```sh
-npm run electron:build:macos # [по умолчанию обе архитектуры macOS]
+pnpm run electron:build:macos # [по умолчанию обе архитектуры macOS]
 ```
 
 
@@ -184,9 +184,9 @@ npm run electron:build:macos # [по умолчанию обе архитект�
 
 2. Клонируйте этот репозиторий локально командой `git clone --depth=1 https://github.com/MoeKoeMusic/MoeKoeMusic.git`.
 
-3. Установите зависимости проекта командой `npm install`.
+3. Установите зависимости проекта командой `pnpm install --frozen-lockfile`.
 
-4. Используйте `npm run build:client`, чтобы собрать клиентский фронтенд
+4. Используйте `pnpm run build:client`, чтобы собрать клиентский фронтенд
 
 5. Выберите одну из команд ниже, чтобы собрать подходящий вам установщик; готовые файлы появятся в каталоге `/dist_electron`. Подробнее см. [документацию electron-builder](https://www.electron.build/cli).
 
@@ -194,15 +194,15 @@ npm run electron:build:macos # [по умолчанию обе архитект�
 #### 1. Сборка для платформы macOS
    - Универсальный пакет macOS (архитектуры Intel и Apple Silicon):
    ```
-   npm run electron:build -- --mac --universal
+   pnpm run electron:build -- --mac --universal
    ```
    - Только архитектура Intel:
    ```
-   npm run electron:build -- --mac --x64
+   pnpm run electron:build -- --mac --x64
    ```
    - Только архитектура Apple Silicon:
    ```
-   npm run electron:build -- --mac --arm64
+   pnpm run electron:build -- --mac --arm64
    ```
 
 
@@ -210,11 +210,11 @@ npm run electron:build:macos # [по умолчанию обе архитект�
 
    - Установщик NSIS по умолчанию (подходит большинству пользователей Windows):
    ```
-   npm run electron:build -- --win
+   pnpm run electron:build -- --win
    ```
    - Создание EXE-файлов и установщиков Squirrel для Windows:
    ```
-   npm run electron:build -- --win --ia32 --x64 --arm64 --target squirrel
+   pnpm run electron:build -- --win --ia32 --x64 --arm64 --target squirrel
    ```
        - `--ia32` — 32-битная архитектура Windows.
        - `--x64` — 64-битная архитектура Windows.
@@ -222,36 +222,36 @@ npm run electron:build:macos # [по умолчанию обе архитект�
 
    - Создание портативного EXE-файла для Windows (без установки):
    ```
-   npm run electron:build -- --win --portable
+   pnpm run electron:build -- --win --portable
    ```
 #### 3. Сборка для платформы Linux
    - Формат AppImage по умолчанию (подходит большинству дистрибутивов Linux):
 
    ```
-   npm run electron:build -- --linux
+   pnpm run electron:build -- --linux
    ```
    - snap (для Ubuntu и дистрибутивов с поддержкой snap):
    ```
-   npm run electron:build -- --linux --target snap
+   pnpm run electron:build -- --linux --target snap
    ```
    - deb (для семейства Debian/Ubuntu):
    ```
-   npm run electron:build -- --linux --target deb
+   pnpm run electron:build -- --linux --target deb
    ```
    - rpm (для семейства Red Hat/Fedora):
    ```
-   npm run electron:build -- --linux --target rpm
+   pnpm run electron:build -- --linux --target rpm
    ```
    - Архитектура ARM64 (ARM v8+): 
    ```
-   npm run electron:build:linux-arm64
+   pnpm run electron:build:linux-arm64
    ```
 
 #### 4. Сборка для всех платформ
 
   Если нужно одновременно создать установщики для Windows, macOS и Linux, используйте следующую команду:
   ```
-  npm run electron:build -- -mwl
+  pnpm run electron:build -- -mwl
   ```
 
 #### 5. Пользовательские настройки сборки

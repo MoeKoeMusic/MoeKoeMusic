@@ -139,37 +139,37 @@ git clone --depth=1 https://github.com/MoeKoeMusic/MoeKoeMusic.git
 
 ```sh
 cd MoeKoeMusic
-npm install
+pnpm install --frozen-lockfile
 ```
 3. 启动开发者模式
   - 在浏览器里开发
   ```sh
-  npm run dev
+  pnpm run dev
   ```
   - 在客户端开发模式下开发
   ```sh
-  npm run dev:client
+  pnpm run dev:client
   ```
 
 4. 构建前端
 为你的目标平台选择一条命令来构建前端
 ```sh
-npm run build # 为网页端构建前端
-npm run build:client # 为客户端构建前端
-npm run build:docker # 为 Docker 镜像构建前端
+pnpm run build # 为网页端构建前端
+pnpm run build:client # 为客户端构建前端
+pnpm run build:docker # 为 Docker 镜像构建前端
 ```
 5. 编译项目
   - Windows: 
 ```sh
-npm run electron:build:win # [默认 NSIS 安装包]
+pnpm run electron:build:win # [默认 NSIS 安装包]
 ```
   - Linux: 
 ```sh
-npm run electron:build:linux # [默认 AppImage 格式]
+pnpm run electron:build:linux # [默认 AppImage 格式]
 ```
   - macOS: 
 ```sh
-npm run electron:build:macos # [默认 macOS 双架构]
+pnpm run electron:build:macos # [默认 macOS 双架构]
 ```
 
 
@@ -183,9 +183,9 @@ npm run electron:build:macos # [默认 macOS 双架构]
 
 2. 使用 `git clone --depth=1 https://github.com/MoeKoeMusic/MoeKoeMusic.git` 克隆本仓库到本地。
 
-3. 使用 `npm install` 安装项目依赖。
+3. 使用 `pnpm install --frozen-lockfile` 安装项目依赖。
 
-4. 使用 `npm run build:client` 为客户端构建前端
+4. 使用 `pnpm run build:client` 为客户端构建前端
 
 5. 选择下列的命令来打包适合的你的安装包，打包出来的文件在 `/dist_electron` 目录下。了解更多信息可访问 [electron-builder 文档](https://www.electron.build/cli)
 
@@ -193,15 +193,15 @@ npm run electron:build:macos # [默认 macOS 双架构]
 #### 1. 打包 macOS 平台
    - 通用的 macOS 包（Intel 和 Apple Silicon 双架构）：
    ```
-   npm run electron:build -- --mac --universal
+   pnpm run electron:build -- --mac --universal
    ```
    - 仅 Intel 架构：
    ```
-   npm run electron:build -- --mac --x64
+   pnpm run electron:build -- --mac --x64
    ```
    - 仅 Apple Silicon 架构：
    ```
-   npm run electron:build -- --mac --arm64
+   pnpm run electron:build -- --mac --arm64
    ```
 
 
@@ -209,11 +209,11 @@ npm run electron:build:macos # [默认 macOS 双架构]
 
    - 默认 NSIS 安装包（适合大多数 Windows 用户）：
    ```
-   npm run electron:build -- --win
+   pnpm run electron:build -- --win
    ```
    - 为 Windows 创建 EXE 文件和 Squirrel 安装包：
    ```
-   npm run electron:build -- --win --ia32 --x64 --arm64 --target squirrel
+   pnpm run electron:build -- --win --ia32 --x64 --arm64 --target squirrel
    ```
        - --ia32 为 32 位 Windows 架构。
        - --x64 为 64 位 Windows 架构。
@@ -221,36 +221,36 @@ npm run electron:build:macos # [默认 macOS 双架构]
 
    - 为 Windows 生成便携式的 EXE 文件（免安装）：
    ```
-   npm run electron:build -- --win --portable
+   pnpm run electron:build -- --win --portable
    ```
 #### 3. 打包 Linux 平台
    - 默认 AppImage 格式（适用于大多数 Linux 发行版）：
 
    ```
-   npm run electron:build -- --linux
+   pnpm run electron:build -- --linux
    ```
    - snap（适用于 Ubuntu 和支持 snap 的发行版）：
    ```
-   npm run electron:build -- --linux --target snap
+   pnpm run electron:build -- --linux --target snap
    ```
    - 	deb（适用于 Debian/Ubuntu 系列）：
    ```
-   npm run electron:build -- --linux --target deb
+   pnpm run electron:build -- --linux --target deb
    ```
    - rpm（适用于 Red Hat/Fedora 系列）：
    ```
-   npm run electron:build -- --linux --target rpm
+   pnpm run electron:build -- --linux --target rpm
    ```
    - ARM64架构(ARM v8+): 
    ```
-   npm run electron:build:linux-arm64
+   pnpm run electron:build:linux-arm64
    ```
 
 #### 4. 打包所有平台
 
   如果需要同时生成 Windows、macOS 和 Linux 的安装包，可以使用以下命令：
   ```
-  npm run electron:build -- -mwl
+  pnpm run electron:build -- -mwl
   ```
 
 #### 5. 自定义编译设置

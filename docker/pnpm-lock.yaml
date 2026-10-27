@@ -15,8 +15,8 @@ importers:
         specifier: ^4.2.0
         version: 4.2.0
       kugoumusicapi:
-        specifier: github:MakcRe/KuGouMusicApi#514f870
-        version: https://codeload.github.com/MakcRe/KuGouMusicApi/tar.gz/514f870db7e60ca37bc5535be5da36d32b571c6f(debug@4.4.3)
+        specifier: github:MakcRe/KuGouMusicApi#5d6c9f7
+        version: https://codeload.github.com/MakcRe/KuGouMusicApi/tar.gz/5d6c9f7b180279c9dd08bc6f7159de52a856d587(debug@4.4.3)
 
 packages:
 
@@ -336,9 +336,9 @@ packages:
   is-promise@4.0.0:
     resolution: {integrity: sha512-hvpoI6korhJMnej285dSg6nu1+e6uxs7zG3BYAm5byqDsgJNWwxzM6z6iZiAgQR4TJ30JmBTOwqZUw3WlyH3AQ==}
 
-  kugoumusicapi@https://codeload.github.com/MakcRe/KuGouMusicApi/tar.gz/514f870db7e60ca37bc5535be5da36d32b571c6f:
-    resolution: {gitHosted: true, integrity: sha512-AxyFmekmrX9BORGc4a0uZCZ5z6iRMOVbnGC8xlK918AUay1zzXiAN3NnvbZ8KghrFj3KDS7PAtV+9c3nlYJWaA==, tarball: https://codeload.github.com/MakcRe/KuGouMusicApi/tar.gz/514f870db7e60ca37bc5535be5da36d32b571c6f}
-    version: 1.6.2
+  kugoumusicapi@https://codeload.github.com/MakcRe/KuGouMusicApi/tar.gz/5d6c9f7b180279c9dd08bc6f7159de52a856d587:
+    resolution: {gitHosted: true, integrity: sha512-UgeD+hVA/IQEoiWJIYNamX5cUeZikicTl/SzfM3v3t5I8nlUjmNjdVjimk0J+Cu/Vkb3fXgBMlZTlDQJPgRxpA==, tarball: https://codeload.github.com/MakcRe/KuGouMusicApi/tar.gz/5d6c9f7b180279c9dd08bc6f7159de52a856d587}
+    version: 1.6.3
     engines: {node: '>=12'}
     hasBin: true
 
@@ -408,8 +408,8 @@ packages:
     resolution: {integrity: sha512-NMPBRMJgiQHjbd8phG3Vebdx4kZ1H121rbl5IkMqeOsahptB9BKo/d7oJ3zTXqTgagn2bWlNSXkh0QUGM31RYg==}
     engines: {node: '>=18'}
 
-  node-forge@1.4.0:
-    resolution: {integrity: sha512-LarFH0+6VfriEhqMMcLX2F7SwSXeWwnEAJEsYm5QKWchiVYVvJyV9v7UDvUv+w5HO23ZpQTXDv/GxdDdMyOuoQ==}
+  node-forge@1.4.1:
+    resolution: {integrity: sha512-w5/MfWaeMrpR/5ba6fZyAUTLSuE6aYz7H/3cYrqwZEmf5eQS3IaaLgJt4MBv7HglGFWmV22K8h4U18RJQmw/ow==}
     engines: {node: '>= 6.13.0'}
 
   object-inspect@1.13.4:
@@ -999,7 +999,7 @@ snapshots:
 
   is-promise@4.0.0: {}
 
-  kugoumusicapi@https://codeload.github.com/MakcRe/KuGouMusicApi/tar.gz/514f870db7e60ca37bc5535be5da36d32b571c6f(debug@4.4.3):
+  kugoumusicapi@https://codeload.github.com/MakcRe/KuGouMusicApi/tar.gz/5d6c9f7b180279c9dd08bc6f7159de52a856d587(debug@4.4.3):
     dependencies:
       axios: 1.20.0(debug@4.4.3)
       big-integer: 1.6.52
@@ -1007,7 +1007,7 @@ snapshots:
       dotenv: 16.6.1
       express: 4.22.3
       form-data: 4.0.6
-      node-forge: 1.4.0
+      node-forge: 1.4.1
       pako: 2.2.0
       qrcode: 1.5.4
       safe-decode-uri-component: 1.2.1
@@ -1061,7 +1061,7 @@ snapshots:
     dependencies:
       content-type: 2.1.0
 
-  node-forge@1.4.0: {}
+  node-forge@1.4.1: {}
 
   object-inspect@1.13.4: {}
 

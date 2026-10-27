@@ -97,8 +97,8 @@ jobs:
       - name: Build
         env:
           os: ${{ runner.os == 'Windows' && 'win' || runner.os == 'macOS' && 'macos' || 'linux' }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pnpm install --frozen-lockfile
           pnpm run build:client
           pnpm run electron:build:${{ env.os }}
 

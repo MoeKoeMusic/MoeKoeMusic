@@ -164,7 +164,7 @@
     "electron-store": "^10.1.0",
     "electron-updater": "^6.8.9",
     "express": "^5.3.0",
-    "kugoumusicapi": "github:MakcRe/KuGouMusicApi#514f870",
+    "kugoumusicapi": "github:MakcRe/KuGouMusicApi#62730f9",
     "music-metadata": "^11.16.1",
     "pinia": "^3.0.4",
     "pinia-plugin-persistedstate": "^4.7.1",

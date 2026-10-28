@@ -50,8 +50,12 @@ process.env.platform = (settings?.dataSource || 'concept') === 'concept'? 'lite'
 
 registerKuGouApiHandler();
 
-app.on('ready', () => {
+app.on('ready', async () => {
     try {
+        // 必须先 await 扩展加载，再创建窗口
+        // 扩展只会向其  注册完成之后  新建的页面注入 content_scripts。
+        // 若窗口先创建，页面已开始加载，则会漏注入插件，只能手动刷新恢复。
+        await initializeExtensions();
         mainWindow = createWindow();
         createTray(mainWindow);
         customTrayMenuService.init(() => mainWindow, getTray);
@@ -66,7 +70,6 @@ app.on('ready', () => {
         apiService.init(mainWindow);
         registerProtocolHandler(mainWindow);
         sendHashAfterLoad(mainWindow);
-        void initializeExtensions();
         setupDesktopShortcutIcon();
     } catch (error) {
         console.log('初始化应用时发生错误:', error);

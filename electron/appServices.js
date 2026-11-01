@@ -1,7 +1,6 @@
 import { app, ipcMain, BrowserWindow, screen, Tray, Menu, TouchBar, globalShortcut, dialog, shell, nativeImage } from 'electron';
 import path from 'path';
 import log from 'electron-log';
-import Store from 'electron-store';
 import { fileURLToPath } from 'url';
 import isDev from 'electron-is-dev';
 import { exec } from 'child_process';
@@ -10,8 +9,9 @@ import { Notification } from 'electron';
 import { t } from './language/i18n.js';
 import { bindExternalLinkHandler } from './services/externalLinkHandler.js';
 import customTrayMenuService from './services/customTrayMenuService.js';
+import { useStore } from './util/store.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const store = new Store();
+const store = useStore();
 const { TouchBarLabel, TouchBarButton, TouchBarGroup, TouchBarSpacer } = TouchBar;
 let mainWindow = null;
 let tray = null;

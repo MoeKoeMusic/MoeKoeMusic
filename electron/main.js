@@ -12,18 +12,18 @@ import customTrayMenuService from './services/customTrayMenuService.js';
 import { setupDesktopShortcutIcon } from './services/desktopShortcutIcon.js';
 import { openLogPath, exportLog } from './services/logHelper.js';
 import { registerKuGouApiHandler } from './services/kugouApiService.js';
-import Store from 'electron-store';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { t } from './language/i18n.js';
 import { getExtensionsFromPermissions } from './extensions/utils.js';
+import { useStore, getSettings } from './util/store.js';
 
 let mainWindow = null;
 let blockerId = null;
-const store = new Store();
+const store = useStore();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const settings = store.get('settings');
+const settings = getSettings();
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -45,8 +45,8 @@ if (!gotTheLock) {
 }
 
 // 初始化 KuGouAPI 环境变量并注册 IPC 通道
-if(settings?.proxy === 'on') process.env.KUGOU_API_PROXY = settings?.proxyUrl || '';
-process.env.platform = (settings?.dataSource || 'concept') === 'concept'? 'lite': '';
+if(settings.proxy === 'on') process.env.KUGOU_API_PROXY = settings.proxyUrl;
+process.env.platform = settings.dataSource === 'concept'? 'lite': '';
 
 registerKuGouApiHandler();
 
@@ -63,7 +63,7 @@ app.on('ready', async () => {
         // 初始化状态栏歌词服务
         statusBarLyricsService.init(mainWindow, store, getTray, createTray);
 
-        if (process.platform === "darwin" && settings?.touchBar == 'on') createTouchBar(mainWindow);
+        if (process.platform === "darwin" && settings.touchBar == 'on') createTouchBar(mainWindow);
         playStartupSound();
         registerShortcut();
         setupAutoUpdater(mainWindow);
@@ -88,29 +88,29 @@ app.on('ready', async () => {
     }
 });
 
-if (settings?.gpuAcceleration === 'on') {
+if (settings.gpuAcceleration === 'on') {
     app.disableHardwareAcceleration();
     app.commandLine.appendSwitch('enable-transparent-visuals');
     app.commandLine.appendSwitch('disable-gpu-compositing');
 }
 
-if (settings?.preventAppSuspension === 'on') {
+if (settings.preventAppSuspension === 'on') {
     blockerId = powerSaveBlocker.start('prevent-display-sleep');
 }
 
-if (settings?.highDpi === 'on') {
+if (settings.highDpi === 'on') {
     app.commandLine.appendSwitch('high-dpi-support', '1');
-    app.commandLine.appendSwitch('force-device-scale-factor', settings?.dpiScale || '1');
+    app.commandLine.appendSwitch('force-device-scale-factor', settings.dpiScale);
 }
 
-if(settings?.apiMode === 'auto') {
+if(settings.apiMode === 'auto') {
     const apiModeExtensions = getExtensionsFromPermissions('moekoe', 'moekoe:apiMode');
     if(apiModeExtensions.length >= 1) {
         console.log(`detected ${apiModeExtensions.length} extension(s) need 'moekoe:apiMode' permission, automatically starting api service...`);
-        apiService.start(settings?.apiModeConfig);
+        apiService.start(settings.apiModeConfig);
     }
-} else if (settings?.apiMode === 'on') {
-    apiService.start(settings?.apiModeConfig);
+} else if (settings.apiMode === 'on') {
+    apiService.start(settings.apiModeConfig);
 }
 
 // 即将退出
@@ -166,7 +166,7 @@ ipcMain.on('disclaimer-response', (event, accepted) => {
 ipcMain.on('window-control', (event, action) => {
     switch (action) {
         case 'close':
-            if (settings?.minimizeToTray === 'off') {
+            if (settings.minimizeToTray === 'off') {
                 app.isQuitting = true;
                 app.quit();
             } else {
@@ -193,9 +193,9 @@ app.on('will-quit', () => {
 });
 ipcMain.on('save-settings', (event, settings) => {
     store.set('settings', settings);
-    if (['on', 'off'].includes(settings?.autoStart)) {
+    if (['on', 'off'].includes(settings.autoStart)) {
         app.setLoginItemSettings({
-            openAtLogin: settings?.autoStart === 'on',
+            openAtLogin: settings.autoStart === 'on',
             path: app.getPath('exe'),
         });
     }
@@ -261,7 +261,6 @@ ipcMain.on('desktop-lyrics-action', (event, action) => {
 });
 
 const syncDesktopLyricsSetting = (value) => {
-    const settings = settings || {};
     store.set('settings', {
         ...settings,
         desktopLyrics: value

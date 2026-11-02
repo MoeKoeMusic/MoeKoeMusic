@@ -4,6 +4,7 @@ import {
     playStartupSound, createLyricsWindow, setThumbarButtons,
     registerProtocolHandler, sendHashAfterLoad, getTray, createMvWindow, syncDockIcon
 } from './appServices.js';
+import './util/kugouapi/init.js';
 import { initializeExtensions, cleanupExtensions } from './extensions/extensions.js';
 import { setupAutoUpdater, startUpdateDownload } from './services/updater.js';
 import apiService from './services/apiService.js';
@@ -44,18 +45,14 @@ if (!gotTheLock) {
     });
 }
 
-// 初始化 KuGouAPI 环境变量并注册 IPC 通道
-if(settings.proxy === 'on') process.env.KUGOU_API_PROXY = settings.proxyUrl;
-process.env.platform = settings.dataSource === 'concept'? 'lite': '';
-
-registerKuGouApiHandler();
-
 app.on('ready', async () => {
     try {
         // 必须先 await 扩展加载，再创建窗口
         // 扩展只会向其  注册完成之后  新建的页面注入 content_scripts。
         // 若窗口先创建，页面已开始加载，则会漏注入插件，只能手动刷新恢复。
         await initializeExtensions();
+
+        registerKuGouApiHandler();
         mainWindow = createWindow();
         createTray(mainWindow);
         customTrayMenuService.init(() => mainWindow, getTray);

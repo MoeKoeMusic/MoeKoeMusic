@@ -90,10 +90,10 @@ class ApiService {
     stop() {
         if (this.app) {
             for (const client of this.clients) {
-                client.close();
+                client?.close();
             }
             this.clients.clear();
-            this.server.close();
+            this.server?.close();
             this.server = null;
             console.log('外部 API 服务已停止');
         }

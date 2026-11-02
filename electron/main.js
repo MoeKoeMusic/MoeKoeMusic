@@ -188,11 +188,11 @@ ipcMain.on('window-control', (event, action) => {
 app.on('will-quit', () => {
     globalShortcut.unregisterAll();
 });
-ipcMain.on('save-settings', (event, settings) => {
-    store.set('settings', settings);
-    if (['on', 'off'].includes(settings.autoStart)) {
+ipcMain.on('save-settings', (event, newSettings) => {
+    store.set('settings', newSettings);
+    if (['on', 'off'].includes(newSettings.autoStart)) {
         app.setLoginItemSettings({
-            openAtLogin: settings.autoStart === 'on',
+            openAtLogin: newSettings.autoStart === 'on',
             path: app.getPath('exe'),
         });
     }
@@ -358,4 +358,16 @@ ipcMain.handle('export-log', async (e) => {
 
 ipcMain.handle('start-update-download', async () => {
     return await startUpdateDownload();
+});
+
+ipcMain.handle('get-api-service-endpoint', () => {
+    if(settings.apiMode === 'off') return null;
+    const config = settings.apiModeConfig;
+    if(config.wsPath && !config.wsPath.startsWith('/'))
+        config.wsPath = `/${config.wsPath}`;
+
+    return {
+        http: `http://127.0.0.1:${config.port}`,
+        ws: `ws://127.0.0.1:${config.port}${config.wsPath}`
+    }
 });

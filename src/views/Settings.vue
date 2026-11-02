@@ -267,6 +267,7 @@ import { applyCustomFont, requestMicrophonePermission } from '../utils/utils';
 import { DEFAULT_API_BASE_URL, validateApiBaseUrl, testApiBaseUrl as testApiBaseUrlRequest } from '@/utils/apiBaseUrl';
 import { useSettingsConfig } from '@/config/settings';
 import { ONBOARDING_GUIDE_EVENT } from '@/config/onboardingGuide';
+import defaultSettings from '@/../electron/defaultSettings.json';
 
 const MoeAuth = MoeAuthStore();
 const { t } = useI18n();
@@ -668,7 +669,8 @@ const closeSelection = () => {
 };
 
 onMounted(() => {
-    const savedSettings = JSON.parse(localStorage.getItem('settings'));
+    /** @type {typeof defaultSettings} */
+    const savedSettings = JSON.parse(localStorage.getItem('settings') || 'null') || defaultSettings;
 
     if (savedSettings) {
         if (savedSettings.apiBaseUrlMode === undefined) {
@@ -685,12 +687,12 @@ onMounted(() => {
                 continue;
             }
             if(key === 'apiModeConfig') {
-                apiModeForm.host = savedSettings[key].host || '127.0.0.1';
-                apiModeForm.port = savedSettings[key].port || 6520;
-                apiModeForm.wsPath = savedSettings[key].wsPath || '/moekoe';
+                apiModeForm.host = savedSettings[key].host;
+                apiModeForm.port = savedSettings[key].port;
+                apiModeForm.wsPath = savedSettings[key].wsPath;
             }
             if (key === 'apiBaseUrlMode') {
-                const value = savedSettings[key] || 'default';
+                const value = savedSettings[key];
                 selectedSettings.value[key] = {
                     displayText: value === 'custom' ? '自定义' : '默认',
                     value: value
@@ -698,17 +700,17 @@ onMounted(() => {
                 continue;
             }
             if (key === 'apiBaseUrl') {
-                const value = savedSettings[key] || '';
+                const value = savedSettings[key];
                 selectedSettings.value[key] = { displayText: '', value: value };
                 continue;
             }
             if (key === 'dpiScale') {
-                const value = savedSettings[key] || '1.0';
+                const value = savedSettings[key];
                 selectedSettings.value[key] = { displayText: value, value: value };
                 continue;
             }
             if (isFontSelection(key)) {
-                const value = savedSettings[key] || '';
+                const value = savedSettings[key];
                 selectedSettings.value[key] = {
                     displayText: value || t('mo-ren-zi-ti'),
                     value: value

@@ -45,6 +45,7 @@ const moekoeAPI = {
         openMvWindow: (url) => ipcRenderer.invoke('open-mv-window', url),
         openLogPath: () => ipcRenderer.invoke('open-log-path'),
         exportLog: () => ipcRenderer.invoke('export-log'),
+        getApiModeUrl: () => ipcRenderer.invoke('get-api-service-endpoint'),
     },
     kugouapi: {
         generateNewDevice: () => ipcRenderer.invoke('kugouapi:generate-new-device'),

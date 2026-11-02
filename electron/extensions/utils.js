@@ -1,6 +1,14 @@
+import Logger from 'electron-log';
 import extensionManager from './extensionManager.js';
+import { getSettings } from '../util/store.js';
 
+const settings = getSettings();
 const ValidMoekoePermissions = ['moekoe:nativeHost', 'nativeHost', 'moekoe:apiMode', 'apiMode'];
+const MoeKoePermissions2SettingsTable = {
+	'moekoe:apiMode': 'apiMode == auto on'
+}
+
+const m = str => `[extensions/utils] ${str}`;
 
 export const parsePermissions = (manifest) => {
 	const result = {
@@ -46,4 +54,38 @@ export const getExtensionsFromPermissions = (type, permission) => {
 	});
 
 	return matchedExtensions;
+}
+
+/** @param {string} rule */
+const checkMP2STRule = (rule) => {
+	const [key, con, ...vals] = rule.split(' ');
+	if(settings[key]) {
+		switch(con) {
+			case '==':
+				return vals.includes(settings[key]);
+			case '!=':
+				return !vals.includes(settings[key]);
+			default:
+				Logger.warn(m(`unknown condition: '${con}', must be '==' or '!='`));
+				return false;
+		}
+	}
+	Logger.warn(m(`not found '${key}' in settings`));
+	return false;
+}
+
+/** @param {ReturnType<typeof parsePermissions>} permissions */
+export const checkMoeKoePermissions = (permissions, settings) => {
+	if(permissions.moekoe.length < 1) return { result: true, disableReason: null };
+	const disableReason = [];
+
+	const result = permissions.moekoe.every(p => {
+		if(p in MoeKoePermissions2SettingsTable) {
+			const result = checkMP2STRule(MoeKoePermissions2SettingsTable[p], settings);
+			if(!result) disableReason.push(p);
+			return result;
+		}
+		return true;
+	});
+	return { result, disableReason };
 }

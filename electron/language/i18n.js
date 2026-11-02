@@ -1,7 +1,7 @@
-import Store from 'electron-store';
+import { useStore } from '../util/store.js';
 import { app } from 'electron';
 
-const store = new Store();
+const store = useStore();
 
 const translations = {
   'zh-CN': {

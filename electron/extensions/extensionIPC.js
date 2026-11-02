@@ -6,9 +6,11 @@ import { fileURLToPath } from 'url';
 import extensionManager from './extensionManager.js';
 import nativeHostManager from './nativeHostManager.js';
 import { bindExternalLinkHandler } from '../services/externalLinkHandler.js';
-import { parsePermissions } from './utils.js';
+import { checkMoeKoePermissions } from './utils.js';
+import { getSettings } from '../util/store.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const settings = getSettings();
 
 function syncNativeHosts() {
     nativeHostManager.syncExtensions(
@@ -115,10 +117,10 @@ export function registerExtensionIPC() {
             // 每次读取插件列表时同步一次，保证授权按钮能立即找到对应插件记录。
             nativeHostManager.syncExtensions(loadedExtensions, scannedExtensions);
             
-            const extensions = loadedExtensions.map(ext => {
-                const scannedExt = scannedExtensions.find(scanned => scanned.name === ext.name);
+            const extensions = scannedExtensions.map(ext => {
+                const loadedExt = loadedExtensions.find(scanned => scanned.name === ext.name);
                 let iconData = null;
-                const manifestAuthor = ext.manifest?.author ?? scannedExt?.manifest?.author;
+                const manifestAuthor = loadedExt?.manifest?.author ?? ext?.manifest?.author;
                 const authorName = typeof manifestAuthor === 'string'
                     ? manifestAuthor
                     : (manifestAuthor?.name || '');
@@ -126,31 +128,32 @@ export function registerExtensionIPC() {
                     ? (manifestAuthor?.url || '')
                     : '';
                 
-                if (scannedExt?.path) {
-                    iconData = getExtensionIconData(ext, scannedExt.path);
+                if (ext?.path) {
+                    iconData = getExtensionIconData(ext, ext.path);
                 }
                 
                 return {
-                    id: ext.id,
-                    pluginId: ext.manifest?.plugin_id || scannedExt?.manifest?.plugin_id || '',
+                    id: loadedExt?.id,
+                    pluginId: loadedExt?.manifest?.plugin_id || ext.manifest?.plugin_id || '',
                     name: ext.name,
-                    directory: scannedExt?.directory || '',
+                    directory: ext.directory || '',
                     version: ext.version,
-                    enabled: true,
+                    enabled: !!loadedExt,
+                    disableReason: checkMoeKoePermissions(ext.permissions, settings).disableReason,
                     description: ext.manifest?.description || '',
                     author: authorName,
                     authorUrl: authorUrl,
-                    permissions: parsePermissions(ext.manifest),
+                    permissions: ext.permissions,
                     iconData: iconData,
-                    moeKoeAdapted: ext.manifest?.moekoe === true || scannedExt?.manifest?.moekoe === true,
-                    minversion: ext.manifest?.minversion || scannedExt?.manifest?.minversion || '',
-                    popupPath: scannedExt?.popupPath || '',
-                    hasPopup: scannedExt?.hasPopup === true,
+                    moeKoeAdapted: ext.manifest?.moekoe === true || loadedExt?.manifest?.moekoe === true,
+                    minversion: ext.manifest?.minversion || loadedExt?.manifest?.minversion || '',
+                    popupPath: loadedExt?.popupPath || '',
+                    hasPopup: loadedExt?.hasPopup === true,
                     nativeHosts: nativeHostManager.describeHosts(
                         ext.id,
-                        ext.manifest || scannedExt?.manifest || {},
-                        scannedExt?.path || '',
-                        scannedExt?.directory || ''
+                        ext.manifest || loadedExt?.manifest || {},
+                        loadedExt?.path || '',
+                        loadedExt?.directory || ''
                     )
                 };
             });

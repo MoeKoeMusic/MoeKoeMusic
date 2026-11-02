@@ -46,7 +46,7 @@
                 <div v-for="extension in extensions" :key="extension.id" class="market-item installed-item">
                     <div class="market-item-header">
                         <div class="market-title-group">
-                            <div class="extension-icon">
+                            <div class="extension-icon" :class="{ disabled: extension.enabled === false }">
                             <img
                                 v-if="extension.iconData"
                                 :src="extension.iconData"
@@ -57,7 +57,10 @@
                             <i v-else class="fas fa-puzzle-piece"></i>
                             </div>
                             <div class="market-title-text">
-                                <h4>{{ extension.name }}</h4>
+                                <h4 :class="{ disabled: extension.enabled === false }">{{ extension.name }}</h4>
+                                <p class="disabled-reason" v-if="extension.enabled === false">
+                                    已禁用{{ extension.disableReason && extension.disableReason.length > 0? `，原因：无法授予 ${ extension.disableReason[0]} 等权限`: '' }}
+                                </p>
                                 <p>{{ extension.description || '暂无描述' }}</p>
                             </div>
                         </div>
@@ -1004,6 +1007,10 @@ $border-dark: #232527;
     overflow: hidden;
     flex-shrink: 0;
 
+    &.disabled {
+        opacity: 0.6;
+    }
+
     img {
         width: 100%;
         height: 100%;
@@ -1020,6 +1027,12 @@ $border-dark: #232527;
         font-size: 16px;
         color: var(--text-color, #222);
 
+        &.disabled {
+            opacity: 0.6;
+            font-style: italic;
+            text-decoration: line-through 2px;
+        }
+
         .market-title-link {
             color: inherit;
             text-decoration: none;
@@ -1035,6 +1048,10 @@ $border-dark: #232527;
         margin: 0;
         font-size: 13px;
         color: $text-muted;
+
+        &.disabled-reason {
+            color: red;
+        }
     }
 
     &:is(.dark .extension-details, .dark .market-title-text) {

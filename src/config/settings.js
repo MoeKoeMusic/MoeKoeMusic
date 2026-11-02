@@ -1,4 +1,5 @@
 import { computed } from 'vue';
+import defaultSettings from '@/../electron/defaultSettings.json';
 
 export const createSettingSections = (t, actions = {}) => computed(() => [
     {
@@ -8,7 +9,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             {
                 key: 'language',
                 selectAction: 'applyLanguage',
-                defaultValue: '',
+                defaultValue: defaultSettings.language,
                 defaultDisplayText: '🌏 ' + t('zi-dong'),
                 itemIcon: 'fas fa-language',
                 selectionTitle: t('xuan-ze-yu-yan'),
@@ -25,7 +26,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             {
                 key: 'themeColor',
                 selectAction: 'applyThemeColor',
-                defaultValue: 'pink',
+                defaultValue: defaultSettings.themeColor,
                 itemIcon: 'fas fa-paint-brush',
                 selectionTitle: t('xuan-ze-zhu-se-tiao'),
                 options: [
@@ -40,7 +41,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             {
                 key: 'theme',
                 selectAction: 'applyTheme',
-                defaultValue: 'light',
+                defaultValue: defaultSettings.theme,
                 itemIcon: 'fas fa-moon',
                 selectionTitle: t('xuan-ze-wai-guan'),
                 options: [
@@ -52,7 +53,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             },
             {
                 key: 'searchMode',
-                defaultValue: 'quick',
+                defaultValue: defaultSettings.searchMode,
                 itemIcon: 'fas fa-search',
                 selectionTitle: '搜索模式',
                 options: [
@@ -63,7 +64,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             },
             {
                 key: 'navigationMode',
-                defaultValue: 'top',
+                defaultValue: defaultSettings.navigationMode,
                 itemIcon: 'fas fa-bars',
                 selectionTitle: '导航方式',
                 options: [
@@ -74,7 +75,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             },
             {
                 key: 'playerBarLayout',
-                defaultValue: 'full',
+                defaultValue: defaultSettings.playerBarLayout,
                 itemIcon: 'fas fa-window-maximize',
                 selectionTitle: '播放栏布局',
                 options: [
@@ -85,7 +86,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             },
             {
                 key: 'nativeTitleBar',
-                defaultValue: 'off',
+                defaultValue: defaultSettings.nativeTitleBar,
                 itemIcon: 'fas fa-window-maximize',
                 selectionTitle: t('native-title-bar'),
                 options: [
@@ -99,7 +100,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             },
             {
                 key: 'font',
-                defaultValue: '',
+                defaultValue: defaultSettings.font,
                 defaultDisplayText: t('mo-ren-zi-ti'),
                 itemIcon: 'fas fa-font',
                 selectionTitle: t('zi-ti-she-zhi'),
@@ -109,7 +110,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             },
             {
                 key: 'startupPage',
-                defaultValue: 'Index',
+                defaultValue: defaultSettings.startupPage,
                 itemIcon: 'fas fa-home',
                 selectionTitle: '启动页',
                 options: [
@@ -128,7 +129,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             },
             {
                 key: 'customTrayMenu',
-                defaultValue: 'native',
+                defaultValue: defaultSettings.customTrayMenu,
                 itemIcon: 'fas fa-window-restore',
                 selectionTitle: '托盘菜单',
                 options: [
@@ -147,7 +148,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             {
                 key: 'quality',
                 selectAction: 'checkQualityAuth',
-                defaultValue: '128',
+                defaultValue: defaultSettings.quality,
                 itemIcon: 'fas fa-headphones',
                 selectionTitle: t('yin-zhi-xuan-ze'),
                 options: [
@@ -165,7 +166,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             {
                 key: 'loudnessNormalization',
                 selectAction: 'dispatchLoudnessNormalization',
-                defaultValue: 'off',
+                defaultValue: defaultSettings.loudnessNormalization,
                 itemIcon: 'fas fa-sliders-h',
                 selectionTitle: t('ping-heng-yin-pin-xiang-du') + '(实验性)',
                 options: [
@@ -180,7 +181,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             {
                 key: 'pauseOnAudioOutputChange',
                 selectAction: 'updateAudioOutputWatch',
-                defaultValue: 'off',
+                defaultValue: defaultSettings.pauseOnAudioOutputChange,
                 itemIcon: 'fas fa-exchange-alt',
                 selectionTitle: '输出设备变化自动暂停(实验性)',
                 options: [
@@ -194,7 +195,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             {
                 key: 'audioOutputDevice',
                 selectAction: 'dispatchAudioOutputDevice',
-                defaultValue: 'default',
+                defaultValue: defaultSettings.audioOutputDevice,
                 defaultDisplayText: '默认',
                 itemIcon: 'fas fa-volume-up',
                 selectionTitle: '音频输出设备(实验性)',
@@ -205,7 +206,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             },
             {
                 key: 'greetings',
-                defaultValue: 'on',
+                defaultValue: defaultSettings.greetings,
                 itemIcon: 'fas fa-comment',
                 selectionTitle: t('qi-dong-wen-hou-yu'),
                 options: [
@@ -217,7 +218,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             },
             {
                 key: 'dataSource',
-                defaultValue: 'concept',
+                defaultValue: defaultSettings.dataSource,
                 itemIcon: 'fas fa-sliders-h',
                 selectionTitle: t('shu-ju-yuan'),
                 options: [
@@ -240,7 +241,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             {
                 key: 'desktopLyrics',
                 selectAction: 'toggleDesktopLyrics',
-                defaultValue: 'off',
+                defaultValue: defaultSettings.desktopLyrics,
                 itemIcon: 'fas fa-desktop',
                 selectionTitle: t('xian-shi-zhuo-mian-ge-ci'),
                 options: [
@@ -252,7 +253,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             },
             {
                 key: 'desktopLyricsFont',
-                defaultValue: '',
+                defaultValue: defaultSettings.desktopLyricsFont,
                 defaultDisplayText: t('mo-ren-zi-ti'),
                 itemIcon: 'fas fa-font',
                 selectionTitle: t('ge-ci-zi-ti-she-zhi'),
@@ -262,7 +263,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             },
             {
                 key: 'statusBarLyrics',
-                defaultValue: 'off',
+                defaultValue: defaultSettings.statusBarLyrics,
                 itemIcon: 'fas fa-align-justify',
                 selectionTitle: t('zhuang-tai-lan-ge-ci'),
                 options: [
@@ -277,7 +278,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             },
             {
                 key: 'lyricsTranslation',
-                defaultValue: 'on',
+                defaultValue: defaultSettings.lyricsTranslation,
                 itemIcon: 'fas fa-language',
                 selectionTitle: t('ge-ci-fan-yi'),
                 options: [
@@ -301,7 +302,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
         items: [
             {
                 key: 'gpuAcceleration',
-                defaultValue: 'off',
+                defaultValue: defaultSettings.gpuAcceleration,
                 itemIcon: 'fas fa-microchip',
                 selectionTitle: t('jin-yong-gpu-jia-su-zhong-qi-sheng-xiao'),
                 options: [
@@ -316,7 +317,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             {
                 key: 'highDpi',
                 selectAction: 'saveDpiScale',
-                defaultValue: 'off',
+                defaultValue: defaultSettings.highDpi,
                 itemIcon: 'fas fa-expand',
                 selectionTitle: t('shi-pei-gao-dpi'),
                 noSelection: false,
@@ -332,12 +333,12 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             {
                 key: 'dpiScale',
                 hidden: true,
-                defaultValue: '1.0',
+                defaultValue: defaultSettings.dpiScale,
                 defaultDisplayText: '1.0'
             },
             {
                 key: 'minimizeToTray',
-                defaultValue: 'on',
+                defaultValue: defaultSettings.minimizeToTray,
                 itemIcon: 'fas fa-window-minimize',
                 selectionTitle: t('guan-bi-shi-minimize-to-tray'),
                 options: [
@@ -349,7 +350,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             },
             {
                 key: 'hideDockIcon',
-                defaultValue: 'off',
+                defaultValue: defaultSettings.hideDockIcon,
                 itemIcon: 'fas fa-eye-slash',
                 selectionTitle: t('guan-bi-chuang-kou-hou-yin-cang-dock-tu-biao'),
                 options: [
@@ -362,7 +363,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             },
             {
                 key: 'autoStart',
-                defaultValue: 'off',
+                defaultValue: defaultSettings.autoStart,
                 itemIcon: 'fas fa-power-off',
                 selectionTitle: t('kai-ji-zi-qi-dong'),
                 options: [
@@ -374,7 +375,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             },
             {
                 key: 'networkMode',
-                defaultValue: 'mainnet',
+                defaultValue: defaultSettings.networkMode,
                 itemIcon: 'fas fa-sliders-h',
                 selectionTitle: t('wang-luo-jie-dian'),
                 options: [
@@ -390,7 +391,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             },
             {
                 key: 'startMinimized',
-                defaultValue: 'off',
+                defaultValue: defaultSettings.startMinimized,
                 itemIcon: 'fas fa-compress',
                 selectionTitle: t('qi-dong-shi-zui-xiao-hua'),
                 options: [
@@ -402,7 +403,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             },
             {
                 key: 'preventAppSuspension',
-                defaultValue: 'off',
+                defaultValue: defaultSettings.preventAppSuspension,
                 itemIcon: 'fas fa-clock',
                 selectionTitle: t('zu-zhi-xi-tong-xiu-mian'),
                 options: [
@@ -416,7 +417,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             },
             {
                 key: 'apiMode',
-                defaultValue: 'auto',
+                defaultValue: defaultSettings.apiMode,
                 itemIcon: 'fas fa-code',
                 selectionTitle: t('api-mo-shi'),
                 noSelection: false,
@@ -432,10 +433,15 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
                 refreshHintText: t('zhong-qi-hou-sheng-xiao')
             },
             {
+                key: 'apiModeConfig',
+                defaultValue: defaultSettings.apiModeConfig,
+                hidden: true
+            },
+            {
                 key: 'apiBaseUrlMode',
                 available: 'client',
                 selectAction: 'resetApiBaseUrl',
-                defaultValue: 'default',
+                defaultValue: defaultSettings.apiBaseUrlMode,
                 itemIcon: 'fas fa-link',
                 selectionTitle: 'RPC地址',
                 options: [
@@ -452,12 +458,12 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             {
                 key: 'apiBaseUrl',
                 hidden: true,
-                defaultValue: '',
+                defaultValue: defaultSettings.apiBaseUrl,
                 defaultDisplayText: ''
             },
             {
                 key: 'touchBar',
-                defaultValue: 'off',
+                defaultValue: defaultSettings.touchBar,
                 itemIcon: 'fas fa-tablet-alt',
                 selectionTitle: 'TouchBar',
                 options: [
@@ -489,7 +495,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             {
                 key: 'proxy',
                 available: 'client',
-                defaultValue: 'off',
+                defaultValue: defaultSettings.proxy,
                 itemIcon: 'fas fa-random',
                 selectionTitle: t('wang-luo-dai-li'),
                 noSelection: false,
@@ -506,7 +512,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             {
                 key: 'proxyUrl',
                 hidden: true,
-                defaultValue: '',
+                defaultValue: defaultSettings.proxyUrl,
                 defaultDisplayText: ''
             },
             {
@@ -524,7 +530,7 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
             },
             {
                 key: 'backgroundThrottling',
-                defaultValue: 'off',
+                defaultValue: defaultSettings.backgroundThrottling,
                 itemIcon: 'fas fa-bolt',
                 selectionTitle: '禁用后台节流',
                 options: [
@@ -543,47 +549,47 @@ export const createSettingSections = (t, actions = {}) => computed(() => [
 export const createShortcutConfigs = (t) => ({
     mainWindow: {
         label: t('xian-shi-yin-cang-zhu-chuang-kou'),
-        defaultValue: 'Ctrl+Shift+S'
+        defaultValue: defaultSettings.shortcuts.mainWindow
     },
     quitApp: {
         label: t('tui-chu-zhu-cheng-xu'),
-        defaultValue: 'Ctrl+Q'
+        defaultValue: defaultSettings.shortcuts.quitApp
     },
     prevTrack: {
         label: t('shang-yi-shou'),
-        defaultValue: 'Alt+Ctrl+Left'
+        defaultValue: defaultSettings.shortcuts.prevTrack
     },
     nextTrack: {
         label: t('xia-yi-shou'),
-        defaultValue: 'Alt+Ctrl+Right'
+        defaultValue: defaultSettings.shortcuts.nextTrack
     },
     playPause: {
         label: t('zan-ting-bo-fang'),
-        defaultValue: 'Alt+Ctrl+Space'
+        defaultValue: defaultSettings.shortcuts.playPause
     },
     volumeUp: {
         label: t('yin-liang-zeng-jia'),
-        defaultValue: 'Alt+Ctrl+Up'
+        defaultValue: defaultSettings.shortcuts.volumeUp
     },
     volumeDown: {
         label: t('yin-liang-jian-xiao'),
-        defaultValue: 'Alt+Ctrl+Down'
+        defaultValue: defaultSettings.shortcuts.volumeDown
     },
     mute: {
         label: t('jing-yin'),
-        defaultValue: 'Alt+Ctrl+M'
+        defaultValue: defaultSettings.shortcuts.mute
     },
     like: {
         label: t('tian-jia-wo-xi-huan'),
-        defaultValue: 'Alt+Ctrl+L'
+        defaultValue: defaultSettings.shortcuts.like
     },
     mode: {
         label: t('qie-huan-bo-fang-mo-shi'),
-        defaultValue: 'Alt+Ctrl+P'
+        defaultValue: defaultSettings.shortcuts.mode
     },
     toggleDesktopLyrics: {
         label: t('xian-shi-yin-cang-zhuo-mian-ge-ci'),
-        defaultValue: 'Alt+Ctrl+D'
+        defaultValue: defaultSettings.shortcuts.toggleDesktopLyrics
     }
 });
 

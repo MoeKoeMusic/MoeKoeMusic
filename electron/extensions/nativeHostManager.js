@@ -3,10 +3,10 @@ import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import Store from 'electron-store';
 import log from 'electron-log';
 import treeKill from 'tree-kill';
 import { parsePermissions } from './utils.js';
+import { useStore } from '../util/store.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const NATIVE_HOST_PERMISSION = 'moekoe:nativeHost';
@@ -49,7 +49,7 @@ function isRelativePluginPath(filePath) {
 class NativeHostManager {
     constructor() {
         // electron-store 会写入当前用户的应用配置目录，用来持久化用户授权选择。
-        this.store = new Store();
+        this.store = useStore();
         // extensionId -> 插件运行时信息。extensionId 来自 Electron/Chromium 加载后的扩展 ID。
         this.extensions = new Map();
         // `${extensionId}:${hostId}` -> 子进程信息。

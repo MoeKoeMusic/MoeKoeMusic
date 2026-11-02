@@ -1,7 +1,7 @@
-import Store from 'electron-store';
+import { useStore } from '../store.js';
 import apiUtils from 'kugoumusicapi/util/util.js';
 
-const store = new Store();
+const store = useStore();
 
 export const generateNewDevice = () => {
 	const uuid = apiUtils.getGuid();

@@ -5,10 +5,12 @@ import log from 'electron-log';
 import { fileURLToPath } from 'url';
 import isDev from 'electron-is-dev';
 import AdmZip from 'adm-zip';
-import { parsePermissions } from './utils.js';
+import { parsePermissions, checkMoeKoePermissions } from './utils.js';
 import { validateNativeHostManifest } from './nativeHostManager.js';
+import { getSettings } from '../util/store.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const settings = getSettings();
 
 // Chrome 插件管理 - 根据环境选择正确的路径
 const EXTENSIONS_DIR = !isDev
@@ -41,15 +43,17 @@ export async function loadChromeExtensions() {
                     
                     // 验证 manifest 格式
                     if (manifest.manifest_version && manifest.name && manifest.version) {
-                        loadTasks.push(
-                            session.defaultSession.extensions.loadExtension(extensionPath, {
-                                allowFileAccess: true
-                            }).then((extension) => {
-                                log.info(`成功加载插件: ${manifest.name} (${extension.id})`);
-                            }).catch((error) => {
-                                log.error(`加载插件失败 ${extensionDir}:`, error);
-                            })
-                        );
+                        const permissions = parsePermissions(manifest);
+                        if(checkMoeKoePermissions(permissions, settings).result)
+                            loadTasks.push(
+                                session.defaultSession.extensions.loadExtension(extensionPath, {
+                                    allowFileAccess: true
+                                }).then((extension) => {
+                                    log.info(`成功加载插件: ${manifest.name} (${extension.id})`);
+                                }).catch((error) => {
+                                    log.error(`加载插件失败 ${extensionDir}:`, error);
+                                })
+                            );
                     } else {
                         log.warn(`插件 ${extensionDir} 的 manifest.json 格式不正确`);
                     }

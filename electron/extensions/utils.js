@@ -76,7 +76,7 @@ const checkMP2STRule = (rule) => {
 
 /** @param {ReturnType<typeof parsePermissions>} permissions */
 export const checkMoeKoePermissions = (permissions, settings) => {
-	if(permissions.moekoe.length < 1) return true;
+	if(permissions.moekoe.length < 1) return { result: true, disableReason: null };
 	const disableReason = [];
 
 	const result = permissions.moekoe.every(p => {

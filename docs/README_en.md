@@ -155,9 +155,8 @@ pnpm install --frozen-lockfile
 4. Build the frontend
 Choose one of the commands below for your target platform to build the frontend
 ```sh
-pnpm run build # Build the frontend for the web
-pnpm run build:client # Build the frontend for the client
-pnpm run build:docker # Build the frontend for the Docker image
+pnpm run build # Build frontend for web or client
+pnpm run build:docker # Build frontend for Docker image
 ```
 5. Compile the project
   - Windows:
@@ -180,13 +179,13 @@ For more commands, please refer to `scripts` in the `package.json` file.
 
 If you can't find an installer suitable for your device on the Releases page, you can follow the steps below to package your own client.
 
-1. Install [Node.js](https://nodejs.org/en/) and make sure the `Node.js` version is >= 20.0.0.
+1. Install [Node.js](https://nodejs.org/en/) and make sure the `Node.js` version is >= 22.14.0.
 
 2. Clone this repository locally with `git clone --depth=1 https://github.com/MoeKoeMusic/MoeKoeMusic.git`.
 
 3. Install the project dependencies with `pnpm install --frozen-lockfile`.
 
-4. Build frontend for client with `pnpm run build:client`
+4. Build frontend with `pnpm run build`
 
 5. Choose one of the commands below to package the installer that suits you; the output files will be in the `/dist_electron` directory. For more information, see the [electron-builder documentation](https://www.electron.build/cli).
 

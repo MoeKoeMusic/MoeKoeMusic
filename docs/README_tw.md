@@ -155,8 +155,7 @@ pnpm install --frozen-lockfile
 4. 建置前端
 為你的目標平台選擇一條指令來建置前端
 ```sh
-pnpm run build # 為網頁端建置前端
-pnpm run build:client # 為客戶端建置前端
+pnpm run build # 為網頁端或客戶端建置前端
 pnpm run build:docker # 為 Docker 映像檔建置前端
 ```
 5. 編譯專案
@@ -180,13 +179,13 @@ pnpm run electron:build:macos # [預設 macOS 雙架構]
 
 如果在 Release 頁面沒有找到適合你裝置的安裝包的話，你可以根據下面的步驟來打包自己的客戶端。
 
-1. 安裝 [Node.js](https://nodejs.org/en/)，並確保 `Node.js` 版本 >= 20.0.0。
+1. 安裝 [Node.js](https://nodejs.org/en/)，並確保 `Node.js` 版本 >= 22.14.0。
 
 2. 使用 `git clone --depth=1 https://github.com/MoeKoeMusic/MoeKoeMusic.git` 複製本儲存庫到本機。
 
 3. 使用 `pnpm install --frozen-lockfile` 安裝專案依賴。
 
-4. 使用 `pnpm run build:client` 為客戶端建置前端
+4. 使用 `pnpm run build` 建置前端
 
 5. 選擇下列的指令來打包適合你的安裝包，打包出來的檔案在 `/dist_electron` 目錄下。了解更多資訊可造訪 [electron-builder 文件](https://www.electron.build/cli)
 

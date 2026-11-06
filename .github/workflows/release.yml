@@ -90,7 +90,7 @@ jobs:
         uses: pnpm/setup@v3
         with:
           version: 11
-          runtime: node@20
+          runtime: node@lts
           require-lockfile: true
           cache: true
 
@@ -99,7 +99,7 @@ jobs:
           os: ${{ runner.os == 'Windows' && 'win' || runner.os == 'macOS' && 'macos' || 'linux' }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pnpm run build:client
+          pnpm run build
           pnpm run electron:build:${{ env.os }}
 
       - name: Upload to Release

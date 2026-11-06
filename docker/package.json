@@ -16,7 +16,7 @@
     "start": "node app.js"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.15.0"
   },
   "dependencies": {
     "express": "^5.3.0",

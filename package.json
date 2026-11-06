@@ -4,16 +4,14 @@
   "homepage": "https://music.moekoe.cn/",
   "main": "electron/main.js",
   "scripts": {
-    "serve": "cross-env VITE_APP_ENV=web vite",
-    "serve:client": "cross-env VITE_APP_ENV=client vite",
-    "build": "cross-env VITE_APP_ENV=web vite build",
-    "build:client": "cross-env VITE_APP_ENV=client vite build",
-    "build:docker": "cross-env VITE_APP_ENV=web VITE_APP_API_URL=/api vite build",
+    "serve": "cross-env vite",
+    "build": "cross-env vite build",
+    "build:docker": "cross-env VITE_APP_API_URL=/api vite build",
     "preview": "vite preview",
     "electron:serve": "cross-env NODE_ENV=development electron .",
     "api": "kugoumusicapi --platform=lite --port=6521",
     "dev": "run-p api serve",
-    "dev:client": "run-p serve:client electron:serve",
+    "dev:client": "run-p serve electron:serve",
     "electron:build:win": "pnpm run electron:build -- --win --publish never",
     "electron:build:linux": "pnpm run electron:build -- --linux --publish never",
     "electron:build:linux-arm64": "pnpm run electron:build -- --linux --publish never",
@@ -24,7 +22,7 @@
     "electron:build": "cross-env NODE_ENV=production electron-builder"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.14.0"
   },
   "desktopName": "cn.MoeKoe.Music",
   "build": {

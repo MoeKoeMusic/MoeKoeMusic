@@ -130,7 +130,7 @@ export const get = async (url, params = {}, config = {}, onSuccess = null, onErr
 // 封装 POST 请求
 export const post = async (url, data = {}, config = {}, onSuccess = null, onError = null) => {
     try {
-        const response = import.meta.env.VITE_APP_ENV === 'client'?
+        const response = hasBuiltinApi()?
             await requestBuiltinApi(url, { params: data, ...config }):
             await httpClient.post(url, data, config);
         if (onSuccess) onSuccess(response);
@@ -144,7 +144,7 @@ export const post = async (url, data = {}, config = {}, onSuccess = null, onErro
 // 封装 PUT 请求
 export const put = async (url, data = {}, config = {}, onSuccess = null, onError = null) => {
     try {
-        const response = import.meta.env.VITE_APP_ENV === 'client'?
+        const response = hasBuiltinApi()?
             await requestBuiltinApi(url, { params: data, ...config }):
             await httpClient.put(url, data, config);
         if (onSuccess) onSuccess(response);
@@ -158,7 +158,7 @@ export const put = async (url, data = {}, config = {}, onSuccess = null, onError
 // 封装 DELETE 请求
 export const del = async (url, config = {}, onSuccess = null, onError = null) => {
     try {
-        const response = import.meta.env.VITE_APP_ENV === 'client'?
+        const response = hasBuiltinApi()?
             await requestBuiltinApi(url, config):
             await httpClient.delete(url, config);
         if (onSuccess) onSuccess(response);
@@ -172,7 +172,7 @@ export const del = async (url, config = {}, onSuccess = null, onError = null) =>
 // 封装 PATCH 请求
 export const patch = async (url, data = {}, config = {}, onSuccess = null, onError = null) => {
     try {
-        const response = import.meta.env.VITE_APP_ENV === 'client'?
+        const response = hasBuiltinApi()?
             await requestBuiltinApi(url, { params: data, ...config }):
             await httpClient.patch(url, data, config);
         if (onSuccess) onSuccess(response);
@@ -197,7 +197,7 @@ export const uploadImage = async (url, file, additionalData = {}, config = {}, o
         }
 
         // 需要确保 Content-Type 被设置为 multipart/form-data
-        const response = import.meta.env.VITE_APP_ENV === 'client'?
+        const response = hasBuiltinApi()?
             await requestBuiltinApi(url, { params: formData, ...config, headers: { ...config.headers, 'Content-Type': 'multipart/form-data' } }):
             await httpClient.post(url, formData, {
             ...config,

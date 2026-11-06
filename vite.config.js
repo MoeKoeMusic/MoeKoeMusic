@@ -1,7 +1,7 @@
 // vite.config.js
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import { VitePWA } from 'vite-plugin-pwa';
+import { VitePWA } from '@unplugin-pwa/vite';
 
 export default defineConfig({
   plugins: [
@@ -15,7 +15,8 @@ export default defineConfig({
         logLevel: 'silent',
         type: 'module'
       },
-      workbox: {
+      swType: 'module',
+      generateSW: {
         // 缓存策略配置
         runtimeCaching: [
           {
@@ -75,7 +76,7 @@ export default defineConfig({
         ],
         icons: [
           {
-            src: '/assets/images/logo.png',
+            src: './assets/images/logo.png',
             sizes: '256x256',
             type: 'image/png'
           }

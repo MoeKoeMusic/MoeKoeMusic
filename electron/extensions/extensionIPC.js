@@ -20,7 +20,7 @@ function syncNativeHosts() {
     nativeHostManager.startAuthorizedAutoHosts();
 }
 
-function getSenderExtensionId(event) {
+export function getSenderExtensionId(event) {
     // 插件调用 native-host-send/status 时，必须来自 chrome-extension:// 页面。
     // 这里从 senderFrame.url 解析扩展 ID，避免插件伪造其他插件的 extensionId。
     const senderUrl = event.senderFrame?.url || event.sender?.getURL?.() || '';

@@ -4,8 +4,8 @@
   "homepage": "https://music.moekoe.cn/",
   "main": "electron/main.js",
   "scripts": {
-    "serve": "cross-env vite",
-    "build": "cross-env vite build",
+    "serve": "vite",
+    "build": "vite build",
     "build:docker": "cross-env VITE_APP_API_URL=/api vite build",
     "preview": "vite preview",
     "electron:serve": "cross-env NODE_ENV=development electron .",

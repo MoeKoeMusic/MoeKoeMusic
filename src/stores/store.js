@@ -2,7 +2,9 @@ import { defineStore } from 'pinia';
 import axios from 'axios';
 import { getApiBaseUrl } from '../utils/apiBaseUrl';
 
-const registerDeviceApi = import.meta.env.VITE_APP_ENV === 'client'?
+const hasBuiltinApi = () => 'kugouapi' in window;
+
+const registerDeviceApi = hasBuiltinApi()?
 { get: async(path) => {
     const res = await window.kugouapi?.request(path);
     if(res.body) return res.body;
@@ -36,8 +38,7 @@ export const MoeAuthStore = defineStore('MoeData', {
             if (this.Device) return this.Device;
             try {
                 const response = await registerDeviceApi.get('/register/dev');
-                const device = import.meta.env.VITE_APP_ENV === 'client'?
-                               response?.data: response?.data?.data;
+                const device = hasBuiltinApi()? response?.data: response?.data?.data;
                 if (device) {
                     this.Device = device;
                     return device;

@@ -1,5 +1,5 @@
 # Stage 1: Build Frontend
-FROM node:20-alpine AS frontend
+FROM node:lts-alpine AS frontend
 WORKDIR /app
 COPY package*.json ./
 # Remove electron stuffs and api from package.json
@@ -22,7 +22,7 @@ COPY . .
 RUN pnpm run build:docker
 
 # Stage 2: Setup Combined App
-FROM node:20-alpine
+FROM node:lts-alpine
 WORKDIR /app
 
 RUN corepack enable

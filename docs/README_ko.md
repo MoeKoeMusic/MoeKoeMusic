@@ -155,8 +155,7 @@ pnpm install --frozen-lockfile
 4. 프런트엔드 빌드
 대상 플랫폼에 맞는 명령을 하나 선택하여 프런트엔드를 빌드하세요
 ```sh
-pnpm run build # 웹용 프런트엔드 빌드
-pnpm run build:client # 클라이언트용 프런트엔드 빌드
+pnpm run build # 웹용 혹은 클라이언트용 프런트엔드 빌드
 pnpm run build:docker # Docker 이미지용 프런트엔드 빌드
 ```
 5. 프로젝트 컴파일
@@ -180,13 +179,13 @@ pnpm run electron:build:macos # [기본 macOS 듀얼 아키텍처]
 
 Release 페이지에서 자신의 기기에 맞는 설치 파일을 찾지 못했다면, 아래 단계에 따라 직접 클라이언트를 패키징할 수 있습니다.
 
-1. [Node.js](https://nodejs.org/en/)를 설치하고 `Node.js` 버전이 20.0.0 이상인지 확인합니다.
+1. [Node.js](https://nodejs.org/en/)를 설치하고 `Node.js` 버전이 22.14.0 이상인지 확인합니다.
 
 2. `git clone --depth=1 https://github.com/MoeKoeMusic/MoeKoeMusic.git`을 사용해 이 저장소를 로컬에 클론합니다.
 
 3. `pnpm install --frozen-lockfile`로 프로젝트 의존성을 설치합니다.
 
-4. `pnpm run build:client`를 사용해서 클라이언트용 프론트엔드를 빌드하기
+4. `pnpm run build`를 사용해서 프론트엔드를 구축하다
 
 5. 아래 명령 중 자신에게 맞는 것을 선택해 설치 파일을 패키징하면, 결과물은 `/dist_electron` 디렉터리에 생성됩니다. 자세한 내용은 [electron-builder 문서](https://www.electron.build/cli)를 참고하세요.
 

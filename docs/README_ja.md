@@ -155,8 +155,7 @@ pnpm install --frozen-lockfile
 4. フロントエンドをビルド
 対象プラットフォームに応じて、以下のいずれかのコマンドでフロントエンドをビルドします
 ```sh
-pnpm run build # Web用のフロントエンドをビルド
-pnpm run build:client # クライアント用のフロントエンドをビルド
+pnpm run build # Webまたはクライアント用のフロントエンドをビルド
 pnpm run build:docker # Dockerイメージ用のフロントエンドをビルド
 ```
 5. プロジェクトをコンパイル
@@ -180,13 +179,13 @@ pnpm run electron:build:macos # [デフォルトは macOS のデュアルアー�
 
 Releases ページにご自身のデバイスに合うインストーラーが見つからない場合は、以下の手順でご自身のクライアントをパッケージできます。
 
-1. [Node.js](https://nodejs.org/en/) をインストールし、`Node.js` のバージョンが 20.0.0 以上であることを確認します。
+1. [Node.js](https://nodejs.org/en/) をインストールし、`Node.js` のバージョンが 22.14.0 以上であることを確認します。
 
 2. `git clone --depth=1 https://github.com/MoeKoeMusic/MoeKoeMusic.git` で本リポジトリをローカルにクローンします。
 
 3. `pnpm install --frozen-lockfile` でプロジェクトの依存関係をインストールします。
 
-4. `pnpm run build:client` を使ってクライアント用のフロントエンドをビルドする
+4. `pnpm run build` を使ってフロントエンドを構築する
 
 5. 以下のコマンドから適したものを選んでインストーラーをパッケージします。出力されたファイルは `/dist_electron` ディレクトリにあります。詳しくは [electron-builder のドキュメント](https://www.electron.build/cli) をご覧ください。
 

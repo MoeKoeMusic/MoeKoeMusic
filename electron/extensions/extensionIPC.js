@@ -147,8 +147,8 @@ export function registerExtensionIPC() {
                     iconData: iconData,
                     moeKoeAdapted: ext.manifest?.moekoe === true || loadedExt?.manifest?.moekoe === true,
                     minversion: ext.manifest?.minversion || loadedExt?.manifest?.minversion || '',
-                    popupPath: loadedExt?.popupPath || '',
-                    hasPopup: loadedExt?.hasPopup === true,
+                    popupPath: ext.popupPath || '',
+                    hasPopup: ext.hasPopup === true,
                     nativeHosts: nativeHostManager.describeHosts(
                         ext.id,
                         ext.manifest || loadedExt?.manifest || {},

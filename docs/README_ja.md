@@ -179,7 +179,7 @@ pnpm run electron:build:macos # [デフォルトは macOS のデュアルアー�
 
 Releases ページにご自身のデバイスに合うインストーラーが見つからない場合は、以下の手順でご自身のクライアントをパッケージできます。
 
-1. [Node.js](https://nodejs.org/en/) をインストールし、`Node.js` のバージョンが 22.14.0 以上であることを確認します。
+1. [Node.js](https://nodejs.org/en/) をインストールし、`Node.js` のバージョンが 24 以上であることを確認します。
 
 2. `git clone --depth=1 https://github.com/MoeKoeMusic/MoeKoeMusic.git` で本リポジトリをローカルにクローンします。
 

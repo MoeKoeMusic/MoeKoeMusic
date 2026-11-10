@@ -179,7 +179,7 @@ pnpm run electron:build:macos # [по умолчанию обе архитект
 
 Если на странице Releases вы не нашли установщик, подходящий для вашего устройства, вы можете собрать собственный клиент по шагам ниже.
 
-1. Установите [Node.js](https://nodejs.org/en/) и убедитесь, что версия `Node.js` >= 22.14.0.
+1. Установите [Node.js](https://nodejs.org/en/) и убедитесь, что версия `Node.js` >= 24.
 
 2. Клонируйте этот репозиторий локально командой `git clone --depth=1 https://github.com/MoeKoeMusic/MoeKoeMusic.git`.
 

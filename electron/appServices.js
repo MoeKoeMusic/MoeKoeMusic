@@ -245,7 +245,10 @@ export function createLyricsWindow() {
 
     // 设置窗口置顶级别
     lyricsWindow.setAlwaysOnTop(true, 'screen-saver');
-    lyricsWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+    lyricsWindow.setVisibleOnAllWorkspaces(true, {
+        visibleOnFullScreen: true,
+        skipTransformProcessType: true
+    });
 
     // 允许窗口透明
     lyricsWindow.setBackgroundColor('#00000000');

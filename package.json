@@ -11,7 +11,7 @@
     "electron:serve": "cross-env NODE_ENV=development electron .",
     "api": "kugoumusicapi --platform=lite --port=6521",
     "dev": "run-p api serve",
-    "dev:client": "run-p serve electron:serve",
+    "dev:client": "run-p --race serve electron:serve",
     "electron:build:win": "pnpm run electron:build -- --win --publish never",
     "electron:build:linux": "pnpm run electron:build -- --linux --publish never",
     "electron:build:linux-arm64": "pnpm run electron:build -- --linux --publish never",

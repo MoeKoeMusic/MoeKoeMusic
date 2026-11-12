@@ -76,7 +76,7 @@
                         </div>
                     </transition>
                 </div>
-                <button class="extra-btn" :title="t('wo-xi-huan')" @click="playlistSelect.toLike()"><i
+                <button class="extra-btn like-btn" :class="{ active: isCurrentSongLiked }" :title="isCurrentSongLiked ? t('qu-xiao-shou-cang') : t('wo-xi-huan')" @click="playlistSelect.toLike()"><i
                         class="fas fa-heart"></i></button>
                 <button class="extra-btn" :title="t('shou-cang-zhi')" @click="playlistSelect.fetchPlaylists()"><i
                         class="fas fa-add"></i></button>
@@ -192,7 +192,7 @@
                     </div>
 
                     <div class="player-controls">
-                        <button class="control-btn like-btn" :title="t('wo-xi-huan')" @click="playlistSelect.toLike()">
+                        <button class="control-btn like-btn" :class="{ active: isCurrentSongLiked }" :title="isCurrentSongLiked ? t('qu-xiao-shou-cang') : t('wo-xi-huan')" @click="playlistSelect.toLike()">
                             <i class="fas fa-heart"></i>
                         </button>
                         <button class="control-btn" :title="t('shang-yi-shou')" @click="playSongFromQueue('previous')">
@@ -280,6 +280,7 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useMusicQueueStore } from '../stores/musicQueue';
 import { useListenTimeStore } from '../stores/listenTime';
 import { MoeAuthStore } from '../stores/store';
+import { useLikeStore } from '../stores/likeStore';
 import { useI18n } from 'vue-i18n';
 import PlaylistSelectModal from './PlaylistSelectModal.vue';
 import QueueList from './QueueList.vue';
@@ -600,6 +601,22 @@ const mediaSession = useMediaSession();
 
 const songQueue = useSongQueue(t, musicQueueStore, queueList);
 const { currentSong, NextSong, addSongToQueue, addCloudMusicToQueue, addLocalMusicToQueue, addLocalPlaylistToQueue, addToNext, getPlaylistAllSongs, addPlaylistToQueue, addCloudPlaylistToQueue, restoreLocalSongCover } = songQueue;
+
+// 「我喜欢」状态：当前歌曲是否已收藏
+const likeStore = useLikeStore();
+const MoeAuth = MoeAuthStore();
+const isCurrentSongLiked = computed(() => likeStore.isLiked(currentSong.value?.hash));
+
+// 切歌时回查「我喜欢」歌单，同步当前歌曲的收藏状态
+watch(
+    () => currentSong.value?.hash || '',
+    (hash) => {
+        if (!hash || currentSong.value?.isLocal || currentSong.value?.isCloud) return;
+        if (!MoeAuth.isAuthenticated) return;
+        void likeStore.loadLikedSongs();
+    },
+    { immediate: true }
+);
 
 const resetTrackTimeline = () => {
     currentTime.value = 0;

@@ -1007,6 +1007,10 @@ $shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.12);
     &.active {
         color: #ff4081;
         opacity: 1;
+
+        i {
+            color: #ff4081;
+        }
     }
 }
 

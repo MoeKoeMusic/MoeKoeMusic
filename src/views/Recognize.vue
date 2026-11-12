@@ -62,8 +62,8 @@
                                 <button class="card-action" type="button" title="播放" @click.stop="playSong(item.match.song)">
                                     <i class="fas fa-play"></i>
                                 </button>
-                                <button class="card-action" type="button" title="加入收藏" @click.stop="likeSelectedSong(item.match.song)">
-                                    <i class="far fa-heart"></i>
+                                <button class="card-action" type="button" :class="{ liked: isSongLiked(item.match.song) }" :title="isSongLiked(item.match.song) ? '取消收藏' : '加入收藏'" @click.stop="likeSelectedSong(item.match.song)">
+                                    <i :class="isSongLiked(item.match.song) ? 'fas fa-heart' : 'far fa-heart'"></i>
                                 </button>
                                 <button class="card-action" type="button" title="搜索" @click.stop="searchSelectedMatch(item.match.song)">
                                     <i class="fas fa-search"></i>
@@ -182,6 +182,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { recognizeAudio } from '@/utils/recognize';
+import { useLikeStore } from '@/stores/likeStore';
 import PlaylistSelectModal from '@/components/PlaylistSelectModal.vue';
 
 const props = defineProps({
@@ -209,6 +210,7 @@ const isSliding = ref(false);
 const isResetting = ref(false);
 const playlistSelect = ref(null);
 const playlistSong = ref({});
+const likeStore = useLikeStore();
 const micDevices = ref([]);
 const selectedMicId = ref('');
 const deviceSelectRef = ref(null);
@@ -625,6 +627,8 @@ const likeSelectedSong = (sourceSong = selectedMatch.value?.song) => {
     playlistSong.value = song;
     playlistSelect.value?.toLike();
 };
+
+const isSongLiked = (sourceSong) => likeStore.isLiked(getSongHash(sourceSong));
 
 const searchSelectedMatch = (sourceSong = selectedMatch.value?.song) => {
     const song = sourceSong;
@@ -1465,6 +1469,10 @@ onMounted(() => {
         &:hover {
             background: rgba(255, 255, 255, 0.16);
             transform: translateY(-2px);
+        }
+
+        &.liked {
+            color: #ff4081;
         }
     }
 }

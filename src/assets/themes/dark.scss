@@ -391,6 +391,13 @@ html.dark {
         border: none !important;
     }
 
+    // 已收藏（我喜欢）的爱心按钮保持红色，不被上面的默认色覆盖
+    .controls .control-btn.like-btn.active,
+    .player-controls .control-btn.like-btn.active,
+    .extra-controls .extra-btn.like-btn.active {
+        color: #ff4081 !important;
+    }
+
     .search-bar input,
     .search-input {
         background-color: $bg-input !important;

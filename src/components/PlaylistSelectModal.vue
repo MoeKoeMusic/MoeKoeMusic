@@ -23,9 +23,11 @@ import { ref } from 'vue';
 import { get } from '../utils/request';
 import { useI18n } from 'vue-i18n';
 import { MoeAuthStore } from '../stores/store';
+import { useLikeStore } from '../stores/likeStore';
 
 const MoeAuth = MoeAuthStore();
 const { t } = useI18n();
+const likeStore = useLikeStore();
 
 const props = defineProps({
     currentSong: {
@@ -93,8 +95,17 @@ const addToPlaylist = async (listid, song) => {
         song_data = `${encodeURIComponent(song.name.replace(',', ''))}|${song.hash}`;
     }
     try {
-        await get(`/playlist/tracks/add?listid=${listid}&data=${song_data}`);
-        $message.success(t('cheng-gong-tian-jia-dao-ge-dan'));
+        const response = await get(`/playlist/tracks/add?listid=${listid}&data=${song_data}`);
+        if (response.status === 1) {
+            $message.success(t('cheng-gong-tian-jia-dao-ge-dan'));
+            const likeId = localStorage.getItem('like');
+            if (likeId && listid === likeId) {
+                const addedHashes = Array.isArray(song) ? song.map(s => s.hash) : [song.hash];
+                likeStore.addLikedHashes(addedHashes);
+            }
+        } else {
+            $message.error(t('tian-jia-dao-ge-dan-shi-bai'));
+        }
     } catch (error) {
         $message.error(t('tian-jia-dao-ge-dan-shi-bai'));
     }
@@ -104,7 +115,42 @@ const addToPlaylist = async (listid, song) => {
 const toLike = () => {
     const like_id = localStorage.getItem('like');
     if (!like_id) { window.$modal.alert('先去看看你的收藏夹吧'); return; }
-    addToPlaylist(like_id, props.currentSong);
+    if (Array.isArray(props.currentSong)) {
+        addToPlaylist(like_id, props.currentSong);
+        return;
+    }
+    // 已收藏则取消收藏，否则添加收藏
+    if (likeStore.isLiked(props.currentSong.hash)) {
+        unlikeFromLike();
+    } else {
+        addToPlaylist(like_id, props.currentSong);
+    }
+};
+
+const unlikeFromLike = async () => {
+    if (!validateUserAndSong()) return;
+    const song = props.currentSong;
+    // 取消收藏需要歌曲在歌单内的 fileid，缓存缺失时先拉取一次
+    let fileid = likeStore.getFileId(song.hash);
+    if (!fileid) {
+        const loaded = await likeStore.loadLikedSongs(true);
+        fileid = loaded ? likeStore.getFileId(song.hash) : null;
+    }
+    if (!fileid) {
+        window.$modal.alert(t('qu-xiao-shou-cang-shi-bai'));
+        return;
+    }
+    try {
+        const response = await get(`/playlist/tracks/del?listid=${localStorage.getItem('like')}&fileids=${fileid}`);
+        if (response.status === 1) {
+            likeStore.removeLikedHashes([song.hash]);
+            $message.success(t('cheng-gong-qu-xiao-shou-cang'));
+        } else {
+            $message.error(t('qu-xiao-shou-cang-shi-bai'));
+        }
+    } catch (error) {
+        $message.error(t('qu-xiao-shou-cang-shi-bai'));
+    }
 };
 
 defineExpose({

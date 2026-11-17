@@ -130,8 +130,9 @@ export const get = async (url, params = {}, config = {}, onSuccess = null, onErr
 // 封装 POST 请求
 export const post = async (url, data = {}, config = {}, onSuccess = null, onError = null) => {
     try {
+        const params = data instanceof ArrayBuffer || ArrayBuffer.isView(data) ? { data } : data;
         const response = hasBuiltinApi()?
-            await requestBuiltinApi(url, { params: data, ...config }):
+            await requestBuiltinApi(url, { ...config, params: { ...params, ...config.params } }):
             await httpClient.post(url, data, config);
         if (onSuccess) onSuccess(response);
         return response;

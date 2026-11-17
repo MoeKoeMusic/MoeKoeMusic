@@ -46,6 +46,9 @@ const moekoeAPI = {
         openLogPath: () => ipcRenderer.invoke('open-log-path'),
         exportLog: () => ipcRenderer.invoke('export-log'),
         getApiModeUrl: () => ipcRenderer.invoke('get-api-service-endpoint'),
+        requestMicrophoneAccess: () => ipcRenderer.invoke('request-microphone-access'),
+        openMicrophoneSettings: () => ipcRenderer.invoke('open-microphone-settings'),
+        requestSystemAudioAccess: () => ipcRenderer.invoke('request-system-audio-access'),
     },
     kugouapi: {
         generateNewDevice: () => ipcRenderer.invoke('kugouapi:generate-new-device'),

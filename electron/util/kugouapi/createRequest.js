@@ -62,6 +62,11 @@ const createRequest = async (path, payload) => {
 			...parseCookieStr(payload?.headers?.authorization || payload?.headers?.Authorization)
 		}
 	}
+	if (params.data instanceof ArrayBuffer) {
+		params.data = Buffer.from(params.data);
+	} else if (ArrayBuffer.isView(params.data)) {
+		params.data = Buffer.from(params.data.buffer, params.data.byteOffset, params.data.byteLength);
+	}
 
 	try {
 		const result = await module(params);

@@ -1,4 +1,4 @@
-import { app, ipcMain, BrowserWindow, screen, Tray, Menu, TouchBar, globalShortcut, dialog, shell, nativeImage } from 'electron';
+import { app, ipcMain, BrowserWindow, desktopCapturer, screen, Tray, Menu, TouchBar, globalShortcut, dialog, shell, nativeImage } from 'electron';
 import path from 'path';
 import log from 'electron-log';
 import { fileURLToPath } from 'url';
@@ -89,6 +89,30 @@ export function createWindow() {
         },
         icon: getIconPath('icon.ico')
     });
+
+    mainWindow.webContents.session.setPermissionCheckHandler((webContents, permission, _origin, details) => {
+        if (permission !== 'media') return true;
+        return webContents === mainWindow.webContents && details.mediaType !== 'video';
+    });
+    mainWindow.webContents.session.setPermissionRequestHandler((webContents, permission, callback, details) => {
+        if (permission !== 'media') return callback(true);
+        callback(webContents === mainWindow.webContents && !details.mediaTypes?.includes('video'));
+    });
+    mainWindow.webContents.session.setDisplayMediaRequestHandler(async (request, callback) => {
+        if (request.frame?.top !== mainWindow.webContents.mainFrame || process.platform !== 'win32') {
+            callback(null);
+            return;
+        }
+
+        try {
+            const sources = await desktopCapturer.getSources({ types: ['screen'] });
+            const primaryDisplayId = String(screen.getPrimaryDisplay().id);
+            const source = sources.find(item => item.display_id === primaryDisplayId) || sources[0];
+            callback(source ? { video: source, audio: 'loopback' } : null);
+        } catch {
+            callback(null);
+        }
+    }, { useSystemPicker: true });
     bindExternalLinkHandler(mainWindow);
 
     // 隐藏菜单栏但保留默认菜单
@@ -821,4 +845,3 @@ export function sendHashAfterLoad(mainWindow) {
         });
     }
 }
-

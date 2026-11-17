@@ -1,4 +1,4 @@
-import { app, ipcMain, globalShortcut, dialog, Notification, shell, session, powerSaveBlocker, nativeImage, screen } from 'electron';
+import { app, ipcMain, globalShortcut, dialog, Notification, shell, session, powerSaveBlocker, nativeImage, screen, systemPreferences } from 'electron';
 import {
     createWindow, createTray, createTouchBar, registerShortcut,
     playStartupSound, createLyricsWindow, setThumbarButtons,
@@ -208,6 +208,34 @@ ipcMain.on('clear-settings', (event) => {
 });
 ipcMain.on('custom-shortcut', (event) => {
     registerShortcut();
+});
+
+ipcMain.handle('request-microphone-access', async () => {
+    if (process.platform === 'darwin') {
+        const status = systemPreferences.getMediaAccessStatus('microphone');
+        return status === 'not-determined'
+            ? systemPreferences.askForMediaAccess('microphone')
+            : status === 'granted';
+    }
+    if (process.platform === 'win32') {
+        return systemPreferences.getMediaAccessStatus('microphone') !== 'denied';
+    }
+    return true;
+});
+
+ipcMain.handle('open-microphone-settings', () => {
+    const url = process.platform === 'darwin'
+        ? 'x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone'
+        : 'ms-settings:privacy-microphone';
+    return shell.openExternal(url);
+});
+
+ipcMain.handle('request-system-audio-access', () => {
+    if (process.platform !== 'darwin') return true;
+    const status = systemPreferences.getMediaAccessStatus('screen');
+    if (status !== 'denied' && status !== 'restricted') return true;
+    shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture');
+    return false;
 });
 
 ipcMain.on('lyrics-data', (event, lyricsData) => {

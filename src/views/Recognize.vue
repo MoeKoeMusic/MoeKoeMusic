@@ -225,6 +225,7 @@ let slideTimer = null;
 let resetFrame = null;
 let hasDragged = false;
 let ignoreClickUntil = 0;
+const sourceStreams = new WeakMap();
 
 const isBusy = computed(() => status.value === 'recording' || status.value === 'recognizing');
 const selectedMicLabel = computed(() => {
@@ -240,7 +241,11 @@ const statusText = computed(() => {
     return source.value === 'mic' ? '靠近音源后点击麦克风' : '选择共享带声音的屏幕或窗口';
 });
 
-const stopTracks = (stream) => stream?.getTracks().forEach(track => track.stop());
+const stopTracks = (stream) => {
+    stream?.getTracks().forEach(track => track.stop());
+    sourceStreams.get(stream)?.getTracks().forEach(track => track.stop());
+    sourceStreams.delete(stream);
+};
 
 const clearTimer = () => {
     if (!timer) return;
@@ -249,6 +254,19 @@ const clearTimer = () => {
 };
 
 const getMicDeviceLabel = device => device.label || '麦克风';
+
+const getAudioInputErrorMessage = (error) => {
+    if (error?.name === 'NotAllowedError' || error?.name === 'SecurityError') {
+        return source.value === 'mic'
+            ? '麦克风权限已被拒绝，请在系统或浏览器设置中允许访问'
+            : '屏幕录制权限已被拒绝，请在系统设置中允许访问';
+    }
+    if (error?.name === 'NotFoundError') return '未检测到可用的麦克风';
+    if (error?.name === 'NotReadableError') return '无法使用麦克风，请检查是否被其他应用占用';
+    if (error?.name === 'OverconstrainedError') return '所选麦克风不可用，请重新选择';
+    if (error?.name === 'AbortError' && source.value === 'system') return '系统音频捕获已取消或当前系统不支持';
+    return '无法访问音频输入';
+};
 
 const closeDeviceMenu = () => {
     isDeviceMenuOpen.value = false;
@@ -471,6 +489,12 @@ const decodeToPCM = async (blob) => {
 };
 
 const getMicStream = async () => {
+    const granted = await window.electronAPI?.requestMicrophoneAccess?.();
+    if (granted === false) {
+        await window.electronAPI.openMicrophoneSettings();
+        throw new DOMException('Permission denied', 'NotAllowedError');
+    }
+
     const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
             deviceId: selectedMicId.value ? { exact: selectedMicId.value } : undefined,
@@ -487,12 +511,18 @@ const getMicStream = async () => {
 const getSystemStream = async () => {
     if (!navigator.mediaDevices?.getDisplayMedia) throw new Error('当前环境不支持系统音频捕获');
 
-    const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
-    stream.getVideoTracks().forEach(track => {
-        track.stop();
-        stream.removeTrack(track);
-    });
-    if (!stream.getAudioTracks().length) throw new Error('未获取到系统音频，请选择共享声音');
+    const granted = await window.electronAPI?.requestSystemAudioAccess?.();
+    if (granted === false) throw new DOMException('Permission denied', 'NotAllowedError');
+
+    const sourceStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+    const audioTracks = sourceStream.getAudioTracks();
+    if (!audioTracks.length) {
+        stopTracks(sourceStream);
+        throw new Error('未获取到系统音频，请选择共享声音');
+    }
+
+    const stream = new MediaStream(audioTracks);
+    sourceStreams.set(stream, sourceStream);
     return stream;
 };
 
@@ -555,10 +585,11 @@ const startRecording = async () => {
             if (seconds.value >= MAX_SECONDS) stopRecording();
         }, 1000);
     } catch (error) {
+        console.error('获取音频输入失败:', error);
         stopTracks(recorder?.stream);
         clearTimer();
         status.value = 'failed';
-        errorMsg.value = error instanceof Error ? error.message : '无法访问音频输入';
+        errorMsg.value = getAudioInputErrorMessage(error);
     }
 };
 

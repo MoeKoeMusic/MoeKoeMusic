@@ -29,9 +29,9 @@ const getRiskEventId = (payload, headers = {}) => {
     return String(candidates.find(item => item) || '').trim();
 };
 
-const isRiskError = (payload, headers = {}) => {
+export const isRiskError = (payload, headers = {}) => {
     const data = payload?.data || {};
-    const code = Number(payload?.error_code || data?.error_code || 0);
+    const code = Number(payload?.error_code || payload?.errcode || data?.error_code || data?.errcode || 0);
     const failed = Number(payload?.status || data?.status || 0) === 0;
     return code === 20028 || (failed && Boolean(getRiskEventId(payload, headers)));
 };
@@ -131,7 +131,8 @@ export const handleRiskResponse = async (response, requestAgain, requestRiskApi)
 
     const verified = await queueVerify(eventId, requestRiskApi);
     if (!verified) {
-        return { handled: true, data: payload };
+        const data = getRiskEventId(payload) ? payload : { ...payload, ssaCode: eventId };
+        return { handled: true, data };
     }
 
     const retryResponse = await requestAgain({

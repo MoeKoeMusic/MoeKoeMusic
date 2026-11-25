@@ -1,4 +1,5 @@
 import { get } from '../../../utils/request';
+import { isRiskError } from '../../../utils/riskVerify';
 import { MoeAuthStore } from '../../../stores/store';
 
 const QUALITY_LEVELS = ['128', '320', 'flac', 'high', 'viper_atmos', 'viper_clear', 'viper_tape'];
@@ -19,6 +20,12 @@ const normalizeQuality = (quality) => {
 const getFallbackChain = (quality) => QUALITY_LEVELS.slice(0, QUALITY_LEVELS.indexOf(normalizeQuality(quality)) + 1).reverse();
 
 const getQualityLabel = (quality) => QUALITY_LABELS[quality] || '';
+
+const isRiskRequestError = (error) => {
+    const response = error?.response;
+    const message = response?.data?.error;
+    return isRiskError(response?.data, response?.headers) || (typeof message === 'string' && message.includes('验证'));
+};
 
 const getPrivilegeVariants = (response) => {
     const variants = [];
@@ -129,6 +136,7 @@ export default function useOnlineMusicQueue(t, musicQueueStore, currentSong, tim
                     if (qualityOptions.length === 0) {
                         const privilegeResponse = await get(`/privilege/lite`, { hash: hash });
                         if (isStaleRequest()) return { stale: true };
+                        if (isRiskError(privilegeResponse)) return { error: true };
                         qualityOptions = getQualityOptions(privilegeResponse);
                         // /song/url 不返回 mixsongid，从 /privilege/lite 的 album_audio_id 提取，供听歌时长上报使用
                         const albumAudioId = Number(privilegeResponse?.data?.[0]?.album_audio_id);
@@ -138,7 +146,7 @@ export default function useOnlineMusicQueue(t, musicQueueStore, currentSong, tim
                     }
                     candidates = getPrivilegeCandidates(qualityOptions, q, hash);
                 } catch (error) {
-                    if (error.response?.data?.error?.includes('验证')) {
+                    if (isRiskRequestError(error)) {
                         throw error;
                     }
                     if (error.response?.data?.status == 2) {
@@ -158,6 +166,7 @@ export default function useOnlineMusicQueue(t, musicQueueStore, currentSong, tim
 
                         if (candidateResponse.status !== 1) {
                             response = candidateResponse;
+                            if (isRiskError(response)) break;
                             continue;
                         }
 
@@ -176,7 +185,7 @@ export default function useOnlineMusicQueue(t, musicQueueStore, currentSong, tim
                         selectedCandidate = candidate;
                         break;
                     } catch (error) {
-                        if (error.response?.data?.error?.includes('验证')) {
+                        if (isRiskRequestError(error)) {
                             throw error;
                         }
                         if (error.response?.data?.status == 2) {
@@ -195,7 +204,7 @@ export default function useOnlineMusicQueue(t, musicQueueStore, currentSong, tim
                 if (response?.status == 3) {
                     currentSong.value.name = t('gai-ge-qu-zan-wu-ban-quan');
                 }
-                if (musicQueueStore.queue.length === 0) return { error: true };
+                if (isRiskError(response) || musicQueueStore.queue.length === 0) return { error: true };
                 currentSong.value.author = t('3-miao-hou-zi-dong-qie-huan-xia-yi-shou');
 
                 // 返回需要切换到下一首的标志，而不是直接调用playSongFromQueue
@@ -264,7 +273,7 @@ export default function useOnlineMusicQueue(t, musicQueueStore, currentSong, tim
             if (isStaleRequest()) return { stale: true };
             console.error('[SongQueue] 获取音乐地址出错:', error);
             currentSong.value.author = currentSong.value.name = t('huo-qu-yin-le-di-zhi-shi-bai');
-            if (error.response?.data?.error?.includes('验证')) {
+            if (isRiskRequestError(error)) {
                 window.$modal.alert('账户风控,请稍候重试!');
                 return { error: true};
             }

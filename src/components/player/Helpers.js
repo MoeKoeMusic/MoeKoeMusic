@@ -89,15 +89,21 @@ export function useHelpers(t) {
     }
 
     try {
-      await get('/youth/day/vip',{
+      const vipResponse = await get('/youth/day/vip',{
         receive_day: todayKey
       });
-      await new Promise(resolve => setTimeout(resolve, 500));
-      await get('/youth/day/vip/upgrade');
+      if (vipResponse?.status === 1) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        await get('/youth/day/vip/upgrade');
+      }
+      // 未登录/登录失效（51002、20018）时不要记录日期，重新登录后当天仍可补领
+      const errorCode = Number(vipResponse?.error_code);
+      if (![20018, 51002].includes(errorCode)) {
+        localStorage.setItem('lastVipRequestDate', todayKey);
+      }
     } catch (error) {
       console.error('领取VIP失败:', error);
     }
-    localStorage.setItem('lastVipRequestDate', todayKey);
   };
   
   return {

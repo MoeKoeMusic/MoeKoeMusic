@@ -13,6 +13,8 @@ import customTrayMenuService from './services/customTrayMenuService.js';
 import { setupDesktopShortcutIcon } from './services/desktopShortcutIcon.js';
 import { openLogPath, exportLog } from './services/logHelper.js';
 import { registerKuGouApiHandler } from './services/kugouApiService.js';
+import { registerDownloadHandlers } from './services/downloadService.js';
+import { registerLocalMediaScheme, registerLocalMediaHandlers } from './services/localMediaService.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { t } from './language/i18n.js';
@@ -25,6 +27,9 @@ const store = useStore();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const settings = getSettings();
+
+// 本地音乐的自定义协议必须在 app ready 之前声明
+registerLocalMediaScheme();
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -53,6 +58,8 @@ app.on('ready', async () => {
         await initializeExtensions();
 
         registerKuGouApiHandler();
+        registerDownloadHandlers();
+        registerLocalMediaHandlers();
         mainWindow = createWindow();
         createTray(mainWindow);
         customTrayMenuService.init(() => mainWindow, getTray);

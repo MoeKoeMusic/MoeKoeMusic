@@ -16,6 +16,7 @@
                 <router-link to="/">{{ $t('shou-ye') }}</router-link>
                 <router-link to="/discover">{{ $t('fa-xian') }}</router-link>
                 <router-link to="/library">{{ $t('yin-le-ku') }}</router-link>
+                <router-link to="/LocalMusic">{{ $t('ben-di-yin-le') }}</router-link>
             </div>
             <div class="search-profile">
                 <div class="search-bar">
@@ -553,5 +554,25 @@ header::before {
     right: 10px;
     font-size: 12px;
     color: #666;
+}
+
+/* 多一个「本地音乐」入口后，窄窗口下收紧导航间距 */
+@media (max-width: 1360px) {
+    .nav-links {
+        gap: 8px;
+
+        a {
+            margin-left: 4px;
+            margin-right: 4px;
+            font-size: 16px;
+        }
+    }
+}
+
+@media (max-width: 1080px) {
+    .nav-links a {
+        padding: 6px 6px;
+        font-size: 15px;
+    }
 }
 </style>

@@ -1,5 +1,6 @@
 <template>
     <div class="library-page">
+        <div class="library-main">
         <div class="profile-section">
             <div class="profile-header" :style="profileHeaderStyle">
                 <div class="profile-background-image-wrap">
@@ -163,6 +164,28 @@
             </div>
             <div class="empty-description">{{ t('zhe-li-shi-mo-du-mei-you') }}</div>
         </div>
+        </div>
+
+        <!-- 右侧快捷入口 -->
+        <aside class="library-rail">
+            <router-link class="rail-item" to="/LocalMusic">
+                <span class="rail-icon local"><i class="fas fa-folder-open"></i></span>
+                <span class="rail-text">
+                    <strong>本地音乐</strong>
+                    <em>扫描硬盘 · 自定义歌单 · 歌词匹配</em>
+                </span>
+                <i class="fas fa-chevron-right rail-arrow"></i>
+            </router-link>
+            <router-link class="rail-item" to="/CloudDrive">
+                <span class="rail-icon cloud"><i class="fas fa-cloud"></i></span>
+                <span class="rail-text">
+                    <strong>我的云盘</strong>
+                    <em>已上传到云端的歌曲</em>
+                </span>
+                <i class="fas fa-chevron-right rail-arrow"></i>
+            </router-link>
+            <p class="rail-tip">把常听的本地目录授权一次，之后打开就能直接读取</p>
+        </aside>
     </div>
 </template>
 
@@ -1062,5 +1085,113 @@ const addAllSongsToQueue = () => {
     font-size: 14px;
     text-align: center;
     margin-left: 60px;
+}
+
+/* ===== 右侧快捷入口（本地音乐 / 云盘）===== */
+.library-page {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.library-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.library-rail {
+    position: sticky;
+    top: 20px;
+    flex: 0 0 236px;
+    width: 236px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.rail-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    text-decoration: none;
+    background: rgba(128, 128, 128, 0.08);
+    border: 1px solid rgba(128, 128, 128, 0.12);
+    transition: transform 0.18s ease, background 0.18s ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        background: rgba(var(--primary-color-rgb, 255, 105, 180), 0.12);
+
+        .rail-arrow {
+            opacity: 1;
+            transform: translateX(2px);
+        }
+    }
+}
+
+.rail-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    font-size: 16px;
+    color: #fff;
+
+    &.local {
+        background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+    }
+
+    &.cloud {
+        background: linear-gradient(135deg, #74b9ff, #a29bfe);
+    }
+}
+
+.rail-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+
+    strong {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-color);
+    }
+
+    em {
+        margin-top: 2px;
+        font-size: 11px;
+        font-style: normal;
+        color: var(--text-color);
+        opacity: 0.55;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+.rail-arrow {
+    font-size: 11px;
+    color: var(--text-color);
+    opacity: 0.35;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.rail-tip {
+    margin: 2px 4px 0;
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--text-color);
+    opacity: 0.5;
+}
+
+@media (max-width: 1080px) {
+    .library-rail {
+        display: none;
+    }
 }
 </style>

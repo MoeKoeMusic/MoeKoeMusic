@@ -1,5 +1,6 @@
 import { ref, nextTick } from 'vue';
 import { get } from '../../utils/request';
+import { parseLrcToLyrics } from '../../utils/lrc';
 
 export default function useLyricsHandler(t) {
     const lyricsData = ref([]);
@@ -8,15 +9,27 @@ export default function useLyricsHandler(t) {
     const scrollAmount = ref(null);
     const SongTips = ref(t('zan-wu-ge-ci'));
     const lyricsMode = ref('translation'); // 'translation' 翻译模式 或 'romanization' 音译模式
-    let currentLineIndex = 0;
+    let currentLineIndex = -1;
     let activeLyricsRequestId = 0;
+    // 歌词行放大有 0.42s 的 font-size 过渡，布局在这期间还在变，需要延后校正滚动位置
+    let scrollSyncTimer = null;
+    const SCROLL_SYNC_DELAY = 480;
     const isLocalHash = (hash) => String(hash || '').startsWith('local_');
 
     // 显示/隐藏歌词
     const toggleLyrics = (hash, currentTime) => {
         showLyrics.value = !showLyrics.value;
         if (isLocalHash(hash)) {
-            SongTips.value = t('zan-wu-ge-ci');
+            // 本地歌曲：如果已经通过「一键匹配歌词」拿到歌词，就直接滚动到当前行
+            if (lyricsData.value.length > 0) {
+                nextTick(() => {
+                    const lineIndex = getCurrentLineIndex(currentTime);
+                    if (lineIndex !== -1) scrollToCurrentLine(lineIndex);
+                    else centerFirstLine();
+                });
+            } else {
+                SongTips.value = t('zan-wu-ge-ci');
+            }
             return showLyrics.value;
         }
 
@@ -71,11 +84,25 @@ export default function useLyricsHandler(t) {
             }
             parseLyrics(lyricResponse.decodeContent, settings?.lyricsTranslation !== 'off');
             originalLyrics.value = lyricResponse.decodeContent;
+            resetLyricsScrollAnchor();
             centerFirstLine();
             return true;
         } catch (error) {
             SongTips.value = t('huo-qu-ge-ci-shi-bai');
         }
+    };
+
+    // 本地歌曲：直接套用已匹配到的 LRC 歌词，不走在线接口
+    const setLocalLyrics = (lrcText) => {
+        const parsed = parseLrcToLyrics(lrcText);
+        if (parsed.length === 0) return false;
+
+        lyricsData.value = parsed;
+        originalLyrics.value = lrcText;
+        SongTips.value = '';
+        resetLyricsScrollAnchor();
+        centerFirstLine();
+        return true;
     };
 
     // 解析歌词
@@ -190,6 +217,7 @@ export default function useLyricsHandler(t) {
         }
 
         lyricsData.value = parsedLyrics;
+        resetLyricsScrollAnchor();
     };
 
     // 切换歌词显示模式（翻译/音译）
@@ -198,32 +226,96 @@ export default function useLyricsHandler(t) {
         return lyricsMode.value;
     };
 
+    /** 逐级累加 offsetTop，得到元素相对某个祖先（或文档）的偏移 */
+    const getOffsetTopWithin = (element, root) => {
+        let top = 0;
+        let node = element;
+        while (node && node !== root) {
+            top += node.offsetTop || 0;
+            const parent = node.offsetParent;
+            if (!parent) break;
+            node = parent;
+        }
+        return top;
+    };
+
+    /**
+     * 计算把某一行居中需要的 translateY。
+     * 不再用固定 -32px 的经验值：容器有 padding、行高会随字号过渡变化，
+     * 统一按「行相对容器的偏移」来计算，避免歌词整体偏上/偏下。
+     */
+    const measureLineScroll = (lineIndex) => {
+        const lyricsContainer = document.getElementById('lyrics-container');
+        const lyricsElement = document.getElementById('lyrics');
+        if (!lyricsContainer || !lyricsElement) return null;
+
+        const lineElement = document.querySelectorAll('#lyrics .line-group')[lineIndex];
+        if (!lineElement) return null;
+
+        // 歌词面板还没展开（高度为 0）时算出来的值一定是错的，交给调用方稍后重试
+        if (!lyricsContainer.clientHeight || !lineElement.offsetHeight) return null;
+
+        const lineTop = getOffsetTopWithin(lineElement, lyricsContainer);
+        const lyricsTop = getOffsetTopWithin(lyricsElement, lyricsContainer);
+
+        return lyricsContainer.clientHeight / 2 - lyricsTop - (lineTop - lyricsTop) - lineElement.offsetHeight / 2;
+    };
+
     // 居中显示第一行歌词
     const centerFirstLine = () => {
-        const lyricsContainer = document.getElementById('lyrics-container');
-        if (!lyricsContainer) return;
-        const containerHeight = lyricsContainer.offsetHeight;
-        const lyricsElement = document.getElementById('lyrics');
-        if (!lyricsElement) return;
-        const lyricsHeight = lyricsElement.offsetHeight;
-        scrollAmount.value = (containerHeight - lyricsHeight) / 2;
+        currentLineIndex = -1;
+        nextTick(() => {
+            const amount = measureLineScroll(0);
+            if (amount === null) return;
+            scrollAmount.value = amount;
+        });
+    };
+
+    // 歌词被替换（切歌/重新匹配）后重置滚动锚点，否则同一行索引会被判成「没变化」而不滚动
+    const resetLyricsScrollAnchor = () => {
+        currentLineIndex = -1;
+        if (scrollSyncTimer) {
+            clearTimeout(scrollSyncTimer);
+            scrollSyncTimer = null;
+        }
     };
 
     // 滚动到当前歌词行
-    const scrollToCurrentLine = (lineIndex) => {
-        if (currentLineIndex === lineIndex) return;
+    const scrollToCurrentLine = (lineIndex, options = {}) => {
+        const { force = false, attempt = 0 } = options;
+        const index = Number(lineIndex);
+        if (!Number.isFinite(index) || index < 0) return;
+        if (!force && attempt === 0 && currentLineIndex === index) return;
 
-        currentLineIndex = lineIndex;
-        // 当前行用 font-size 放大会改变各行高度，须等 DOM 应用放大后再测量，否则用旧布局定位会偏移
+        if (attempt === 0) currentLineIndex = index;
+
+        // 当前行用 font-size 放大会改变各行高度，须等 DOM 应用放大后再测量
         nextTick(() => {
-            const lyricsContainer = document.getElementById('lyrics-container');
-            if (!lyricsContainer) return;
-            const containerHeight = lyricsContainer.offsetHeight;
-            const lineElement = document.querySelectorAll('.line-group')[lineIndex];
-            if (lineElement) {
-                const lineHeight = lineElement.offsetHeight;
-                scrollAmount.value = -lineElement.offsetTop + (containerHeight / 2) - (lineHeight / 2) - 32;
+            const amount = measureLineScroll(index);
+            if (amount === null) {
+                // 面板还在展开动画里，稍后重试（最多 6 次）
+                if (attempt < 6) {
+                    if (scrollSyncTimer) clearTimeout(scrollSyncTimer);
+                    scrollSyncTimer = setTimeout(() => {
+                        scrollSyncTimer = null;
+                        scrollToCurrentLine(index, { force: true, attempt: attempt + 1 });
+                    }, 180);
+                } else if (currentLineIndex === index) {
+                    currentLineIndex = -1;
+                }
+                return;
             }
+
+            scrollAmount.value = amount;
+
+            // 字号过渡结束后行高才稳定，再校正一次，否则会「越滚越偏」
+            if (scrollSyncTimer) clearTimeout(scrollSyncTimer);
+            scrollSyncTimer = setTimeout(() => {
+                scrollSyncTimer = null;
+                if (currentLineIndex !== index) return;
+                const corrected = measureLineScroll(index);
+                if (corrected !== null) scrollAmount.value = corrected;
+            }, SCROLL_SYNC_DELAY);
         });
     };
 
@@ -318,20 +410,18 @@ export default function useLyricsHandler(t) {
     const getCurrentLineIndex = (currentTime) => {
         if (!lyricsData.value || lyricsData.value.length === 0) return -1;
 
-        const currentTimeMs = currentTime * 1000;
-        for (let index = 0; index < lyricsData.value.length; index++) {
-            const lineData = lyricsData.value[index];
-            const nextLineData = lyricsData.value[index + 1];
-            const firstChar = lineData.characters[0];
-            const nextFirstChar = nextLineData?.characters[0];
+        const currentTimeMs = (Number(currentTime) || 0) * 1000;
+        let index = -1;
 
-            if (
-                firstChar && nextFirstChar &&
-                currentTimeMs >= firstChar.startTime &&
-                currentTimeMs <= nextFirstChar.startTime
-            ) return index + 1;
+        for (let i = 0; i < lyricsData.value.length; i++) {
+            const firstChar = lyricsData.value[i]?.characters?.[0];
+            if (!firstChar) continue;
+            if (currentTimeMs >= firstChar.startTime) index = i;
+            else break;
         }
-        return lyricsData.value.length - 1;
+
+        // 还没唱到第一行时定位到第一行；唱完后停在最后一行
+        return index === -1 ? 0 : index;
     };
 
     // 获取当前行歌词文本
@@ -362,10 +452,12 @@ export default function useLyricsHandler(t) {
         lyricsMode,
         toggleLyrics,
         getLyrics,
+        setLocalLyrics,
         highlightCurrentChar,
         resetLyricsHighlight,
         getCurrentLineText,
         scrollToCurrentLine,
+        resetLyricsScrollAnchor,
         toggleLyricsMode
     };
 }

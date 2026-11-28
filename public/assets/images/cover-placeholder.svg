@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+    <defs>
+        <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#4B2D70"/>
+            <stop offset="0.55" stop-color="#B23A8E"/>
+            <stop offset="1" stop-color="#F2639C"/>
+        </linearGradient>
+        <radialGradient id="glow" cx="0.28" cy="0.2" r="0.95">
+            <stop offset="0" stop-color="#ffffff" stop-opacity="0.26"/>
+            <stop offset="0.55" stop-color="#ffffff" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="disc" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#2C1B40"/>
+            <stop offset="1" stop-color="#120B1E"/>
+        </linearGradient>
+        <linearGradient id="label" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#FFA3CB"/>
+            <stop offset="1" stop-color="#FF5A8E"/>
+        </linearGradient>
+        <radialGradient id="discShade" cx="0.3" cy="0.22" r="0.95">
+            <stop offset="0" stop-color="#ffffff" stop-opacity="0.20"/>
+            <stop offset="0.45" stop-color="#ffffff" stop-opacity="0.03"/>
+            <stop offset="0.7" stop-color="#000000" stop-opacity="0"/>
+            <stop offset="1" stop-color="#000000" stop-opacity="0.30"/>
+        </radialGradient>
+    </defs>
+
+    <rect width="512" height="512" fill="url(#bg)"/>
+    <rect width="512" height="512" fill="url(#glow)"/>
+
+    <circle cx="88" cy="426" r="74" fill="#ffffff" opacity="0.07"/>
+    <circle cx="438" cy="74" r="46" fill="#ffffff" opacity="0.09"/>
+    <circle cx="452" cy="392" r="22" fill="#ffffff" opacity="0.10"/>
+
+    <g stroke="#ffffff" stroke-opacity="0.12" stroke-width="9" fill="none" stroke-linecap="round">
+        <path d="M40 168 C 64 148 88 188 112 168"/>
+        <path d="M40 196 C 72 172 104 220 136 196"/>
+        <path d="M400 340 C 424 320 448 360 472 340"/>
+    </g>
+
+    <circle cx="256" cy="256" r="150" fill="url(#disc)"/>
+    <g fill="none" stroke="#ffffff" stroke-opacity="0.07" stroke-width="1.5">
+        <circle cx="256" cy="256" r="140"/>
+        <circle cx="256" cy="256" r="128"/>
+        <circle cx="256" cy="256" r="116"/>
+        <circle cx="256" cy="256" r="104"/>
+        <circle cx="256" cy="256" r="92"/>
+        <circle cx="256" cy="256" r="80"/>
+        <circle cx="256" cy="256" r="69"/>
+    </g>
+    <circle cx="256" cy="256" r="150" fill="url(#discShade)"/>
+
+    <circle cx="256" cy="256" r="54" fill="url(#label)"/>
+    <circle cx="256" cy="256" r="54" fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="1.5"/>
+
+    <g fill="#ffffff" transform="rotate(-14 256 256)">
+        <rect x="241" y="236" width="3.2" height="37"/>
+        <rect x="266" y="230" width="3.2" height="37"/>
+        <path d="M241 236 L269.2 230 L269.2 236.5 L241 242.5 Z"/>
+        <ellipse cx="237.5" cy="272" rx="8.5" ry="6.2"/>
+        <ellipse cx="262.5" cy="266" rx="8.5" ry="6.2"/>
+    </g>
+
+    <circle cx="256" cy="256" r="6" fill="#1A1028"/>
+</svg>

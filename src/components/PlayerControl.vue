@@ -13,7 +13,7 @@
         </div>
         <div class="player-bar">
             <div class="album-art" @click="toggleLyrics(currentSong.hash, currentTime)">
-                <img v-if="currentSong.img" :src="currentSong.img" alt="Album Art" />
+                <img v-if="currentSong.img" :src="currentSong.img" alt="Album Art" @error="handleArtworkError" />
                 <i v-else class="fas fa-music"></i>
                 <span class="album-art-hover-indicator" aria-hidden="true">
                     <i class="fas fa-angle-double-up"></i>
@@ -82,6 +82,8 @@
                         class="fas fa-add"></i></button>
                 <button class="extra-btn" :title="t('fen-xiang-ge-qu')" @click="share(currentSong.name, currentSong.hash)"><i
                         class="fas fa-share"></i></button>
+                <button class="extra-btn" :title="t('xia-zai-ge-qu')" @click="downloadCurrentSong"><i
+                        class="fas fa-download"></i></button>
                 <div class="playback-mode">
                     <button class="extra-btn" @click="togglePlaybackMode">
                         <i v-if="currentPlaybackModeIndex != '2'" :class="currentPlaybackMode.icon"
@@ -158,14 +160,14 @@
                             <div v-if="coverMode === 'vinyl'" key="vinyl" class="vinyl-player">
                                 <!-- 唱片播放器模式 -->
                                 <div class="vinyl-disc" :class="{ 'rotating': playing }">
-                                    <img :src="currentSong?.img || './assets/images/!.png'" alt="Album Art" class="vinyl-cover" />
+                                    <img :src="currentSong?.img || './assets/images/!.png'" alt="Album Art" class="vinyl-cover" @error="handleArtworkError" />
                                 </div>
                                 <div class="tonearm" :class="{ 'playing': playing }"></div>
                             </div>
                             <div v-else key="square" class="album-art-large">
                                 <!-- 普通封面模式 -->
                                 <img v-if="easterEggImage" :src="easterEggImage.src" :class="easterEggClass" alt="Easter Egg" />
-                                <img :src="currentSong?.img || './assets/images/!.png'" alt="Album Art" />
+                                <img :src="currentSong?.img || './assets/images/!.png'" alt="Album Art" @error="handleArtworkError" />
                             </div>
                         </transition>
                     </div>
@@ -276,7 +278,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useMusicQueueStore } from '../stores/musicQueue';
 import { useListenTimeStore } from '../stores/listenTime';
 import { MoeAuthStore } from '../stores/store';
@@ -287,6 +289,8 @@ import FullscreenLyricsSettings from './FullscreenLyricsSettings.vue';
 import { useRouter } from 'vue-router';
 import { getCover, getAudioOutputDeviceSignature, share } from '../utils/utils';
 import { get } from '../utils/request';
+import { downloadSong, fetchDownloadQualityOptions, pickDownloadOption } from '../utils/download';
+import { PLACEHOLDER_COVER, isPlaceholderCover, resolveTrackCover, sizeCover } from '@/utils/localCover';
 import { createTeamEventPopup, actions as teamEventActions } from '@/utils/teamEvent';
 
 // 从统一入口导入所有模块
@@ -378,6 +382,24 @@ const canSwitchQuality = computed(() => {
 const isCurrentQualityOption = (option) => {
     return currentSong.value?.resolvedQuality === option.value && currentSong.value?.playHash === option.hash;
 };
+
+// 下载当前播放的歌曲
+const downloadCurrentSong = async () => {
+    const song = currentSong.value;
+    if (!song?.hash || song?.isLocal || song?.isCloud) {
+        $message.info(t('gai-ge-qu-wu-fa-xia-zai'));
+        return;
+    }
+
+    let options = Array.isArray(song.qualityOptions) ? song.qualityOptions : [];
+    if (options.length === 0) {
+        options = await fetchDownloadQualityOptions(song.hash);
+    }
+
+    const option = pickDownloadOption(options, song.resolvedQuality, song.playHash);
+    await downloadSong({ hash: song.hash, name: song.name, author: song.author }, option, options);
+};
+
 const toggleQualityMenu = () => {
     if (!canSwitchQuality.value) return;
 
@@ -547,7 +569,7 @@ const volumeValueStyle = computed(() => {
 });
 
 const lyricsHandler = useLyricsHandler(t);
-const { lyricsData, originalLyrics, showLyrics, scrollAmount, SongTips, lyricsMode, toggleLyrics, getLyrics, highlightCurrentChar, resetLyricsHighlight, getCurrentLineText, scrollToCurrentLine, toggleLyricsMode } = lyricsHandler;
+const { lyricsData, originalLyrics, showLyrics, scrollAmount, SongTips, lyricsMode, toggleLyrics, getLyrics, setLocalLyrics, highlightCurrentChar, resetLyricsHighlight, getCurrentLineText, scrollToCurrentLine, toggleLyricsMode } = lyricsHandler;
 
 const currentLyricsLineIndex = computed(() => {
     if (!lyricsData.value || lyricsData.value.length === 0) return -1;
@@ -764,8 +786,8 @@ const restoreLyricsScroll = throttle(() => {
         console.log('[PlayerControl] 恢复歌词正常滚动');
         lyricScrollTimer = null;
         lyricsFlag.value = false;
-        const currentLine = getCurrentLineText(audio.currentTime);
-        scrollToCurrentLine(currentLine);
+        // 用行号而不是歌词文本，否则拿到的是字符串 → 滚动失效
+        scrollToCurrentLine(getCurrentLineIndex(audio.currentTime), { force: true });
     }, 5000);
 }, 1000);
 
@@ -801,6 +823,49 @@ const getCurrentLyrics = async () => {
         }
     }
 };
+// 本地歌曲歌词：读取「本地音乐 → 一键匹配歌词」写入的缓存；没有缓存时自动按「歌名 + 歌手」联网匹配一次
+const autoLocalLyricsMatching = new Set();
+const loadLocalSongLyrics = async (hash, song = null) => {
+    if (!hash) return;
+
+    try {
+        const { getStoredLyrics } = await import('@/utils/localMusicDb');
+        const record = await getStoredLyrics(hash);
+        if (record?.content) {
+            if (currentSong.value?.hash !== hash) return;
+            setLocalLyrics(record.content);
+            nextTick(() => scrollToCurrentLine(getCurrentLineIndex(audio.currentTime), { force: true }));
+            return;
+        }
+
+        if (!song || autoLocalLyricsMatching.has(hash)) return;
+        if (autoLocalLyricsMatching.size > 300) autoLocalLyricsMatching.clear();
+        autoLocalLyricsMatching.add(hash);
+
+        const { matchAndStoreLyrics } = await import('@/utils/localLyrics');
+        const durationSeconds = Number(song.duration)
+            || ((Number(song.timeLength) || 0) / 1000)
+            || 0;
+        const matched = await matchAndStoreLyrics({
+            hash,
+            cacheKey: song.cacheKey || hash,
+            name: song.name,
+            displayName: song.name,
+            author: song.author,
+            duration: durationSeconds,
+            // 带上文件路径，名称匹配不上时还能用 md5 做音频识别
+            filePath: song.filePath || ''
+        });
+
+        if (matched?.content && currentSong.value?.hash === hash) {
+            setLocalLyrics(matched.content);
+            nextTick(() => scrollToCurrentLine(getCurrentLineIndex(audio.currentTime), { force: true }));
+        }
+    } catch (error) {
+        console.warn('[PlayerControl] 读取本地歌曲歌词失败:', error);
+    }
+};
+
 const retryMissingLyrics = () => {
     if (isLyrics === false || pendingLyricsPromise) return;
 
@@ -848,7 +913,7 @@ const handleFullscreenLyricsSettingsChange = () => {
     if (typeof requestAnimationFrame === 'function') {
         requestAnimationFrame(() => {
             const currentLineIndex = getCurrentLineIndex(audio.currentTime);
-            if (currentLineIndex >= 0) scrollToCurrentLine(currentLineIndex);
+            if (currentLineIndex >= 0) scrollToCurrentLine(currentLineIndex, { force: true });
         });
     }
 };
@@ -867,6 +932,65 @@ const toggleCoverMode = () => {
 const isBlobUrl = (url) => typeof url === 'string' && url.startsWith('blob:');
 
 const isLocalSong = (song) => !!song?.isLocal || String(song?.hash || '').startsWith('local_');
+
+// 本地歌曲封面的解析结果：hash -> 在线封面模板（占位图表示没有在线封面）
+const artworkResolved = new Map();
+const artworkPending = new Set();
+
+/** 把解析好的封面套到当前歌曲和队列条目上 */
+const applyResolvedArtwork = (hash) => {
+    const template = artworkResolved.get(hash);
+    if (template === undefined || currentSong.value?.hash !== hash) return;
+
+    const cover = isPlaceholderCover(template) ? PLACEHOLDER_COVER : sizeCover(template, 480);
+    currentSong.value.img = cover;
+    const queueEntry = musicQueueStore.queue.find(item => item.hash === hash);
+    if (queueEntry) queueEntry.img = cover;
+};
+
+/**
+ * 封面加载失败时的兜底：
+ * 本地歌曲 -> 先换成占位图，再按 歌名+歌手 去在线找封面；
+ * 在线歌曲 -> 沿用默认图。任何情况下都不显示破图。
+ */
+const handleArtworkError = async (event) => {
+    const song = currentSong.value;
+    const failedSrc = event?.currentTarget?.src || '';
+    if (!song) return;
+
+    // currentSong 是逐字段赋值的，isLocal 标记可能还是上一首的，这里多看几个本地特征
+    const isLocalTrack = isLocalSong(song) || Boolean(song.filePath) || String(song.cacheKey || '').startsWith('fs:');
+    if (!isLocalTrack) {
+        if (!failedSrc.endsWith('/assets/images/!.png')) song.img = './assets/images/!.png';
+        return;
+    }
+
+    // 在线封面本身加载失败（断网等）：退回占位图，本次不再重试
+    if (/^https?:\/\//i.test(failedSrc)) {
+        song.img = PLACEHOLDER_COVER;
+        return;
+    }
+
+    const hash = song.hash;
+    song.img = PLACEHOLDER_COVER;
+
+    // 播放流程里 currentSong 会被队列条目重新赋值（封面又变回协议地址），已解析过就直接套用
+    if (artworkResolved.has(hash) || artworkPending.has(hash)) {
+        applyResolvedArtwork(hash);
+        return;
+    }
+
+    artworkPending.add(hash);
+    let template = PLACEHOLDER_COVER;
+    try {
+        template = await resolveTrackCover(song);
+    } catch (error) {
+        console.warn('[PlayerControl] 解析本地歌曲封面失败:', error);
+    }
+    artworkPending.delete(hash);
+    artworkResolved.set(hash, template);
+    applyResolvedArtwork(hash);
+};
 
 const toPlayerSong = (song) => {
     if (!isLocalSong(song)) return song;
@@ -1059,6 +1183,8 @@ const playSong = async (song) => {
                 url: ''
             }));
             window.electron?.ipcRenderer?.send('current-song-updated');
+            // 本地歌曲：读取「一键匹配歌词」写入的缓存，没有就自动联网匹配一次
+            loadLocalSongLyrics(song.hash, song);
             return;
         }
         // 保存当前歌曲到本地存储
@@ -1425,11 +1551,7 @@ const handleWindowResize = () => {
     lyricsResizeTimer = setTimeout(() => {
         lyricsResizeTimer = null;
         if (!showLyrics.value || lyricsFlag.value || lyricsDisplayMode.value !== 'scroll') return;
-        const lyricsContainer = document.getElementById('lyrics-container');
-        const lineIndex = getCurrentLineIndex(audio.currentTime);
-        const lineElement = document.querySelectorAll('.line-group')[lineIndex];
-        if (!lyricsContainer || !lineElement) return;
-        scrollAmount.value = -lineElement.offsetTop + (lyricsContainer.offsetHeight / 2) - (lineElement.offsetHeight / 2) - 32;
+        scrollToCurrentLine(getCurrentLineIndex(audio.currentTime), { force: true });
     }, 150);
 };
 
@@ -1439,7 +1561,7 @@ const handleLyricsClick = (lineIndex) => {
     const lineStartTime = lyricsData.value[lineIndex].characters[0].startTime;
     audio.currentTime = lineStartTime / 1000;
     resetLyricsHighlight(audio.currentTime);
-    scrollToCurrentLine(lineIndex);
+    scrollToCurrentLine(lineIndex, { force: true });
     lyricsFlag.value = false;
     if (lyricScrollTimer) clearTimeout(lyricScrollTimer);
     lyricScrollTimer = null;
@@ -1739,7 +1861,7 @@ onMounted(() => {
                 savedSong.isLocal = true;
                 savedSong.url = '';
                 if (isBlobUrl(savedSong.img)) {
-                    savedSong.img = './assets/images/ico.png';
+                    savedSong.img = PLACEHOLDER_COVER;
                 }
             }
             currentSong.value = savedSong;
@@ -1867,8 +1989,24 @@ watch(lyricsData, (newLyrics) => {
         console.log('[PlayerControl] 歌词数据加载完成，同步到当前播放进度:', audio.currentTime);
         highlightCurrentChar(audio.currentTime, false);
         const currentLineIndex = getCurrentLineIndex(audio.currentTime);
-        scrollToCurrentLine(currentLineIndex);
+        scrollToCurrentLine(currentLineIndex, { force: true });
     }
+});
+
+// 歌词面板刚展开时容器高度还是 0，滚动位置会算错；
+// 展开动画结束后再对齐几次，保证进歌词页时当前行就是居中的
+let lyricsResyncTimers = [];
+watch(showLyrics, (visible) => {
+    lyricsResyncTimers.forEach(clearTimeout);
+    lyricsResyncTimers = [];
+    if (!visible) return;
+
+    [120, 520, 900].forEach((delay) => {
+        lyricsResyncTimers.push(setTimeout(() => {
+            if (!showLyrics.value || lyricsDisplayMode.value !== 'scroll') return;
+            scrollToCurrentLine(getCurrentLineIndex(audio.currentTime), { force: true });
+        }, delay));
+    });
 });
 
 // 组件卸载清理
@@ -1877,6 +2015,8 @@ onUnmounted(() => {
     settleListenSession('switch');
     // 清除自动切换定时器
     clearAutoSwitchTimer();
+    lyricsResyncTimers.forEach(clearTimeout);
+    lyricsResyncTimers = [];
     stopLyricsBackgroundCarousel();
 
     if (audioOutputDeviceWatchChangeHandler) {

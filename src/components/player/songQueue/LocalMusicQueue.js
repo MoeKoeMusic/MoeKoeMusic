@@ -1,11 +1,34 @@
 import { toRaw } from 'vue';
 import { parseBlob } from 'music-metadata';
+import { buildCoverUrl, buildMediaUrl } from '@/utils/localMedia';
+import { PLACEHOLDER_COVER, isPlaceholderCover, sizeCover } from '@/utils/localCover';
+
+/**
+ * 路径型歌曲的封面：列表里已经匹配到在线封面就用它（大图用 480），
+ * 否则交给协议按需从音频文件里抽取（抽不到由播放器兜底成在线封面/占位图）
+ */
+const resolvePathCover = (item) => {
+    if (item.coverTemplate && !isPlaceholderCover(item.coverTemplate)) return sizeCover(item.coverTemplate, 480);
+    return buildCoverUrl(item.filePath);
+};
+
+// 给歌曲对象补上封面/歌词匹配需要的字段
+const toMatchFields = (localItem) => ({
+    cacheKey: localItem.cacheKey || (localItem.filePath ? `fs:${localItem.filePath}` : ''),
+    fileName: localItem.name || '',
+    duration: Number(localItem.duration) || 0
+});
 
 const getLocalSongHash = (item) => {
     if (item.hash) return item.hash;
+    // 全盘扫描/下载目录的歌曲：路径是稳定标识
+    if (item.filePath) return `local_fs_${item.filePath}`;
     if (!item.file) return '';
     return `local_${item.name}_${item.file.size}_${item.file.lastModified}`;
 };
+
+// 来自主进程扫描（有磁盘路径、没有 File 句柄）的歌曲
+const isPathTrack = (item) => Boolean(toRaw(item)?.filePath) && !isLocalFile(toRaw(item)?.file);
 
 const isLocalFile = (file) => typeof Blob !== 'undefined' && toRaw(file) instanceof Blob;
 
@@ -14,7 +37,7 @@ const getLocalSongCover = (item) => {
     if (isLocalFile(coverBlob) && coverBlob.size > 0) {
         return URL.createObjectURL(coverBlob);
     }
-    return item.cover || item.img || './assets/images/ico.png';
+    return item.cover || item.img || PLACEHOLDER_COVER;
 };
 
 const LOCAL_MUSIC_DB_NAME = 'LocalMusicDB';
@@ -119,13 +142,13 @@ const readLocalSongCover = async (file) => {
     try {
         const metadata = await parseBlob(file);
         const picture = metadata.common.picture?.[0];
-        if (!picture) return './assets/images/ico.png';
+        if (!picture) return PLACEHOLDER_COVER;
 
         const blob = new Blob([picture.data], { type: picture.format });
         return URL.createObjectURL(blob);
     } catch (error) {
         console.error('[SongQueue] 读取本地歌曲封面失败:', error);
-        return './assets/images/ico.png';
+        return PLACEHOLDER_COVER;
     }
 };
 
@@ -133,6 +156,10 @@ export default function useLocalMusicQueue(t, musicQueueStore, currentSong, time
     const restoreLocalSongCover = async (localItem) => {
         const localHash = getLocalSongHash(localItem);
         if (!localHash) return '';
+
+        if (isPathTrack(localItem)) {
+            return resolvePathCover(localItem);
+        }
 
         const localFile = await resolveLocalSongFile(localItem, localHash, false);
         if (!localFile) return '';
@@ -153,25 +180,43 @@ export default function useLocalMusicQueue(t, musicQueueStore, currentSong, time
 
         try {
             clearTimeout(timeoutId.value);
+            const pathTrack = isPathTrack(localItem);
             const hasCurrentFile = isLocalFile(localItem.file);
-            const localFile = await resolveLocalSongFile(localItem, localHash);
-            if (!localFile) return { error: true };
-            await saveLocalSongHandle(localHash, localItem);
+            let localFile = null;
+            let url = '';
+
+            if (pathTrack) {
+                // 主进程扫描到的歌曲：直接用自定义协议流式播放，避免整首读入内存
+                url = buildMediaUrl(localItem.filePath);
+            } else {
+                localFile = await resolveLocalSongFile(localItem, localHash);
+                if (!localFile) return { error: true };
+                await saveLocalSongHandle(localHash, localItem);
+                url = URL.createObjectURL(localFile);
+            }
+
             const hasCachedCover = isLocalFile(localItem.coverBlob) || localItem.coverState === 'none';
-            const localCover = hasCurrentFile || hasCachedCover
-                ? getLocalSongCover(localItem)
-                : await readLocalSongCover(localFile);
-            
+            let localCover;
+            if (pathTrack) {
+                localCover = resolvePathCover(localItem);
+            } else {
+                localCover = hasCurrentFile || hasCachedCover
+                    ? getLocalSongCover(localItem)
+                    : await readLocalSongCover(localFile);
+            }
+
             // 设置当前歌曲信息
+            const matchFields = toMatchFields(localItem);
             currentSong.value.author = localItem.author || '未知艺术家';
             currentSong.value.name = localItem.displayName || localItem.name;
             currentSong.value.img = localCover;
             currentSong.value.hash = localHash;
+            currentSong.value.cacheKey = matchFields.cacheKey;
+            currentSong.value.fileName = matchFields.fileName;
+            currentSong.value.duration = matchFields.duration;
             currentSong.value.qualityLabel = '';
             currentSong.value.qualityOptions = [];
 
-            // 创建本地文件的 URL
-            const url = URL.createObjectURL(localFile);
             currentSong.value.url = url;
             console.log('[SongQueue] 创建本地音乐URL:', url);
 
@@ -183,9 +228,11 @@ export default function useLocalMusicQueue(t, musicQueueStore, currentSong, time
                 img: currentSong.value.img,
                 author: currentSong.value.author,
                 timeLength: localItem.timelen || (localItem.duration * 1000) || localItem.timeLength || 0,
+                ...matchFields,
                 url: url,
                 isLocal: true,
                 file: localFile,
+                filePath: localItem.filePath || '',
                 handle: localItem.handle
             };
 
@@ -243,6 +290,25 @@ export default function useLocalMusicQueue(t, musicQueueStore, currentSong, time
                 const localHash = getLocalSongHash(item);
                 if (!localHash || addedHashes.has(localHash)) continue;
                 addedHashes.add(localHash);
+
+                // 路径型歌曲不需要提前读文件，播放时由协议按需读取
+                if (isPathTrack(item)) {
+                    newSongs.push({
+                        id: queueSongs.length + newSongs.length + 1,
+                        hash: localHash,
+                        name: item.displayName || item.name,
+                        author: item.author || '未知艺术家',
+                        img: resolvePathCover(item),
+                        timeLength: item.timelen || (item.duration * 1000) || item.timeLength || 0,
+                        ...toMatchFields(item),
+                        url: buildMediaUrl(item.filePath),
+                        isLocal: true,
+                        file: null,
+                        filePath: item.filePath,
+                        handle: null
+                    });
+                    continue;
+                }
 
                 const localFile = await resolveLocalSongFile(item, localHash);
                 if (!localFile) continue;

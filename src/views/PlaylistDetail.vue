@@ -65,6 +65,10 @@
                                     <li @click="sharePlaylist">
                                         <i class="fas fa-share-alt"></i>
                                     </li>
+                                    <li @click="downloadAllSongs"
+                                        :title="isArtist || isAlbum ? t('xia-zai-quan-bu') : t('xia-zai-ge-dan')">
+                                        <i class="fas fa-download"></i>
+                                    </li>
                                     <li @click="addPlaylistToQueue($event, true)" title="添加至播放列表">
                                         <i class="fas fa-add"></i>
                                     </li>
@@ -101,6 +105,8 @@
                             class="batch-actions-menu">
                             <ul>
                                 <li @click="appendSelectedToQueue"><i class="fas fa-list"></i> 添加到播放列表 </li>
+                                <li @click="downloadSelectedSongs"><i class="fas fa-download"></i>
+                                    {{ $t('xia-zai-xuan-zhong') }}</li>
                                 <li @click="addSelectedToOtherPlaylist" v-if="MoeAuth.UserInfo?.userid"><i
                                         class="fas fa-folder-plus"></i> 添加到其他歌单</li>
                                 <li v-if="!isArtist && detail.list_create_userid == MoeAuth.UserInfo?.userid && route.query.listid"
@@ -246,6 +252,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { MoeAuthStore } from '../stores/store';
 import { useI18n } from 'vue-i18n';
 import { share, formatTimestampToAgo } from '@/utils/utils';
+import { downloadSongs, getSavedQualityOption } from '@/utils/download';
 import { useStickyDetailHeader } from '@/composables/useStickyDetailHeader';
 
 const playlistSelect = ref(null);
@@ -767,6 +774,48 @@ const addPlaylistToQueue = (event, append = false) => {
     if (hasMore.value) {
         loadAndAppendRemainingTracks();
     }
+};
+
+// 批量下载使用的音质：登录后取设置里的偏好音质，未登录交给接口默认码率
+const buildDownloadOption = () => (MoeAuth.isAuthenticated ? getSavedQualityOption() : null);
+
+const toDownloadSong = (track) => ({
+    hash: track.hash,
+    name: track.name,
+    author: track.author
+});
+
+// 下载歌单/专辑/歌手的全部歌曲
+const downloadAllSongs = async () => {
+    isDropdownVisible.value = false;
+
+    // 列表是分页加载的，先把剩余歌曲补齐
+    if (hasMore.value) {
+        $message.info(t('zheng-zai-jie-xi'));
+        await loadAllRemainingTracks();
+    }
+
+    const list = tracks.value.map(toDownloadSong).filter(song => song.hash);
+    if (list.length === 0) {
+        $message.error(t('gai-ge-qu-wu-fa-xia-zai'));
+        return;
+    }
+
+    downloadSongs(list, buildDownloadOption());
+};
+
+// 下载批量选中的歌曲
+const downloadSelectedSongs = () => {
+    const selected = selectedTracks.value
+        .map(index => filteredTracks.value[index])
+        .filter(Boolean)
+        .map(toDownloadSong)
+        .filter(song => song.hash);
+
+    isBatchMenuVisible.value = false;
+    if (selected.length === 0) return;
+
+    downloadSongs(selected, buildDownloadOption());
 };
 
 // 切换关注状态

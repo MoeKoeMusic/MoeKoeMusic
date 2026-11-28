@@ -69,8 +69,24 @@ const getPrivilegeCandidates = (qualityOptions, quality, originalHash) => {
     }));
 };
 
+// 酷狗侧表示「未登录 / 登录已失效」的错误码：51002 未登录，20018 会话过期
+const LOGIN_INVALID_CODES = [20018, 51002];
+
+const isLoginInvalidResponse = (response) => {
+    const code = Number(response?.error_code);
+    return Number(response?.status) === 2 || LOGIN_INVALID_CODES.includes(code);
+};
+
 export default function useOnlineMusicQueue(t, musicQueueStore, currentSong, timeoutId) {
     let activeSongRequestId = 0;
+    // 登录失效提示只弹一次，避免连续切歌时反复弹窗
+    let loginInvalidNotified = false;
+
+    const notifyLoginInvalid = () => {
+        if (loginInvalidNotified) return;
+        loginInvalidNotified = true;
+        window.$modal?.alert?.(t('deng-lu-shi-xiao-qing-zhong-xin-deng-lu'));
+    };
 
     // 添加歌曲到队列并播放
     const addSongToQueue = async (hash, name, img, author, isReset = true, qualityOverride = '', cachedQualityOptions = []) => {
@@ -188,6 +204,27 @@ export default function useOnlineMusicQueue(t, musicQueueStore, currentSong, tim
             }
 
             if (isStaleRequest()) return { stale: true };
+
+            // 内置 API 模式下接口错误是作为正常响应返回的（不会抛异常），
+            // 这里显式识别「登录已失效」，避免只能静默切歌直到达到重试上限
+            if (response && isLoginInvalidResponse(response)) {
+                notifyLoginInvalid();
+
+                if (isAuth) {
+                    try {
+                        // 登录态失效时退化为匿名可听（free_part），至少让免费歌曲能播
+                        const anonymousResponse = await get('/song/url', { hash, free_part: 1 });
+                        if (isStaleRequest()) return { stale: true };
+                        if (anonymousResponse?.status === 1 && anonymousResponse.url?.[0]) {
+                            response = anonymousResponse;
+                            selectedCandidate = { hash, quality: '' };
+                            qualityOptions = [];
+                        }
+                    } catch (error) {
+                        console.warn('[SongQueue] 登录失效后以未登录状态重试失败:', error);
+                    }
+                }
+            }
 
             if (!response || response.status !== 1) {
                 console.error('[SongQueue] 获取音乐URL失败:', response);

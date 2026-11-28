@@ -17,6 +17,19 @@
             <li v-if="contextSong.mvhash" @click="playMV(contextSong.mvhash)"><i class="fa-solid fa-video"></i> 播放MV
             </li>
             <li @click="shareSong(contextSong)"><i class="fa-solid fa-share-nodes"></i> 分享</li>
+            <li @mouseenter="fetchDownloadOptions" @mouseleave="hideDownloadMenu">
+                <i class="fa-solid fa-download"></i>
+                {{ $t('xia-zai') }} <i class="fa-solid fa-chevron-right"></i>
+                <ul v-if="showDownloadMenu" class="submenu download-submenu">
+                    <li v-if="downloadLoading" class="submenu-tip">{{ $t('zheng-zai-jie-xi') }}</li>
+                    <li v-else-if="downloadOptions.length === 0" class="submenu-tip">{{ $t('gai-ge-qu-wu-fa-xia-zai') }}
+                    </li>
+                    <li v-for="option in downloadOptions" :key="`${option.value}-${option.hash}`" :title="option.label"
+                        @click="download(option)">
+                        {{ option.label }}
+                    </li>
+                </ul>
+            </li>
             <li v-if="MoeAuth.isAuthenticated && listId && contextSong.userid === MoeAuth.UserInfo.userid"
                 @click="cancel()"><i class="fa-solid fa-heart"></i> 取消收藏</li>
             <li v-if="MoeAuth.isAuthenticated" @click="addToNext(contextSong)"><i class="fa-solid fa-arrow-right"></i>
@@ -32,6 +45,7 @@ import { get } from '../utils/request';
 import { MoeAuthStore } from '../stores/store';
 import i18n from '@/utils/i18n';
 import { openMvPlayer, share } from '@/utils/utils';
+import { fetchDownloadQualityOptions, downloadSong } from '@/utils/download';
 
 const router = useRouter();
 const MoeAuth = MoeAuthStore();
@@ -74,6 +88,7 @@ const openContextMenu = (event, song, Id) => {
 const hideContextMenu = () => {
     showContextMenu.value = false;
     showSubMenu.value = false;
+    resetDownloadMenu();
 };
 // 获取歌单列表
 const fetchPlaylists = async () => {
@@ -96,6 +111,77 @@ const shareSong = (song) => {
     if (!song) return;
     share(song.OriSongName, song.FileHash);
     hideContextMenu();
+};
+
+// 下载相关状态
+const showDownloadMenu = ref(false);
+const downloadLoading = ref(false);
+const downloadOptions = ref([]);
+const downloadFetchedHash = ref('');
+
+const resetDownloadMenu = () => {
+    showDownloadMenu.value = false;
+    downloadLoading.value = false;
+    downloadOptions.value = [];
+    downloadFetchedHash.value = '';
+};
+
+// 从右键菜单的歌曲对象里整理出下载所需信息
+const buildDownloadSong = () => {
+    const song = contextSong.value || {};
+    const hash = song.hash || song.FileHash || '';
+    let name = song.name || song.SongName || '';
+    let author = song.author || song.SingerName || '';
+    const raw = song.OriSongName || '';
+
+    if (raw) {
+        const parts = raw.split(' - ');
+        if (parts.length > 1) {
+            author = author || parts[0];
+            name = parts.slice(1).join(' - ');
+        } else {
+            name = name || raw;
+        }
+    }
+
+    return { hash, name, author };
+};
+
+// 展开下载音质列表
+const fetchDownloadOptions = async () => {
+    showDownloadMenu.value = true;
+    showSubMenu.value = false;
+
+    const hash = contextSong.value?.hash || contextSong.value?.FileHash;
+    if (!hash) return;
+    if (downloadFetchedHash.value === hash && downloadOptions.value.length > 0) return;
+
+    downloadFetchedHash.value = hash;
+    downloadLoading.value = true;
+    try {
+        downloadOptions.value = await fetchDownloadQualityOptions(hash);
+    } catch (error) {
+        console.error('[ContextMenu] 获取下载音质失败:', error);
+        downloadOptions.value = [];
+    } finally {
+        downloadLoading.value = false;
+    }
+};
+
+const hideDownloadMenu = () => {
+    showDownloadMenu.value = false;
+};
+
+// 按所选音质下载
+const download = (option) => {
+    const song = buildDownloadSong();
+    const options = [...downloadOptions.value];
+    hideContextMenu();
+    if (!song.hash) {
+        $message.error(i18n.global.t('gai-ge-qu-wu-fa-xia-zai'));
+        return;
+    }
+    downloadSong(song, option, options);
 };
 
 // 添加到歌单功能
@@ -221,6 +307,16 @@ defineExpose({ openContextMenu });
         width: 150px;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    .submenu-tip {
+        color: #999;
+        font-size: 12px;
+        cursor: default;
+
+        &:hover {
+            background-color: transparent;
+        }
     }
 }
 </style>

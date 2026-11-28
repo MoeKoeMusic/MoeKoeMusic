@@ -58,6 +58,9 @@ const moekoeAPI = {
         openLogPath: () => ipcRenderer.invoke('open-log-path'),
         exportLog: () => ipcRenderer.invoke('export-log'),
         getApiModeUrl: () => ipcRenderer.invoke('get-api-service-endpoint'),
+        requestMicrophoneAccess: () => ipcRenderer.invoke('request-microphone-access'),
+        openMicrophoneSettings: () => ipcRenderer.invoke('open-microphone-settings'),
+        requestSystemAudioAccess: () => ipcRenderer.invoke('request-system-audio-access'),
         // 本地媒体（全盘扫描 / 元数据 / 歌词读取）
         localMedia: {
             listDrives: () => ipcRenderer.invoke('local-media:list-drives'),

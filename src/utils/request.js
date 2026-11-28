@@ -100,16 +100,26 @@ httpClient.interceptors.response.use(
     }
 );
 
+const requestBuiltinApiResponse = async (path, payload) => {
+    const config = injectAuthHeader({ ...payload });
+    const { body, headers, status } = await window.kugouapi.request(path, config);
+    return {
+        data: body || { data: undefined, error_code: 0, error_msg: 'body is undefined', status: 0 },
+        headers,
+        status,
+        config
+    };
+};
+
 const requestBuiltinApi = async (path, payload) => {
-    const result = await kugouapi.request(path, injectAuthHeader(payload));
-    const resp = result.body || { data: undefined, error_code: 0, error_msg: 'body is undefined', status: 0 };
-    const riskResult = await handleRiskResponse(result,
-        (retryConfig) => requestBuiltinApi({ ...retryConfig }),
-        (path, params) => requestBuiltinApi(path, { params, __skipRisk: true })
+    const response = await requestBuiltinApiResponse(path, payload);
+    const riskResult = await handleRiskResponse(
+        response,
+        (retryConfig) => requestBuiltinApiResponse(path, retryConfig),
+        async (verifyPath, params) => (await requestBuiltinApiResponse(verifyPath, { params })).data
     );
-    if(riskResult.handled) return riskResult.data;
-    else return resp;
-}
+    return riskResult.handled ? riskResult.data : response.data;
+};
 
 const hasBuiltinApi = () => 'kugouapi' in window;
 
@@ -130,8 +140,9 @@ export const get = async (url, params = {}, config = {}, onSuccess = null, onErr
 // 封装 POST 请求
 export const post = async (url, data = {}, config = {}, onSuccess = null, onError = null) => {
     try {
+        const params = data instanceof ArrayBuffer || ArrayBuffer.isView(data) ? { data } : data;
         const response = hasBuiltinApi()?
-            await requestBuiltinApi(url, { params: data, ...config }):
+            await requestBuiltinApi(url, { ...config, params: { ...params, ...config.params } }):
             await httpClient.post(url, data, config);
         if (onSuccess) onSuccess(response);
         return response;
